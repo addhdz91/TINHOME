@@ -42,6 +42,7 @@
 | `/como-funciona` | Cómo funciona | Pública |
 | `/precios` | Planes | Pública |
 | `/lista-espera` | Apuntarse a la lista de espera | Pública |
+| `/lista-espera/confirmar?token=…` | Confirmación del doble opt-in (enlace del email N-19) | Pública |
 | `/legal/:slug` | Textos legales | Pública |
 | `/denunciar` | Denuncia pública (DSA) | Pública |
 | `/ayuda` · `/ayuda/:slug` | Centro de ayuda y preguntas frecuentes | Pública (también dentro de la app) |

@@ -10,6 +10,9 @@ describe('TinHomeLogo', () => {
     const logo = screen.getByRole('img', { name: 'TinHome' });
     expect(logo).toHaveAttribute('data-tone', 'light');
     expect(logo.getAttribute('src')).toContain('horizontal-light');
+    expect(logo.getAttribute('srcset')).toMatch(
+      /horizontal-light-48\.webp 238w, .*-96\.webp 476w, .*-192\.webp 952w/,
+    );
   });
 
   it.each(['dark', 'black'] as const)('uses the dark variant in the %s theme', (theme) => {

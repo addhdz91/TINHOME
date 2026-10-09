@@ -72,3 +72,55 @@
     }
   }
 }
+
+/* S-01 — swipe demo of the landing (3 s loop, pausable; static with reduced motion). */
+@keyframes swipe-demo {
+  0%,
+  20% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(45%) rotate(12deg);
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(120%) rotate(16deg);
+    opacity: 0;
+  }
+  76% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes swipe-stamp {
+  0%,
+  25% {
+    opacity: 0;
+  }
+  55%,
+  75% {
+    opacity: 1;
+  }
+  76%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@utility animate-swipe-demo {
+  animation: swipe-demo 3s var(--ease-brand) infinite;
+}
+
+@utility animate-swipe-stamp {
+  animation: swipe-stamp 3s linear infinite;
+}
+
+@utility paused {
+  animation-play-state: paused;
+}

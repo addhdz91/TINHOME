@@ -65,6 +65,7 @@ service cloud.firestore {
     match /partnerClicks/{id} { allow read: if isAdmin(); }
     match /auditLog/{id} { allow read: if isSuperadmin(); }
     // passes, docHashes, waitlist, likeCounters, chatCounters, events, mailQueue, stripeEvents,
-    // photoHashIndex, users/{uid}/pushTokens: no client access (default deny)
+    // photoHashIndex, users/{uid}/pushTokens, demandCounters, rateLimits: no client access
+    // (default deny). demandCounters holds raw counts below P-18 (FR-18 privacy).
   }
 }

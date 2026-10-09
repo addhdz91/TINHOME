@@ -1,17 +1,39 @@
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TinHomeLogo } from '@/components/TinHomeLogo';
+import { Link } from 'react-router';
+import { Seo } from '@/components/Seo';
+import { Skeleton } from '@/components/Skeleton';
+import { Button } from '@/components/ui/button';
+import { Hero } from '../components/Hero';
+import { Steps } from '../components/Steps';
+import { Trust } from '../components/Trust';
 
-/** S-01 placeholder: the full landing is built in M1. */
+// Below the fold and data-driven (Firestore + zod): loaded after the hero has painted.
+const CitiesSection = lazy(async () => ({
+  default: (await import('../components/CitiesSection')).CitiesSection,
+}));
+const Faq = lazy(async () => ({ default: (await import('../components/Faq')).Faq }));
+
+/** S-01 — Landing: understand in 5 s and join the waitlist (registration arrives in M2). */
 export function LandingPage() {
   const { t } = useTranslation();
   return (
-    <section className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-16 text-center">
-      <TinHomeLogo variant="full" height={120} decorative />
-      <h1 className="text-display text-balance">{t('landing.title')}</h1>
-      <p className="text-lg text-muted">{t('landing.subtitle')}</p>
-      <p className="rounded-md bg-brand-soft px-4 py-3 text-brand-text">
-        {t('landing.comingSoon')}
-      </p>
-    </section>
+    <>
+      <Seo title={t('seo.landing.title')} description={t('seo.landing.description')} />
+      <Hero />
+      <Steps />
+      <Trust />
+      <Suspense fallback={<Skeleton className="mx-auto my-12 h-64 max-w-[1200px]" />}>
+        <CitiesSection />
+        <Faq />
+      </Suspense>
+      <section className="mx-auto flex max-w-3xl flex-col items-center gap-3 px-4 pt-4 pb-16 text-center">
+        <h2 className="text-h2">{t('landing.finalCta.title')}</h2>
+        <p className="text-muted">{t('landing.finalCta.body')}</p>
+        <Button asChild size="lg">
+          <Link to="/lista-espera">{t('landing.hero.ctaPrimary')}</Link>
+        </Button>
+      </section>
+    </>
   );
 }

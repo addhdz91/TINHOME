@@ -6,7 +6,9 @@
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom/vitest"],
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "scripts", "vite.config.ts"]
 }

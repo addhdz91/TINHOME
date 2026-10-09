@@ -35,11 +35,16 @@ pnpm install                 # instala todo el monorepo
 pnpm dev                     # web (5173) + emuladores Firebase
 pnpm seed                    # datos de ejemplo en emuladores (Madrid/Valencia, 60 casas, usuarios demo)
 pnpm test                    # unitarias + integración (con emuladores)
+pnpm test:unit               # solo unitarias (sin Java)
+pnpm test:int                # integración de callables contra el emulador de Firestore
 pnpm test:rules              # reglas de Firestore y Storage
-pnpm test:e2e                # Playwright
+pnpm test:e2e                # Playwright (emuladores + seed + web); PLAYWRIGHT_CHROMIUM_PATH si Chromium ya está instalado
+pnpm brand:assets            # regenera los logos WebP de la web desde assets/brand/logo (solo redimensiona)
 pnpm lint && pnpm typecheck  # obligatorio antes de cada commit
 stripe listen --forward-to http://127.0.0.1:5001/demo-tinhome/europe-southwest1/stripeWebhook
 ```
+
+Firebase CLI: dependencia de desarrollo; úsala con `pnpm exec firebase …` (no hace falta instalación global).
 
 Usuarios demo (emulador): `laura@demo.tinhome` (gratis, Madrid), `javier@demo.tinhome` (Premium, Valencia), `admin@demo.tinhome` (superadmin). Contraseña: `Demo1234!`.
 

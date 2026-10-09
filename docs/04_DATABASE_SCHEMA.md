@@ -29,6 +29,8 @@
 | `windows` | auto | Pública | ✗ |
 | `demandStats` | `{fromCity}_{toCity}_{windowId}` | Pública | ✗ |
 | `waitlist` | `sha256(email)` | ✗ | ✗ |
+| `demandCounters` | `{from}_{to}_{window}` | ✗ | ✗ |
+| `rateLimits` | `{scope}_{hash}_{ventana}` | ✗ | ✗ |
 | `entitlements` | auto | Propietario · admin | ✗ |
 | `subscriptions` | `uid` | Propietario · admin | ✗ |
 | `referrals` | `inviteeUid` | Invitador · admin | ✗ |
@@ -175,7 +177,13 @@
 `fromCityId`, `toCityId`, `windowId`, `count` (S; se publica solo si ≥ P-18), `updatedAt`.
 
 ### 2.15 `waitlist/{sha256(email)}`
-`email`, `cityId`, `destinations: string[]`, `windowIds: string[]`, `status: PENDING_CONFIRMATION|CONFIRMED|CONVERTED|UNSUBSCRIBED`, `confirmToken` (hash), `createdAt`, `confirmedAt?`.
+`email` (normalizado: sin espacios y en minúsculas), `cityId`, `destinations: string[]`, `windowIds: string[]`, `status: PENDING_CONFIRMATION|CONFIRMED|CONVERTED|UNSUBSCRIBED`, `confirmToken` (SHA-256 del token; el token en claro solo viaja en el email), `confirmTokenExpiresAt` (S, 7 días), `privacyVersion` + `privacyAcceptedAt` (consentimiento del visitante; no hay `uid` para `legalAcceptances`), `lastEmailAt` (S, reenvío ≥ 60 s), `createdAt`, `updatedAt`, `confirmedAt?`.
+
+### 2.15b `demandCounters/{fromCityId}_{toCityId}_{windowId}` (solo servidor, M1)
+`fromCityId`, `toCityId`, `windowId`, `count`, `updatedAt`. Recuento bruto (también < P-18). `demandStats` es su proyección pública y solo existe cuando `count ≥ P-18` (FR-18), porque las reglas no pueden ocultar campos.
+
+### 2.15c `rateLimits/{scope}_{hash}_{ventana}` (solo servidor, M1)
+`scope`, `count`, `expiresAt` (TTL). Contador de ventana fija para callables públicas (`joinWaitlist`: 10/h por IP). La clave guarda solo un hash de la IP, nunca la IP.
 
 ### 2.16 `entitlements/{id}`
 `uid`, `source: STRIPE|FOUNDER|REFERRAL|ADMIN`, `startsAt`, `endsAt`, `refId?` (subscriptionId / referralId / auditId), `reason?` (ADMIN), `revokedAt?`.
@@ -222,7 +230,7 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 - `chatCounters/{uid}_{YYYYMMDDHHmm}`: `count`. Límite de mensajes por minuto (BR-36). TTL a 1 día.
 - `events/{id}`: `name`, `uidHash`, `cityId?`, `props` (sin PII), `createdAt`. TTL 400 días.
 - `auditLog/{id}`: `actorUid`, `actorRole`, `action`, `targetType`, `targetId`, `before?`, `after?`, `reason?`, `createdAt`. Solo inserción.
-- `mailQueue/{id}`: `to`, `templateId`, `data`, `status: QUEUED|SENT|FAILED`, `attempts`, `lastError?`, `createdAt`, `sentAt?`. TTL 90 días.
+- `mailQueue/{id}`: `to`, `templateId`, `data`, `status: QUEUED|SENT|FAILED`, `attempts`, `lastError?`, `createdAt`, `sentAt?`, `expiresAt` (TTL 90 días).
 - `stripeEvents/{eventId}`: `type`, `processedAt`. TTL 90 días.
 
 ---
@@ -256,7 +264,7 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 | `entitlements` | `uid ASC, endsAt DESC` | Cálculo de `premiumUntil` |
 | `auditLog` | `targetType ASC, targetId ASC, createdAt DESC` | Auditoría |
 
-Políticas TTL: `passes.expiresAt`, `likeCounters` (campo `expiresAt`), `events`, `mailQueue`, `stripeEvents`. Borrados programados por job: coordenadas de `locationChecks` (J-10), mensajes de chats cerrados (P-39, J-05).
+Políticas TTL: `passes.expiresAt`, `likeCounters` (campo `expiresAt`), `chatCounters.expiresAt`, `rateLimits.expiresAt`, `mailQueue.expiresAt`, `events`, `stripeEvents`. Borrados programados por job: coordenadas de `locationChecks` (J-10), mensajes de chats cerrados (P-39, J-05).
 
 ---
 

@@ -1,22 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { createMemoryRouter } from 'react-router';
-import { RouterProvider } from 'react-router/dom';
+import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { renderRoutes } from '@/test/render';
 import { buildRoutes } from './routes';
-import { ThemeProvider } from './ThemeProvider';
-
-function renderAt(path: string) {
-  const router = createMemoryRouter(buildRoutes(), { initialEntries: [path] });
-  render(
-    <ThemeProvider>
-      <RouterProvider router={router} />
-    </ThemeProvider>,
-  );
-}
 
 describe('routes', () => {
-  it('renders the public landing placeholder', async () => {
-    renderAt('/');
+  it('renders the landing with hero, cities progress and published demand only', async () => {
+    renderRoutes(buildRoutes(), '/');
     expect(
       await screen.findByRole('heading', {
         level: 1,
@@ -27,10 +16,31 @@ describe('routes', () => {
       'href',
       '#main',
     );
+
+    const malaga = await screen.findByRole('progressbar', { name: 'Málaga' });
+    expect(malaga).toHaveAttribute('aria-valuenow', '87');
+    expect(
+      screen.getByText('Málaga abre al llegar a 150 casas verificadas. Vamos por 87.'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText(/personas de Valencia quieren ir a Madrid en Semana Santa 2027/),
+    ).toBeInTheDocument();
+    // A pair below P-18 (3 people from Málaga) is never shown.
+    expect(screen.queryByText(/personas de Málaga quieren ir/)).toBeNull();
+  });
+
+  it('links the footer to the legal texts', async () => {
+    renderRoutes(buildRoutes(), '/');
+    const footer = await screen.findByRole('contentinfo');
+    expect(within(footer).getByRole('link', { name: 'Privacidad' })).toHaveAttribute(
+      'href',
+      '/legal/privacidad',
+    );
+    expect(within(footer).getByRole('link', { name: 'Denunciar contenido' })).toBeInTheDocument();
   });
 
   it('shows the brand page in development', async () => {
-    renderAt('/dev/brand');
+    renderRoutes(buildRoutes(), '/dev/brand');
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Marca y tokens' }),
     ).toBeInTheDocument();
@@ -39,11 +49,11 @@ describe('routes', () => {
 
   it('shows a friendly 404 for unknown public, app and admin paths', async () => {
     for (const path of ['/no-existe', '/app/no-existe', '/admin/no-existe']) {
-      renderAt(path);
+      const { unmount } = renderRoutes(buildRoutes(), path);
       expect(
         await screen.findByRole('heading', { name: 'No encontramos esta página' }),
       ).toBeInTheDocument();
-      document.body.innerHTML = '';
+      unmount();
     }
   });
 });

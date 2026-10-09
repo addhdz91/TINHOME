@@ -8,7 +8,12 @@
   },
   "nav": {
     "home": "Inicio",
-    "help": "Ayuda"
+    "help": "Ayuda",
+    "howItWorks": "Cómo funciona",
+    "pricing": "Precios",
+    "waitlist": "Lista de espera",
+    "joinWaitlist": "Apúntate",
+    "mainLabel": "Principal"
   },
   "theme": {
     "label": "Tema",
@@ -27,12 +32,96 @@
     }
   },
   "landing": {
-    "title": "Intercambia tu casa. Viaja por España sin pagar alojamiento.",
-    "subtitle": "Haz match con casas de personas verificadas que quieren venir a tu ciudad.",
-    "comingSoon": "Estamos preparando TinHome. Muy pronto podrás apuntarte."
+    "hero": {
+      "title": "Intercambia tu casa. Viaja por España sin pagar alojamiento.",
+      "subtitle": "Haz match con casas de personas verificadas que quieren venir a tu ciudad.",
+      "ctaPrimary": "Apúntate a la lista de espera",
+      "ctaSecondary": "Cómo funciona"
+    },
+    "mock": {
+      "label": "Ejemplo de tarjeta de casa que se desliza a la derecha con un me gusta",
+      "title": "Ático luminoso en Ruzafa",
+      "place": "Valencia · Ruzafa",
+      "guests": "4 personas · 2 dormitorios",
+      "chip": "Encaje perfecto",
+      "stamp": "ME GUSTA",
+      "pause": "Pausar animación",
+      "play": "Reanudar animación"
+    },
+    "steps": {
+      "title": "Así de fácil",
+      "items": [
+        {
+          "title": "Publica tu casa",
+          "body": "Crea tu ficha con fotos y dinos adónde y cuándo te gustaría viajar. Publicar no cuesta nada."
+        },
+        {
+          "title": "Haz match",
+          "body": "Desliza casas de quienes quieren venir a tu ciudad. Si os gustáis mutuamente, es un match."
+        },
+        {
+          "title": "Acordad e intercambiad",
+          "body": "Habláis por el chat, acordáis las fechas y os intercambiáis las casas."
+        }
+      ]
+    },
+    "trust": {
+      "title": "Confianza antes que nada",
+      "items": [
+        {
+          "title": "Personas verificadas",
+          "body": "Revisamos a mano la identidad de cada persona y que su casa es de verdad suya."
+        },
+        {
+          "title": "Valoraciones mutuas",
+          "body": "Después de cada intercambio, los dos os valoráis. Las opiniones se publican a la vez."
+        },
+        {
+          "title": "Sin dinero entre usuarios",
+          "body": "TinHome no participa en el acuerdo. Nunca pagues ni envíes dinero a otro usuario."
+        }
+      ]
+    },
+    "cities": {
+      "title": "Ciudades",
+      "subtitle": "Abrimos cada ciudad cuando hay casas suficientes para que haya buenos matches."
+    },
+    "demand": {
+      "title": "Ganas de viajar",
+      "empty": "Todavía estamos contando quién quiere ir adónde. ¡Apúntate y suma!"
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "items": [
+        {
+          "q": "¿Cuánto cuesta?",
+          "a": "Publicar tu casa, verificarte, hacer match y chatear no cuesta nada. Si quieres más, Premium cuesta {{monthly}} al mes o {{yearly}} al año, IVA incluido."
+        },
+        {
+          "q": "¿Es seguro?",
+          "a": "Verificamos a mano la identidad de cada persona y la ubicación de su casa, hay valoraciones mutuas y puedes denunciar o bloquear en dos toques. Aun así, conoce bien a la otra persona antes de cerrar el acuerdo."
+        },
+        {
+          "q": "¿Y si soy inquilino?",
+          "a": "Puedes participar si tienes la autorización escrita de tu arrendador. Te damos un modelo para que te la firme."
+        },
+        {
+          "q": "¿TinHome participa en el acuerdo?",
+          "a": "No. TinHome os pone en contacto; el acuerdo lo cerráis vosotros directamente. Nunca intermediamos pagos entre usuarios."
+        }
+      ]
+    },
+    "finalCta": {
+      "title": "¿Te apuntas?",
+      "body": "Te avisamos en cuanto tu ciudad abra."
+    }
   },
   "footer": {
-    "rights": "© {{year}} TinHome"
+    "rights": "© {{year}} TinHome",
+    "tagline": "TinHome conecta a las personas; el acuerdo lo cerráis vosotros.",
+    "legalTitle": "Legal",
+    "productTitle": "TinHome",
+    "report": "Denunciar contenido"
   },
   "notFound": {
     "title": "No encontramos esta página",
@@ -148,5 +237,177 @@
     "E_LOCATION_ATTEMPTS": "Has hecho muchos intentos hoy. Prueba mañana o solicita revisión manual.",
     "E_TICKET_CLOSED": "Esta solicitud está cerrada. Abre una nueva si lo necesitas.",
     "E_INTERNAL": "Algo ha fallado. Inténtalo de nuevo."
+  },
+  "common": {
+    "loadError": "No hemos podido cargar esta información.",
+    "retry": "Reintentar",
+    "loading": "Cargando…",
+    "backHome": "Volver al inicio",
+    "optional": "opcional",
+    "requiredMark": "obligatorio"
+  },
+  "seo": {
+    "landing": {
+      "title": "TinHome — Intercambia tu casa",
+      "description": "Haz match con casas de personas verificadas que quieren venir a tu ciudad."
+    },
+    "howItWorks": {
+      "title": "Cómo funciona — TinHome",
+      "description": "Publica tu casa, haz match y acordad el intercambio. Así funciona TinHome."
+    },
+    "pricing": {
+      "title": "Precios — TinHome",
+      "description": "TinHome es gratis para publicar y hacer match. Premium da me gusta ilimitados y más visibilidad."
+    },
+    "waitlist": {
+      "title": "Lista de espera — TinHome",
+      "description": "Apúntate y te avisamos cuando tu ciudad abra en TinHome."
+    },
+    "legal": {
+      "title": "{{title}} — TinHome"
+    }
+  },
+  "cities": {
+    "open": "Abierta",
+    "waitlist": "En lista de espera",
+    "progressValue": "{{count}} de {{threshold}} casas verificadas",
+    "openBody": "Ya está abierta, con {{count}} casas verificadas.",
+    "waitlistBody": "{{city}} abre al llegar a {{threshold}} casas verificadas. Vamos por {{count}}.",
+    "invite": "Invita a alguien",
+    "shareText": "Estoy en TinHome para intercambiar casa y viajar por España. ¡Apúntate y abrimos antes tu ciudad!",
+    "linkCopied": "Enlace copiado"
+  },
+  "demand": {
+    "sentence": "personas de {{from}} quieren ir a {{to}} en {{window}}"
+  },
+  "howItWorks": {
+    "title": "Cómo funciona TinHome",
+    "intro": "TinHome es para personas que viven en España y quieren viajar intercambiando su casa con otras personas verificadas.",
+    "steps": [
+      {
+        "title": "1. Crea tu cuenta y verifica tu teléfono",
+        "body": "Necesitas ser mayor de edad y vivir en España."
+      },
+      {
+        "title": "2. Publica tu casa",
+        "body": "Fotos de cada estancia, capacidad, normas y en qué fechas o ventanas podrías viajar. Nunca mostramos tu dirección exacta."
+      },
+      {
+        "title": "3. Verificamos tu identidad y tu casa",
+        "body": "Una persona del equipo revisa tu documento y que la casa es tuya o que tienes autorización. Tu casa se ve cuando todo está verificado."
+      },
+      {
+        "title": "4. Descubre y haz match",
+        "body": "Desliza casas de ciudades a las que quieres ir. Si a los dos os gusta la casa del otro, hacéis match y podéis hablar por el chat."
+      },
+      {
+        "title": "5. Acordad el intercambio y valoraos",
+        "body": "Cerráis el acuerdo directamente entre vosotros. Al terminar, cada uno valora la experiencia."
+      }
+    ],
+    "noMoney": "TinHome no participa en el acuerdo. Nunca pagues ni envíes dinero a otro usuario.",
+    "cta": "Apúntate a la lista de espera"
+  },
+  "pricing": {
+    "title": "Precios",
+    "subtitle": "Empezar no cuesta nada. Premium es para quien quiere ir más rápido.",
+    "free": "Gratis",
+    "premium": "Premium",
+    "monthly": "{{price}} al mes",
+    "yearly": "o {{price}} al año",
+    "yearlySaving": "Ahorras un {{percent}} % con el plan anual",
+    "vatIncluded": "IVA incluido",
+    "freePrice": "0 €",
+    "tableCaption": "Comparativa de ventajas Gratis y Premium",
+    "feature": "Ventaja",
+    "included": "Incluido",
+    "notIncluded": "No incluido",
+    "rows": {
+      "publish": "Publicar casa, verificarte y navegar",
+      "likes": "Me gusta al día",
+      "likesFree": "{{count}} al día",
+      "likesPremium": "Ilimitados",
+      "whoLiked": "Ver quién te ha dado me gusta",
+      "whoLikedFree": "Solo el número",
+      "whoLikedPremium": "Lista completa",
+      "visibility": "Visibilidad de tu casa",
+      "visibilityFree": "Normal",
+      "visibilityPremium": "Impulso en el orden",
+      "top": "Colección y filtro Casas Top",
+      "filters": "Filtros avanzados",
+      "undo": "Deshacer un paso",
+      "undoFree": "1 por sesión",
+      "undoPremium": "Ilimitado",
+      "chat": "Chat tras el match",
+      "messageLike": "Me gusta con mensaje antes del match",
+      "messageLikePremium": "{{count}} al día",
+      "sponsored": "Tarjetas patrocinadas",
+      "sponsoredPremium": "Sin intersticiales en el mazo"
+    },
+    "notes": [
+      "Premium se contrata desde la app cuando tu ciudad esté abierta.",
+      "Cancelas cuando quieras y sigue activo hasta el final del periodo pagado. Sin permanencia.",
+      "Tienes {{days}} días para desistir de la contratación."
+    ],
+    "cta": "Apúntate a la lista de espera"
+  },
+  "waitlist": {
+    "title": "Apúntate a la lista de espera",
+    "intro": "Dinos dónde vives y adónde te gustaría ir. Te avisamos en cuanto tu ciudad abra.",
+    "form": {
+      "email": "Email",
+      "emailHint": "Solo lo usaremos para avisarte de la apertura.",
+      "city": "Tu ciudad",
+      "cityPlaceholder": "Elige tu ciudad",
+      "destinations": "¿Adónde te gustaría ir?",
+      "destinationsHint": "Elige hasta {{max}} ciudades.",
+      "windows": "¿Cuándo te gustaría viajar?",
+      "windowsHint": "Opcional. Puedes elegir varias.",
+      "privacy": "He leído la <1>política de privacidad</1> y quiero que me aviséis de la apertura.",
+      "submit": "Apuntarme",
+      "submitting": "Enviando…",
+      "errorSummary": "Revisa los campos marcados:",
+      "errors": {
+        "email": "Escribe un email válido.",
+        "cityId": "Elige tu ciudad.",
+        "destinations": "Elige al menos una ciudad de destino.",
+        "destinationsMax": "Elige como máximo {{max}} ciudades.",
+        "acceptPrivacy": "Necesitamos que aceptes la política de privacidad.",
+        "windowIds": "Revisa las fechas elegidas."
+      }
+    },
+    "noCities": "Ahora mismo no hay ciudades disponibles. Vuelve en unos días.",
+    "success": {
+      "title": "Revisa tu email",
+      "body": "Si el email es correcto, te hemos enviado un enlace para confirmar tu plaza. Caduca en {{days}} días.",
+      "spam": "¿No lo ves? Mira en la carpeta de spam o promociones.",
+      "again": "Apuntar otro email"
+    },
+    "confirm": {
+      "loading": "Confirmando tu plaza…",
+      "title": "¡Ya estás en la lista!",
+      "position": "Eres la persona n.º {{position}} en la lista de {{city}}.",
+      "body": "Te escribiremos cuando {{city}} abra. Mientras tanto, cuantas más casas se sumen, antes abrimos.",
+      "share": "Compartir TinHome",
+      "invalidTitle": "El enlace no es válido o ha caducado",
+      "invalidBody": "Vuelve a apuntarte y te enviaremos un enlace nuevo.",
+      "again": "Apuntarme de nuevo",
+      "missingToken": "Falta el código del enlace. Abre el enlace completo que te enviamos por email."
+    }
+  },
+  "legal": {
+    "version": "Versión {{version}}",
+    "notFoundTitle": "No encontramos este texto legal",
+    "docs": {
+      "aviso-legal": "Aviso legal",
+      "terminos": "Términos y condiciones",
+      "privacidad": "Privacidad",
+      "cookies": "Cookies",
+      "normas-comunidad": "Normas de la comunidad",
+      "info-dsa": "Información DSA",
+      "declaracion-responsable": "Declaración responsable",
+      "autorizacion-arrendador": "Autorización del arrendador",
+      "acuerdo-intercambio": "Acuerdo de intercambio"
+    }
   }
 }

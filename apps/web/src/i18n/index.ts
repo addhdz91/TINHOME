@@ -12,6 +12,8 @@ void i18next.use(initReactI18next).init({
   defaultNS,
   resources,
   interpolation: { escapeValue: false },
+  // Resources are bundled: initialise synchronously (also required by the build-time prerender).
+  initAsync: false,
   returnNull: false,
 });
 

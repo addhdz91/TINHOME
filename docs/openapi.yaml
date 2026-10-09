@@ -916,7 +916,7 @@ paths:
       tags:
       - Ciudades
       summary: Apuntarse a la lista de espera (pública)
-      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: PUB. Errores: E_VALIDATION, E_RATE_LIMIT, E_CITY_UNKNOWN, E_LEGAL_VERSION. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -974,7 +974,7 @@ paths:
       tags:
       - Ciudades
       summary: Confirma la lista de espera (doble opt-in)
-      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: PUB. Errores: E_TOKEN_INVALID. Idempotente. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:

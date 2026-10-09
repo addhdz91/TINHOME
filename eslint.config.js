@@ -62,11 +62,17 @@ export default tseslint.config(
   },
   // Functions, scripts and tests run on Node.
   {
-    files: ['functions/**/*.ts', 'packages/**/*.ts', 'scripts/**/*.ts', 'tests/**/*.ts'],
+    files: [
+      'functions/**/*.ts',
+      'packages/**/*.ts',
+      'scripts/**/*.ts',
+      'tests/**/*.ts',
+      'apps/web/scripts/**/*.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
   {
-    files: ['scripts/**/*.ts'],
+    files: ['scripts/**/*.ts', 'apps/web/scripts/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
   // Web app: React, accessibility and no literal strings in JSX.
@@ -83,7 +89,16 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.flatConfigs.strict.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      'i18next/no-literal-string': ['error', { mode: 'jsx-only' }],
+      // Only user-visible JSX text and attributes; routes, classes and ids are not copy.
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            include: ['alt', 'aria-label', 'aria-description', 'title', 'placeholder', 'label'],
+          },
+        },
+      ],
       'no-restricted-imports': [
         'error',
         {

@@ -64,10 +64,12 @@
 
 | Callable | Guardas | Entrada | Salida | Errores |
 |---|---|---|---|---|
-| `joinWaitlist` | PUB | `{ email, cityId, destinations: string[], windowIds: string[], acceptPrivacy: version }` | `{ ok: true }` (siempre igual, exista o no) | `E_VALIDATION`, `E_RATE_LIMIT` |
-| `confirmWaitlist` | PUB | `{ token }` | `{ cityId, position?: int }` | `E_TOKEN_INVALID` |
+| `joinWaitlist` | PUB | `{ email, cityId, destinations: string[] (1–P-23, sin la propia ciudad), windowIds: string[] (0–10, activas), acceptPrivacy: version }` | `{ ok: true }` (siempre igual, exista o no) | `E_VALIDATION`, `E_RATE_LIMIT` (10/h por IP), `E_CITY_UNKNOWN`, `E_LEGAL_VERSION` |
+| `confirmWaitlist` | PUB | `{ token }` (43 car. base64url) | `{ cityId, position?: int }` (`position` solo en la primera confirmación; idempotente) | `E_TOKEN_INVALID` (desconocido o caducado: 7 días) |
 
 Ciudades, ventanas y `demandStats` se leen directamente de Firestore (lectura pública).
+
+`joinWaitlist` encola el email N-19 en `mailQueue`; el trigger `onMailQueued` lo envía (consola en emuladores). Un email ya confirmado no recibe nada y la respuesta es idéntica (sin enumeración).
 
 ### 2.5 Descubrir, Explorar, ficha (DISC)
 

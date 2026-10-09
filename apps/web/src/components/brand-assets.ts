@@ -1,46 +1,47 @@
 import type { Theme } from '@tinhome/shared/constants';
-import horizontalDark from '@/assets/brand/tinhome-horizontal-dark.png';
-import horizontalLight from '@/assets/brand/tinhome-horizontal-light.png';
-import horizontalMono from '@/assets/brand/tinhome-horizontal-mono-white.png';
-import fullDark from '@/assets/brand/tinhome-logo-dark.png';
-import fullLight from '@/assets/brand/tinhome-logo-light.png';
-import fullMono from '@/assets/brand/tinhome-logo-mono-white.png';
-import symbolDark from '@/assets/brand/tinhome-symbol-dark.png';
-import symbolLight from '@/assets/brand/tinhome-symbol-light.png';
-import symbolMono from '@/assets/brand/tinhome-symbol-mono-white.png';
-import wordmarkDark from '@/assets/brand/tinhome-wordmark-dark.png';
-import wordmarkLight from '@/assets/brand/tinhome-wordmark-light.png';
-import wordmarkMono from '@/assets/brand/tinhome-wordmark-mono-white.png';
 
 export type LogoVariant = 'horizontal' | 'symbol' | 'full' | 'wordmark';
 export type LogoTone = 'light' | 'dark' | 'mono-white';
 
-/** Official PNGs from assets/brand/logo (11_BRAND_GUIDELINES.md §2) with their intrinsic size. */
-export const LOGO_ASSETS: Record<
-  LogoVariant,
-  { width: number; height: number; src: Record<LogoTone, string> }
-> = {
-  horizontal: {
-    width: 1557,
-    height: 314,
-    src: { light: horizontalLight, dark: horizontalDark, 'mono-white': horizontalMono },
-  },
-  symbol: {
-    width: 799,
-    height: 571,
-    src: { light: symbolLight, dark: symbolDark, 'mono-white': symbolMono },
-  },
-  full: {
-    width: 1099,
-    height: 821,
-    src: { light: fullLight, dark: fullDark, 'mono-white': fullMono },
-  },
-  wordmark: {
-    width: 1059,
-    height: 233,
-    src: { light: wordmarkLight, dark: wordmarkDark, 'mono-white': wordmarkMono },
-  },
+/**
+ * Web copies of the official logos (assets/brand/logo), only resized and encoded as WebP by
+ * `pnpm brand:assets` — never redrawn or recoloured (11_BRAND_GUIDELINES.md §3).
+ */
+const files = import.meta.glob<string>('../assets/brand/web/*.webp', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+});
+
+const FILE_PREFIX: Record<LogoVariant, string> = {
+  horizontal: 'horizontal',
+  symbol: 'symbol',
+  full: 'logo',
+  wordmark: 'wordmark',
 };
+
+/** Intrinsic aspect ratio of each variant (from the original PNGs). */
+export const LOGO_RATIO: Record<LogoVariant, number> = {
+  horizontal: 1557 / 314,
+  symbol: 799 / 571,
+  full: 1099 / 821,
+  wordmark: 1059 / 233,
+};
+
+const HEIGHTS = [48, 96, 192] as const;
+
+/** `srcset` with width descriptors so the browser picks the right size for each screen. */
+export function logoSources(variant: LogoVariant, tone: LogoTone): { src: string; srcSet: string } {
+  const entries = HEIGHTS.map((height) => {
+    const url =
+      files[`../assets/brand/web/${FILE_PREFIX[variant]}-${tone}-${String(height)}.webp`] ?? '';
+    return { url, width: Math.round(LOGO_RATIO[variant] * height) };
+  });
+  return {
+    src: entries[1]?.url ?? '',
+    srcSet: entries.map((entry) => `${entry.url} ${String(entry.width)}w`).join(', '),
+  };
+}
 
 /** C-25 — `light` logo in the light theme, `dark` logo in dark and black. */
 export function toneForTheme(theme: Theme): LogoTone {

@@ -18,3 +18,5 @@ pubsub-debug.log
 emulator-data/
 playwright-report/
 test-results/
+dist-ssr/
+firebase.*-sandbox.json

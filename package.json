@@ -10,14 +10,17 @@
     "dev": "concurrently -k -n functions,emulators,web -c yellow,cyan,blue \"pnpm --filter @tinhome/functions build:watch\" \"pnpm emulators\" \"pnpm --filter @tinhome/web dev\"",
     "emulators": "pnpm --filter @tinhome/functions build && pnpm exec firebase emulators:start --project demo-tinhome",
     "build": "pnpm -r build",
-    "test": "pnpm -r --filter !@tinhome/rules-tests test",
+    "test": "pnpm -r --filter !@tinhome/rules-tests --filter !@tinhome/e2e test && pnpm test:int",
     "test:rules": "pnpm exec firebase emulators:exec --only firestore,storage --project demo-tinhome \"pnpm --filter @tinhome/rules-tests test\"",
-    "test:e2e": "echo \"E2E (Playwright) llega con el primer flujo crítico (M1)\"",
+    "test:e2e": "pnpm --filter @tinhome/functions build && pnpm exec firebase emulators:exec --only auth,firestore,functions --project demo-tinhome \"pnpm seed && pnpm --filter @tinhome/e2e test\"",
     "lint": "eslint . --max-warnings 0 && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm -r typecheck && tsc -p scripts/tsconfig.json",
     "seed": "tsx scripts/seed.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:unit": "pnpm -r --filter !@tinhome/rules-tests --filter !@tinhome/e2e test",
+    "test:int": "pnpm exec firebase emulators:exec --only firestore --project demo-tinhome \"pnpm --filter @tinhome/functions test:int\"",
+    "brand:assets": "tsx scripts/brand-web-assets.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [
@@ -44,6 +47,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.9",
+    "sharp": "^0.35.5",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.1"

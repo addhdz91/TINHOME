@@ -1,7 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/app/theme-context';
 import { cn } from '@/lib/utils';
-import { LOGO_ASSETS, toneForTheme, type LogoTone, type LogoVariant } from './brand-assets';
+import {
+  LOGO_RATIO,
+  logoSources,
+  toneForTheme,
+  type LogoTone,
+  type LogoVariant,
+} from './brand-assets';
 
 interface TinHomeLogoProps {
   variant?: LogoVariant;
@@ -24,13 +30,15 @@ export function TinHomeLogo({
 }: TinHomeLogoProps) {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const asset = LOGO_ASSETS[variant];
   const resolvedTone = tone === 'auto' ? toneForTheme(theme) : tone;
-  const width = Math.round((asset.width / asset.height) * height);
+  const width = Math.round(LOGO_RATIO[variant] * height);
+  const { src, srcSet } = logoSources(variant, resolvedTone);
 
   return (
     <img
-      src={asset.src[resolvedTone]}
+      src={src}
+      srcSet={srcSet}
+      sizes={`${String(width)}px`}
       alt={decorative ? '' : t('logo.alt')}
       width={width}
       height={height}
