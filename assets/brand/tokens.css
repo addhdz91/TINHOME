@@ -1,0 +1,133 @@
+/*
+ * TinHome — tokens de diseño (fuente: docs/02_UX_UI_SPEC.md §3 y docs/11_BRAND_GUIDELINES.md)
+ * Copiar en apps/web/src/styles/tokens.css e importarlo antes de Tailwind.
+ * Temas: claro (por defecto), [data-theme="dark"], [data-theme="black"].
+ * "Sistema" = el script inline de index.html pone dark o light según prefers-color-scheme.
+ */
+
+:root {
+  /* Colores corporativos (constantes en todos los temas) */
+  --brand-violet: #8257e5;
+  --brand-blue: #0a6cf0;
+  --brand-sky: #2191fc;
+  --brand-violet-deep: #6440cb;
+  --gradient-from: #8257e5;
+  --gradient-to: #0a6cf0;
+  --gradient-brand: linear-gradient(135deg, var(--gradient-from) 0%, var(--gradient-to) 100%);
+
+  /* Tema claro */
+  color-scheme: light;
+  --bg: #f7f6fb;
+  --surface: #ffffff;
+  --surface-muted: #f0eef7;
+  --border: #e4e1ee;
+  --text: #1b1830;
+  --text-muted: #5b5670;
+  --primary: #0a6cf0;
+  --primary-hover: #0a5ed3;
+  --primary-foreground: #ffffff;
+  --link: #0a5ed3;
+  --brand: #8257e5;
+  --brand-text: #6440cb;
+  --brand-soft: #f5f2fd;
+  --accent: #2191fc;
+  --pass: #5b5670;
+  --premium: #a16207;
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #b91c1c;
+  --focus: #0a6cf0;
+  --overlay: rgb(11 8 32 / 0.55);
+  --card-scrim: linear-gradient(180deg, transparent 45%, rgb(11 8 32 / 0.85) 100%);
+  --shadow-card: 0 1px 2px rgb(27 24 48 / 0.06), 0 8px 24px rgb(27 24 48 / 0.08);
+  --shadow-sheet: 0 -8px 32px rgb(27 24 48 / 0.16);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f0d1a;
+  --surface: #1a1730;
+  --surface-muted: #24203d;
+  --border: #2e2a47;
+  --text: #f4f2fa;
+  --text-muted: #a9a3bf;
+  --primary: #458ff4;
+  --primary-hover: #80b3f7;
+  --primary-foreground: #0b0820;
+  --link: #80b3f7;
+  --brand: #a07feb;
+  --brand-text: #bea8f1;
+  --brand-soft: #25194b;
+  --accent: #56abfd;
+  --pass: #a9a3bf;
+  --premium: #facc15;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --focus: #80b3f7;
+  --overlay: rgb(0 0 0 / 0.65);
+  --shadow-card: none;
+  --shadow-sheet: none;
+}
+
+[data-theme='black'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #0e0d14;
+  --surface-muted: #17151f;
+  --border: #262335;
+  --text: #f4f2fa;
+  --text-muted: #a9a3bf;
+  --primary: #458ff4;
+  --primary-hover: #80b3f7;
+  --primary-foreground: #0b0820;
+  --link: #80b3f7;
+  --brand: #a07feb;
+  --brand-text: #bea8f1;
+  --brand-soft: #1a1233;
+  --accent: #56abfd;
+  --pass: #a9a3bf;
+  --premium: #facc15;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --focus: #80b3f7;
+  --overlay: rgb(0 0 0 / 0.75);
+  --shadow-card: none;
+  --shadow-sheet: none;
+}
+
+/* Exponer a Tailwind v4 (clases bg-surface, text-muted, bg-primary, etc.) */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-link: var(--link);
+  --color-brand: var(--brand);
+  --color-brand-text: var(--brand-text);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-pass: var(--pass);
+  --color-premium: var(--premium);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-focus: var(--focus);
+  --font-display: 'Nunito Variable', 'Nunito', system-ui, sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+.bg-brand-gradient {
+  background-image: var(--gradient-brand);
+  color: #ffffff;
+}

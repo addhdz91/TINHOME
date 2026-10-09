@@ -1,0 +1,5756 @@
+# Generado a partir de docs/05_API_CONTRACT.md. Mantener sincronizado con @tinhome/shared/schemas.
+openapi: 3.1.0
+info:
+  title: TinHome API (Cloud Functions callables)
+  version: 2.0.0
+  description: 'Contrato de las funciones de TinHome Fase 1. Las callables se invocan con el SDK de Firebase (httpsCallable),
+    que envía POST {data} y recibe {result}. Fuente de verdad en código: esquemas zod de @tinhome/shared.'
+servers:
+- url: https://europe-southwest1-{projectId}.cloudfunctions.net
+  variables:
+    projectId:
+      default: tinhome-staging
+- url: http://127.0.0.1:5001/demo-tinhome/europe-southwest1
+  description: Emulador local
+tags:
+- name: Cuenta
+- name: Casa
+- name: Verificación
+- name: Ciudades
+- name: Descubrir
+- name: Match
+- name: Contacto
+- name: Intercambios
+- name: Valoraciones
+- name: Premium
+- name: Crecimiento
+- name: Seguridad
+- name: Notificaciones
+- name: Patrocinados
+- name: Analítica
+- name: Privacidad
+- name: Admin
+- name: Chat
+- name: Ayuda
+- name: Webhooks
+paths:
+  /completeSignup:
+    post:
+      operationId: completeSignup
+      tags:
+      - Cuenta
+      summary: Completa el alta tras crear el usuario en Auth
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    firstName: &id001
+                      type: string
+                    lastName: *id001
+                    birthDate: &id006
+                      type: string
+                      format: date
+                    referralCode: *id001
+                    acceptedTerms: *id001
+                    acceptedPrivacy: *id001
+                  required:
+                  - firstName
+                  - lastName
+                  - birthDate
+                  - acceptedTerms
+                  - acceptedPrivacy
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      me:
+                        $ref: '#/components/schemas/Me'
+                    required:
+                    - me
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getMe:
+    post:
+      operationId: getMe
+      tags:
+      - Cuenta
+      summary: Estado agregado del usuario
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: &id002
+                  type: object
+                  additionalProperties: false
+                  properties: {}
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    $ref: '#/components/schemas/Me'
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /updateProfile:
+    post:
+      operationId: updateProfile
+      tags:
+      - Cuenta
+      summary: Actualiza el perfil público
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    displayFirstName: *id001
+                    about:
+                      type: string
+                      maxLength: 300
+                    languages:
+                      type: array
+                      items: *id001
+                    travelsWith:
+                      type: string
+                      enum:
+                      - SOLO
+                      - COUPLE
+                      - FAMILY
+                      - FRIENDS
+                    avatarPath: *id001
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      profile:
+                        $ref: '#/components/schemas/PublicProfile'
+                    required:
+                    - profile
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /updateSettings:
+    post:
+      operationId: updateSettings
+      tags:
+      - Cuenta
+      summary: Tema y notificaciones
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    theme:
+                      type: string
+                      enum:
+                      - system
+                      - light
+                      - dark
+                      - black
+                    notifications:
+                      type: object
+                      additionalProperties: &id004
+                        type: boolean
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: &id003
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      ok:
+                        const: true
+                    required:
+                    - ok
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /confirmPhoneLinked:
+    post:
+      operationId: confirmPhoneLinked
+      tags:
+      - Cuenta
+      summary: Confirma el teléfono vinculado en Auth
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      phoneVerified:
+                        const: true
+                    required:
+                    - phoneVerified
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /acceptLegalDocs:
+    post:
+      operationId: acceptLegalDocs
+      tags:
+      - Cuenta
+      summary: Acepta versiones de textos legales
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          slug: *id001
+                          version: *id001
+                        required:
+                        - slug
+                        - version
+                  required:
+                  - items
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /requestAccountDeletion:
+    post:
+      operationId: requestAccountDeletion
+      tags:
+      - Cuenta
+      summary: Solicita la baja (requiere reautenticación reciente)
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    confirm:
+                      const: ELIMINAR
+                  required:
+                  - confirm
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      purgeAt: &id008
+                        type: string
+                        format: date-time
+                    required:
+                    - purgeAt
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /upsertHome:
+    post:
+      operationId: upsertHome
+      tags:
+      - Casa
+      summary: Crea o actualiza la casa del usuario
+      description: 'Callable de Firebase. Guardas: A,EV,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  $ref: '#/components/schemas/HomeInput'
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        $ref: '#/components/schemas/HomeOwnerView'
+                    required:
+                    - home
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /reorderHomePhotos:
+    post:
+      operationId: reorderHomePhotos
+      tags:
+      - Casa
+      summary: Reordena fotos
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    photoIds:
+                      type: array
+                      items: *id001
+                  required:
+                  - photoIds
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      photos:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Photo'
+                    required:
+                    - photos
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /deleteHomePhoto:
+    post:
+      operationId: deleteHomePhoto
+      tags:
+      - Casa
+      summary: Borra una foto
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    photoId: *id001
+                  required:
+                  - photoId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      photos:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Photo'
+                    required:
+                    - photos
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /acceptDeclaration:
+    post:
+      operationId: acceptDeclaration
+      tags:
+      - Casa
+      summary: Acepta la declaración responsable
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    version: *id001
+                  required:
+                  - version
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /publishHome:
+    post:
+      operationId: publishHome
+      tags:
+      - Casa
+      summary: Publica la casa
+      description: 'Callable de Firebase. Guardas: A,EV,PV,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        $ref: '#/components/schemas/HomeOwnerView'
+                      visible: *id004
+                      pendingReasons:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Blocker'
+                    required:
+                    - home
+                    - visible
+                    - pendingReasons
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /pauseHome:
+    post:
+      operationId: pauseHome
+      tags:
+      - Casa
+      summary: Pausa la casa
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        $ref: '#/components/schemas/HomeOwnerView'
+                    required:
+                    - home
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /unpauseHome:
+    post:
+      operationId: unpauseHome
+      tags:
+      - Casa
+      summary: Reactiva la casa pausada
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        $ref: '#/components/schemas/HomeOwnerView'
+                    required:
+                    - home
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /updateTravelPrefs:
+    post:
+      operationId: updateTravelPrefs
+      tags:
+      - Casa
+      summary: Destinos, disponibilidad y viajeros
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    destinations:
+                      $ref: '#/components/schemas/Destinations'
+                    availability:
+                      $ref: '#/components/schemas/Availability'
+                    travelers:
+                      $ref: '#/components/schemas/Travelers'
+                  required:
+                  - destinations
+                  - availability
+                  - travelers
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        $ref: '#/components/schemas/HomeOwnerView'
+                    required:
+                    - home
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /submitIdentityVerification:
+    post:
+      operationId: submitIdentityVerification
+      tags:
+      - Verificación
+      summary: Envía documentos de identidad
+      description: 'Callable de Firebase. Guardas: A,EV,PV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    tenure:
+                      type: string
+                      enum:
+                      - OWNER
+                      - TENANT
+                    propertyDocType:
+                      type: string
+                      enum:
+                      - DEED
+                      - LAND_REGISTRY_NOTE
+                      - IBI_RECEIPT
+                      - RENTAL_CONTRACT
+                      - UTILITY_BILL
+                    docNumber: *id001
+                    files:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        idFront: *id001
+                        idBack: *id001
+                        selfie: *id001
+                        propertyDoc: *id001
+                        landlordAuthorization: *id001
+                      required:
+                      - idFront
+                      - idBack
+                      - selfie
+                      - propertyDoc
+                  required:
+                  - tenure
+                  - propertyDocType
+                  - docNumber
+                  - files
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      verificationId: *id001
+                      status:
+                        const: PENDING
+                    required:
+                    - verificationId
+                    - status
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /joinWaitlist:
+    post:
+      operationId: joinWaitlist
+      tags:
+      - Ciudades
+      summary: Apuntarse a la lista de espera (pública)
+      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                    cityId: *id001
+                    destinations:
+                      type: array
+                      items: *id001
+                    windowIds:
+                      type: array
+                      items: *id001
+                    acceptPrivacy: *id001
+                  required:
+                  - email
+                  - cityId
+                  - destinations
+                  - windowIds
+                  - acceptPrivacy
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - AppCheck: []
+  /confirmWaitlist:
+    post:
+      operationId: confirmWaitlist
+      tags:
+      - Ciudades
+      summary: Confirma la lista de espera (doble opt-in)
+      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    token: *id001
+                  required:
+                  - token
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      cityId: *id001
+                      position: &id005
+                        type: integer
+                    required:
+                    - cityId
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - AppCheck: []
+  /getDiscoverDeck:
+    post:
+      operationId: getDiscoverDeck
+      tags:
+      - Descubrir
+      summary: Lote de tarjetas para Descubrir
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    destinationCityIds:
+                      type: array
+                      items: *id001
+                    windowId: *id001
+                    excludeIds:
+                      type: array
+                      items: *id001
+                      maxItems: 200
+                  required:
+                  - excludeIds
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/HomeCard'
+                      canLike: *id004
+                      blockers:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Blocker'
+                      likesRemaining:
+                        oneOf:
+                        - *id005
+                        - type: 'null'
+                      sponsored:
+                        oneOf:
+                        - $ref: '#/components/schemas/SponsoredCard'
+                        - type: 'null'
+                    required:
+                    - cards
+                    - canLike
+                    - blockers
+                    - likesRemaining
+                    - sponsored
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /searchHomes:
+    post:
+      operationId: searchHomes
+      tags:
+      - Descubrir
+      summary: Explorar con filtros
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    filters:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        cityIds:
+                          type: array
+                          items: *id001
+                        windowId: *id001
+                        dateRange:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            start: *id006
+                            end: *id006
+                        minGuests: *id005
+                        pets: *id004
+                        types:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/HomeType'
+                        amenities:
+                          type: array
+                          items: *id001
+                        perfectFitOnly: *id004
+                        topOnly: *id004
+                        likedMeOnly: *id004
+                        minReviews: *id005
+                    sort:
+                      type: string
+                      enum:
+                      - RELEVANCE
+                      - NEWEST
+                      - RATING
+                    cursor: *id001
+                    limit: &id007
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                      default: 20
+                  required:
+                  - filters
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/HomeCard'
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getHomeDetail:
+    post:
+      operationId: getHomeDetail
+      tags:
+      - Descubrir
+      summary: Ficha de una casa
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    homeId: *id001
+                  required:
+                  - homeId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        type: object
+                      host:
+                        $ref: '#/components/schemas/PublicProfile'
+                      reviews:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'
+                      relation:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          liked: *id004
+                          passed: *id004
+                          matchId:
+                            oneOf:
+                            - *id001
+                            - type: 'null'
+                      compatibility:
+                        $ref: '#/components/schemas/Compatibility'
+                    required:
+                    - home
+                    - host
+                    - reviews
+                    - relation
+                    - compatibility
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /likeHome:
+    post:
+      operationId: likeHome
+      tags:
+      - Match
+      summary: Me gusta (puede crear match)
+      description: 'Callable de Firebase. Guardas: A,EV,ID,ACT,LEG,CO. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    homeId: *id001
+                    message:
+                      type: string
+                      maxLength: 280
+                    clientRequestId:
+                      type: string
+                      format: uuid
+                  required:
+                  - homeId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      matched: *id004
+                      matchId:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                      likesRemaining:
+                        oneOf:
+                        - *id005
+                        - type: 'null'
+                    required:
+                    - matched
+                    - matchId
+                    - likesRemaining
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /passHome:
+    post:
+      operationId: passHome
+      tags:
+      - Match
+      summary: Paso
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    homeId: *id001
+                  required:
+                  - homeId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /undoPass:
+    post:
+      operationId: undoPass
+      tags:
+      - Match
+      summary: Deshacer el último paso
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    homeId: *id001
+                    sessionId: *id001
+                  required:
+                  - homeId
+                  - sessionId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /listLikesReceived:
+    post:
+      operationId: listLikesReceived
+      tags:
+      - Match
+      summary: Me gusta recibidos (lista solo Premium)
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: &id009
+                    cursor: *id001
+                    limit: *id007
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      count: *id005
+                      items:
+                        oneOf:
+                        - type: array
+                          items:
+                            $ref: '#/components/schemas/HomeCard'
+                        - type: 'null'
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - count
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /markMatchSeen:
+    post:
+      operationId: markMatchSeen
+      tags:
+      - Match
+      summary: Marca un match como visto
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                  required:
+                  - matchId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /unmatch:
+    post:
+      operationId: unmatch
+      tags:
+      - Match
+      summary: Deshacer match
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                  required:
+                  - matchId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getMatchContact:
+    post:
+      operationId: getMatchContact
+      tags:
+      - Contacto
+      summary: Contacto del otro participante
+      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                  required:
+                  - matchId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      displayName: *id001
+                      phoneE164: *id001
+                      whatsappUrl: *id001
+                    required:
+                    - displayName
+                    - phoneE164
+                    - whatsappUrl
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /proposeExchange:
+    post:
+      operationId: proposeExchange
+      tags:
+      - Intercambios
+      summary: Declara un intercambio
+      description: 'Callable de Firebase. Guardas: A,ACT,LEG. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                    startDate: *id006
+                    endDate: *id006
+                    guests:
+                      type: object
+                      additionalProperties: *id005
+                    pets:
+                      type: object
+                      additionalProperties: *id005
+                    note:
+                      type: string
+                      maxLength: 300
+                  required:
+                  - matchId
+                  - startDate
+                  - endDate
+                  - guests
+                  - pets
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      exchange:
+                        $ref: '#/components/schemas/Exchange'
+                    required:
+                    - exchange
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /respondExchange:
+    post:
+      operationId: respondExchange
+      tags:
+      - Intercambios
+      summary: Confirma o rechaza
+      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    exchangeId: *id001
+                    accept: *id004
+                  required:
+                  - exchangeId
+                  - accept
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      exchange:
+                        $ref: '#/components/schemas/Exchange'
+                    required:
+                    - exchange
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /cancelExchange:
+    post:
+      operationId: cancelExchange
+      tags:
+      - Intercambios
+      summary: Cancela un intercambio
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    exchangeId: *id001
+                    reason:
+                      type: string
+                      maxLength: 300
+                  required:
+                  - exchangeId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      exchange:
+                        $ref: '#/components/schemas/Exchange'
+                    required:
+                    - exchange
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /submitReview:
+    post:
+      operationId: submitReview
+      tags:
+      - Valoraciones
+      summary: Valora un intercambio completado
+      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    exchangeId: *id001
+                    overall:
+                      type: integer
+                      minimum: 1
+                      maximum: 5
+                    sub:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        cleanliness:
+                          type: integer
+                          minimum: 1
+                          maximum: 5
+                        accuracy:
+                          type: integer
+                          minimum: 1
+                          maximum: 5
+                        communication:
+                          type: integer
+                          minimum: 1
+                          maximum: 5
+                        care:
+                          type: integer
+                          minimum: 1
+                          maximum: 5
+                      required:
+                      - cleanliness
+                      - accuracy
+                      - communication
+                      - care
+                    comment:
+                      type: string
+                      maxLength: 1000
+                  required:
+                  - exchangeId
+                  - overall
+                  - sub
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      review:
+                        $ref: '#/components/schemas/Review'
+                      published: *id004
+                    required:
+                    - review
+                    - published
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /createCheckoutSession:
+    post:
+      operationId: createCheckoutSession
+      tags:
+      - Premium
+      summary: Sesión de Stripe Checkout
+      description: 'Callable de Firebase. Guardas: A,EV,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    plan:
+                      type: string
+                      enum:
+                      - MONTHLY
+                      - YEARLY
+                    acceptImmediateStart:
+                      const: true
+                  required:
+                  - plan
+                  - acceptImmediateStart
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      url: *id001
+                    required:
+                    - url
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /createPortalSession:
+    post:
+      operationId: createPortalSession
+      tags:
+      - Premium
+      summary: Portal del cliente de Stripe
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      url: *id001
+                    required:
+                    - url
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /withdrawSubscription:
+    post:
+      operationId: withdrawSubscription
+      tags:
+      - Premium
+      summary: Desistimiento en 14 días
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    confirm:
+                      const: true
+                  required:
+                  - confirm
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      refundedCents: *id005
+                      endedAt: *id008
+                    required:
+                    - refundedCents
+                    - endedAt
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getReferralSummary:
+    post:
+      operationId: getReferralSummary
+      tags:
+      - Crecimiento
+      summary: Resumen de invitaciones
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      code: *id001
+                      link: *id001
+                      invited:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            displayName: *id001
+                            status:
+                              type: string
+                              enum:
+                              - REGISTERED
+                              - REWARDED
+                              - INELIGIBLE
+                            createdAt: *id008
+                      rewardsThisYear: *id005
+                      maxRewards: *id005
+                    required:
+                    - code
+                    - link
+                    - invited
+                    - rewardsThisYear
+                    - maxRewards
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /blockUser:
+    post:
+      operationId: blockUser
+      tags:
+      - Seguridad
+      summary: Bloquear usuario
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    targetUid: *id001
+                  required:
+                  - targetUid
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /unblockUser:
+    post:
+      operationId: unblockUser
+      tags:
+      - Seguridad
+      summary: Desbloquear usuario
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    targetUid: *id001
+                  required:
+                  - targetUid
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /listBlocked:
+    post:
+      operationId: listBlocked
+      tags:
+      - Seguridad
+      summary: Usuarios bloqueados
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            uid: *id001
+                            displayName: *id001
+                            blockedAt: *id008
+                    required:
+                    - items
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /submitReport:
+    post:
+      operationId: submitReport
+      tags:
+      - Seguridad
+      summary: Denuncia de usuario
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    targetType:
+                      type: string
+                      enum:
+                      - HOME
+                      - USER
+                      - REVIEW
+                      - MESSAGE
+                    targetId: *id001
+                    reason:
+                      type: string
+                      enum:
+                      - PHOTOS_NOT_OWN
+                      - RUDE
+                      - HARASSMENT
+                      - INAPPROPRIATE_MESSAGES
+                      - FRAUD
+                      - HIDDEN_RENTAL
+                      - ILLEGAL
+                      - PERSONAL_DATA
+                      - OTHER
+                    description:
+                      type: string
+                      minLength: 20
+                      maxLength: 2000
+                    attachmentPaths:
+                      type: array
+                      items: *id001
+                      maxItems: 5
+                    alsoBlock: *id004
+                  required:
+                  - targetType
+                  - targetId
+                  - reason
+                  - description
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      reportId: *id001
+                      priority:
+                        type: string
+                        enum:
+                        - HIGH
+                        - NORMAL
+                      preventiveHold: *id004
+                    required:
+                    - reportId
+                    - priority
+                    - preventiveHold
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /submitPublicReport:
+    post:
+      operationId: submitPublicReport
+      tags:
+      - Seguridad
+      summary: Denuncia pública (DSA, sin cuenta)
+      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    name: *id001
+                    email:
+                      type: string
+                      format: email
+                    targetUrl: *id001
+                    description:
+                      type: string
+                      minLength: 20
+                      maxLength: 4000
+                    goodFaith:
+                      const: true
+                  required:
+                  - name
+                  - email
+                  - targetUrl
+                  - description
+                  - goodFaith
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      reportId: *id001
+                    required:
+                    - reportId
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - AppCheck: []
+  /submitAppeal:
+    post:
+      operationId: submitAppeal
+      tags:
+      - Seguridad
+      summary: Recurso contra una decisión de moderación
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    actionId: *id001
+                    text:
+                      type: string
+                      minLength: 20
+                      maxLength: 4000
+                  required:
+                  - actionId
+                  - text
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      appealId: *id001
+                    required:
+                    - appealId
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /markAllNotificationsRead:
+    post:
+      operationId: markAllNotificationsRead
+      tags:
+      - Notificaciones
+      summary: Marca todos los avisos como leídos
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      updated: *id005
+                    required:
+                    - updated
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getSponsored:
+    post:
+      operationId: getSponsored
+      tags:
+      - Patrocinados
+      summary: Tarjeta patrocinada para una ubicación
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    placement:
+                      type: string
+                      enum:
+                      - MATCH
+                      - EXCHANGE
+                      - DECK
+                    cityId: *id001
+                  required:
+                  - placement
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      card:
+                        oneOf:
+                        - $ref: '#/components/schemas/SponsoredCard'
+                        - type: 'null'
+                    required:
+                    - card
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /trackEvent:
+    post:
+      operationId: trackEvent
+      tags:
+      - Analítica
+      summary: Evento de analítica de primera parte
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    name:
+                      type: string
+                      enum:
+                      - signup_completed
+                      - phone_verified
+                      - home_published
+                      - identity_submitted
+                      - like_sent
+                      - match_created
+                      - exchange_confirmed
+                      - review_submitted
+                      - paywall_viewed
+                      - checkout_started
+                      - premium_activated
+                      - invite_shared
+                      - sponsored_clicked
+                    props:
+                      type: object
+                      additionalProperties:
+                        oneOf:
+                        - *id001
+                        - &id010
+                          type: number
+                        - *id004
+                  required:
+                  - name
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /submitGdprRequest:
+    post:
+      operationId: submitGdprRequest
+      tags:
+      - Privacidad
+      summary: Solicitud de derechos RGPD
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                      - ACCESS
+                      - RECTIFICATION
+                      - ERASURE
+                      - OBJECTION
+                      - RESTRICTION
+                      - PORTABILITY
+                    details:
+                      type: string
+                      maxLength: 2000
+                  required:
+                  - type
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      requestId: *id001
+                      dueAt: *id008
+                    required:
+                    - requestId
+                    - dueAt
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /exportMyData:
+    post:
+      operationId: exportMyData
+      tags:
+      - Privacidad
+      summary: Exporta mis datos (JSON)
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      url: *id001
+                      expiresAt: *id008
+                    required:
+                    - url
+                    - expiresAt
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetDashboard:
+    post:
+      operationId: adminGetDashboard
+      tags:
+      - Admin
+      summary: KPIs del panel
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListVerifications:
+    post:
+      operationId: adminListVerifications
+      tags:
+      - Admin
+      summary: Cola de verificaciones
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    status:
+                      $ref: '#/components/schemas/IdentityStatus'
+                    cursor: *id001
+                    limit: *id007
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetVerification:
+    post:
+      operationId: adminGetVerification
+      tags:
+      - Admin
+      summary: Detalle de verificación
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                  required:
+                  - id
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetVerificationFileUrl:
+    post:
+      operationId: adminGetVerificationFileUrl
+      tags:
+      - Admin
+      summary: URL firmada (5 min) de un documento; auditada
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                    file:
+                      type: string
+                      enum:
+                      - idFront
+                      - idBack
+                      - selfie
+                      - propertyDoc
+                      - landlordAuthorization
+                  required:
+                  - id
+                  - file
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      url: *id001
+                      expiresAt: *id008
+                    required:
+                    - url
+                    - expiresAt
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminDecideVerification:
+    post:
+      operationId: adminDecideVerification
+      tags:
+      - Admin
+      summary: Aprobar, rechazar o pedir información
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                    decision:
+                      type: string
+                      enum:
+                      - APPROVE
+                      - REJECT
+                      - REQUEST_INFO
+                    reason: *id001
+                    infoRequest: *id001
+                    fraudSuspicion: *id004
+                  required:
+                  - id
+                  - decision
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListReports:
+    post:
+      operationId: adminListReports
+      tags:
+      - Admin
+      summary: Cola de denuncias
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    status: *id001
+                    priority:
+                      type: string
+                      enum:
+                      - HIGH
+                      - NORMAL
+                    cursor: *id001
+                    limit: *id007
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetReport:
+    post:
+      operationId: adminGetReport
+      tags:
+      - Admin
+      summary: Detalle de denuncia
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                  required:
+                  - id
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminModerate:
+    post:
+      operationId: adminModerate
+      tags:
+      - Admin
+      summary: Acción de moderación con declaración de motivos
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    reportId: *id001
+                    targetType:
+                      type: string
+                      enum:
+                      - HOME
+                      - USER
+                      - REVIEW
+                    targetId: *id001
+                    targetUid: *id001
+                    action:
+                      type: string
+                      enum:
+                      - DISMISS
+                      - WARN
+                      - HIDE_CONTENT
+                      - HIDE_MESSAGE
+                      - SUSPEND
+                      - BAN
+                      - RESTORE
+                      - RELEASE_HOLD
+                    recordStrike: *id004
+                    suspendedUntil: *id008
+                    statement:
+                      $ref: '#/components/schemas/StatementOfReasons'
+                  required:
+                  - targetType
+                  - targetId
+                  - targetUid
+                  - action
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      actionId: *id001
+                      strikesActive: *id005
+                      suggestedNext:
+                        type: string
+                        enum:
+                        - NONE
+                        - SUSPEND
+                        - BAN
+                    required:
+                    - actionId
+                    - strikesActive
+                    - suggestedNext
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminDecideAppeal:
+    post:
+      operationId: adminDecideAppeal
+      tags:
+      - Admin
+      summary: Resolver un recurso
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    appealId: *id001
+                    decision:
+                      type: string
+                      enum:
+                      - UPHOLD
+                      - REJECT
+                    text: *id001
+                  required:
+                  - appealId
+                  - decision
+                  - text
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminSearchUsers:
+    post:
+      operationId: adminSearchUsers
+      tags:
+      - Admin
+      summary: Buscar usuarios
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    q: *id001
+                    cursor: *id001
+                    limit: *id007
+                  required:
+                  - q
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetUser:
+    post:
+      operationId: adminGetUser
+      tags:
+      - Admin
+      summary: Ficha completa de usuario
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    uid: *id001
+                  required:
+                  - uid
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGrantPremium:
+    post:
+      operationId: adminGrantPremium
+      tags:
+      - Admin
+      summary: Conceder Premium
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    uid: *id001
+                    days:
+                      type: integer
+                      minimum: 1
+                      maximum: 365
+                    reason: *id001
+                  required:
+                  - uid
+                  - days
+                  - reason
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      premiumUntil: *id008
+                    required:
+                    - premiumUntil
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminSetUserStatus:
+    post:
+      operationId: adminSetUserStatus
+      tags:
+      - Admin
+      summary: Suspender, expulsar o reactivar
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    uid: *id001
+                    status:
+                      type: string
+                      enum:
+                      - ACTIVE
+                      - SUSPENDED
+                      - BANNED
+                    suspendedUntil: *id008
+                    statement:
+                      $ref: '#/components/schemas/StatementOfReasons'
+                  required:
+                  - uid
+                  - status
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminSetRole:
+    post:
+      operationId: adminSetRole
+      tags:
+      - Admin
+      summary: Asignar rol (superadmin)
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    uid: *id001
+                    role:
+                      oneOf:
+                      - type: string
+                        enum:
+                        - admin
+                        - superadmin
+                      - type: 'null'
+                  required:
+                  - uid
+                  - role
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminUpsertCity:
+    post:
+      operationId: adminUpsertCity
+      tags:
+      - Admin
+      summary: Crear/editar ciudad (superadmin)
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                    name: *id001
+                    province: *id001
+                    region: *id001
+                    timezone:
+                      type: string
+                      enum:
+                      - Europe/Madrid
+                      - Atlantic/Canary
+                    status:
+                      type: string
+                      enum:
+                      - WAITLIST
+                      - OPEN
+                      - CLOSED
+                    openThreshold: *id005
+                    order: *id005
+                  required:
+                  - id
+                  - name
+                  - province
+                  - region
+                  - timezone
+                  - status
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminUpsertWindow:
+    post:
+      operationId: adminUpsertWindow
+      tags:
+      - Admin
+      summary: Crear/editar ventana (superadmin)
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                    name: *id001
+                    startDate: *id006
+                    endDate: *id006
+                    active: *id004
+                    cityIds:
+                      oneOf:
+                      - type: array
+                        items: *id001
+                      - type: 'null'
+                    order: *id005
+                  required:
+                  - name
+                  - startDate
+                  - endDate
+                  - active
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminUpdateParams:
+    post:
+      operationId: adminUpdateParams
+      tags:
+      - Admin
+      summary: Actualizar parámetros (superadmin)
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminUpsertPartner:
+    post:
+      operationId: adminUpsertPartner
+      tags:
+      - Admin
+      summary: Crear/editar partner (superadmin)
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                    name: *id001
+                    category:
+                      type: string
+                      enum:
+                      - CLEANING
+                      - KEYS
+                      - TRANSPORT
+                      - LUGGAGE
+                      - TRAVEL_INSURANCE
+                      - OTHER
+                    title: *id001
+                    text:
+                      type: string
+                      maxLength: 140
+                    logoUrl: *id001
+                    targetUrl: *id001
+                    cityIds:
+                      oneOf:
+                      - type: array
+                        items: *id001
+                      - type: 'null'
+                    placements:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                        - MATCH
+                        - EXCHANGE
+                        - DECK
+                    active: *id004
+                    startsAt: *id008
+                    endsAt: *id008
+                  required:
+                  - name
+                  - category
+                  - title
+                  - text
+                  - logoUrl
+                  - targetUrl
+                  - placements
+                  - active
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminPublishLegalDoc:
+    post:
+      operationId: adminPublishLegalDoc
+      tags:
+      - Admin
+      summary: Publicar nueva versión de un texto legal (superadmin)
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    slug: *id001
+                    markdown: *id001
+                    requiresReacceptance: *id004
+                    changeSummary: *id001
+                  required:
+                  - slug
+                  - markdown
+                  - requiresReacceptance
+                  - changeSummary
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      version: *id001
+                    required:
+                    - version
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetMetrics:
+    post:
+      operationId: adminGetMetrics
+      tags:
+      - Admin
+      summary: Métricas de negocio
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    from: *id006
+                    to: *id006
+                    cityId: *id001
+                  required:
+                  - from
+                  - to
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminExportCsv:
+    post:
+      operationId: adminExportCsv
+      tags:
+      - Admin
+      summary: Exportar CSV
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    report:
+                      type: string
+                      enum:
+                      - FUNNEL
+                      - DEMAND
+                      - USERS
+                    from: *id006
+                    to: *id006
+                  required:
+                  - report
+                  - from
+                  - to
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      url: *id001
+                    required:
+                    - url
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListAudit:
+    post:
+      operationId: adminListAudit
+      tags:
+      - Admin
+      summary: Auditoría (superadmin)
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    targetType: *id001
+                    targetId: *id001
+                    actorUid: *id001
+                    cursor: *id001
+                    limit: *id007
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListGdprRequests:
+    post:
+      operationId: adminListGdprRequests
+      tags:
+      - Admin
+      summary: Solicitudes RGPD
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: *id009
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminCloseGdprRequest:
+    post:
+      operationId: adminCloseGdprRequest
+      tags:
+      - Admin
+      summary: Cerrar solicitud RGPD
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    id: *id001
+                    status:
+                      type: string
+                      enum:
+                      - DONE
+                      - REJECTED
+                    note: *id001
+                  required:
+                  - id
+                  - status
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /signOutEverywhere:
+    post:
+      operationId: signOutEverywhere
+      tags:
+      - Cuenta
+      summary: Cierra sesión en todos los dispositivos
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /registerPushToken:
+    post:
+      operationId: registerPushToken
+      tags:
+      - Notificaciones
+      summary: Registra token de web push (FCM)
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    token: *id001
+                  required:
+                  - token
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /unregisterPushToken:
+    post:
+      operationId: unregisterPushToken
+      tags:
+      - Notificaciones
+      summary: Elimina token de web push
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    token: *id001
+                  required:
+                  - token
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /sharePhoneInChat:
+    post:
+      operationId: sharePhoneInChat
+      tags:
+      - Chat
+      summary: Comparte mi teléfono en este match
+      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                  required:
+                  - matchId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /sendMessage:
+    post:
+      operationId: sendMessage
+      tags:
+      - Chat
+      summary: Envía un mensaje de texto
+      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                    text:
+                      type: string
+                      minLength: 1
+                      maxLength: 1000
+                    clientRequestId:
+                      type: string
+                      format: uuid
+                  required:
+                  - matchId
+                  - text
+                  - clientRequestId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      message:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          id: *id001
+                          createdAt: *id008
+                          paymentWarning: *id004
+                        required:
+                        - id
+                        - createdAt
+                        - paymentWarning
+                    required:
+                    - message
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /markConversationRead:
+    post:
+      operationId: markConversationRead
+      tags:
+      - Chat
+      summary: Marca la conversación como leída
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                  required:
+                  - matchId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /deleteMessageForMe:
+    post:
+      operationId: deleteMessageForMe
+      tags:
+      - Chat
+      summary: Oculta un mensaje solo para mí
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    matchId: *id001
+                    messageId: *id001
+                  required:
+                  - matchId
+                  - messageId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /verifyHomeLocation:
+    post:
+      operationId: verifyHomeLocation
+      tags:
+      - Verificación
+      summary: Verifica la ubicación de la casa (desde el móvil)
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    lat:
+                      type: number
+                      minimum: -90
+                      maximum: 90
+                    lng:
+                      type: number
+                      minimum: -180
+                      maximum: 180
+                    accuracyM:
+                      type: number
+                      minimum: 0
+                    isMobile: *id004
+                  required:
+                  - lat
+                  - lng
+                  - accuracyM
+                  - isMobile
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      result:
+                        type: string
+                        enum:
+                        - PASS
+                        - FAIL
+                        - INACCURATE
+                      distanceKm: *id005
+                    required:
+                    - result
+                    - distanceKm
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /requestLocationReview:
+    post:
+      operationId: requestLocationReview
+      tags:
+      - Verificación
+      summary: Solicita revisión manual de la ubicación
+      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    note:
+                      type: string
+                      maxLength: 1000
+                  required:
+                  - note
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /submitComplaint:
+    post:
+      operationId: submitComplaint
+      tags:
+      - Ayuda
+      summary: Queja o reclamación (usuario o visitante con email)
+      description: 'Callable de Firebase. Guardas: A|PUB. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    category:
+                      type: string
+                      enum:
+                      - ACCOUNT
+                      - VERIFICATION
+                      - PREMIUM_BILLING
+                      - MODERATION_DECISION
+                      - TECHNICAL
+                      - OTHER
+                    subject:
+                      type: string
+                      maxLength: 120
+                    description:
+                      type: string
+                      minLength: 20
+                      maxLength: 4000
+                    attachmentPaths:
+                      type: array
+                      items: *id001
+                      maxItems: 5
+                    email:
+                      type: string
+                      format: email
+                  required:
+                  - category
+                  - subject
+                  - description
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      ticketId: *id001
+                      number: *id001
+                      dueAt: *id008
+                    required:
+                    - ticketId
+                    - number
+                    - dueAt
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+      - AppCheck: []
+  /addComplaintMessage:
+    post:
+      operationId: addComplaintMessage
+      tags:
+      - Ayuda
+      summary: Responde en una queja abierta
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    ticketId: *id001
+                    text:
+                      type: string
+                      maxLength: 4000
+                  required:
+                  - ticketId
+                  - text
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /rateFaq:
+    post:
+      operationId: rateFaq
+      tags:
+      - Ayuda
+      summary: Valora si un artículo de ayuda sirvió
+      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    slug: *id001
+                    helpful: *id004
+                  required:
+                  - slug
+                  - helpful
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - AppCheck: []
+  /adminDecideLocationReview:
+    post:
+      operationId: adminDecideLocationReview
+      tags:
+      - Admin
+      summary: Resolver revisión manual de ubicación
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    homeId: *id001
+                    decision:
+                      type: string
+                      enum:
+                      - APPROVE
+                      - REJECT
+                    reason: *id001
+                  required:
+                  - homeId
+                  - decision
+                  - reason
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminResolveHold:
+    post:
+      operationId: adminResolveHold
+      tags:
+      - Admin
+      summary: Liberar o confirmar una retención preventiva
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    homeId: *id001
+                    uid: *id001
+                    decision:
+                      type: string
+                      enum:
+                      - RELEASE
+                      - CONFIRM
+                    statement:
+                      $ref: '#/components/schemas/StatementOfReasons'
+                  required:
+                  - decision
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListAlerts:
+    post:
+      operationId: adminListAlerts
+      tags:
+      - Admin
+      summary: Alertas de administración
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: *id009
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminHandleAlert:
+    post:
+      operationId: adminHandleAlert
+      tags:
+      - Admin
+      summary: Marcar alerta como atendida
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    alertId: *id001
+                  required:
+                  - alertId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListComplaints:
+    post:
+      operationId: adminListComplaints
+      tags:
+      - Admin
+      summary: Cola de quejas
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    status: *id001
+                    cursor: *id001
+                    limit: *id007
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      nextCursor:
+                        oneOf:
+                        - *id001
+                        - type: 'null'
+                    required:
+                    - items
+                    - nextCursor
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminReplyComplaint:
+    post:
+      operationId: adminReplyComplaint
+      tags:
+      - Admin
+      summary: Responder una queja
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    ticketId: *id001
+                    text: *id001
+                    status:
+                      type: string
+                      enum:
+                      - IN_REVIEW
+                      - WAITING_USER
+                      - RESOLVED
+                      - CLOSED
+                  required:
+                  - ticketId
+                  - text
+                  - status
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result: *id003
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminUpsertFaq:
+    post:
+      operationId: adminUpsertFaq
+      tags:
+      - Admin
+      summary: Crear/editar artículo de ayuda
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    slug: *id001
+                    category: *id001
+                    question: *id001
+                    answerMarkdown: *id001
+                    order: *id005
+                    published: *id004
+                    tags:
+                      type: array
+                      items: *id001
+                  required:
+                  - slug
+                  - category
+                  - question
+                  - answerMarkdown
+                  - published
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /stripeWebhook:
+    post:
+      operationId: stripeWebhook
+      tags:
+      - Webhooks
+      summary: Webhook de Stripe (firma verificada)
+      parameters:
+      - name: Stripe-Signature
+        in: header
+        required: true
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Recibido
+        '400':
+          description: Firma inválida
+      security: []
+  /r/{partnerId}:
+    get:
+      operationId: sponsoredRedirect
+      tags:
+      - Patrocinados
+      summary: Registra clic y redirige al partner
+      parameters:
+      - name: partnerId
+        in: path
+        required: true
+        schema: *id001
+      - name: p
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - MATCH
+          - EXCHANGE
+          - DECK
+      responses:
+        '302':
+          description: Redirección a targetUrl con utm_source=tinhome
+        '404':
+          description: Partner inactivo
+      security: []
+components:
+  securitySchemes:
+    FirebaseIdToken:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID token
+    AppCheck:
+      type: apiKey
+      in: header
+      name: X-Firebase-AppCheck
+  schemas:
+    Blocker:
+      type: string
+      enum:
+      - EMAIL
+      - PHONE
+      - HOME_INCOMPLETE
+      - HOME_NOT_PUBLISHED
+      - DECLARATION
+      - IDENTITY_PENDING
+      - IDENTITY_MISSING
+      - IDENTITY_REJECTED
+      - NO_AVAILABILITY
+      - CITY_WAITLIST
+      - LEGAL_OUTDATED
+      - ACCOUNT_RESTRICTED
+    IdentityStatus:
+      type: string
+      enum:
+      - NONE
+      - PENDING
+      - INFO_REQUESTED
+      - APPROVED
+      - REJECTED
+    HomeStatus:
+      type: string
+      enum:
+      - DRAFT
+      - PUBLISHED
+      - PAUSED
+      - HIDDEN_BY_ADMIN
+    HomeType:
+      type: string
+      enum:
+      - FLAT
+      - HOUSE
+      - STUDIO
+      - PENTHOUSE
+      - DUPLEX
+      - VILLA
+      - OTHER
+    PremiumSource:
+      type: string
+      enum:
+      - STRIPE
+      - FOUNDER
+      - REFERRAL
+      - ADMIN
+    Photo:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        thumbUrl: *id001
+        cardUrl: *id001
+        fullUrl: *id001
+        width: *id005
+        height: *id005
+      required:
+      - thumbUrl
+      - cardUrl
+      - fullUrl
+      - width
+      - height
+    Compatibility:
+      type: object
+      additionalProperties: false
+      properties:
+        perfectFit: *id004
+        mutualDestination: *id004
+        wantsYourCity: *id004
+        sharedWindowIds:
+          type: array
+          items: *id001
+        overlapDays: *id005
+        petsOk: *id004
+        capacityOk: *id004
+      required:
+      - perfectFit
+      - mutualDestination
+      - wantsYourCity
+      - sharedWindowIds
+      - overlapDays
+      - petsOk
+      - capacityOk
+    HostSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        displayName: *id001
+        photoUrl:
+          oneOf:
+          - *id001
+          - type: 'null'
+        identityVerified: *id004
+        foundingMember: *id004
+      required:
+      - displayName
+      - photoUrl
+      - identityVerified
+      - foundingMember
+    HomeCard:
+      type: object
+      additionalProperties: false
+      properties:
+        homeId: *id001
+        ownerUid: *id001
+        title: *id001
+        cityId: *id001
+        cityName: *id001
+        zone: *id001
+        type:
+          $ref: '#/components/schemas/HomeType'
+        maxGuests: *id005
+        bedrooms: *id005
+        petsAllowed: *id004
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+        host:
+          $ref: '#/components/schemas/HostSummary'
+        rating:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            properties:
+              avg: *id010
+              count: *id005
+            required:
+            - avg
+            - count
+          - type: 'null'
+        isTop: *id004
+        compatibility:
+          $ref: '#/components/schemas/Compatibility'
+        likedYou:
+          oneOf:
+          - *id004
+          - type: 'null'
+      required:
+      - homeId
+      - ownerUid
+      - title
+      - cityId
+      - cityName
+      - zone
+      - type
+      - maxGuests
+      - bedrooms
+      - petsAllowed
+      - photos
+      - host
+      - rating
+      - isTop
+      - compatibility
+      - likedYou
+    SponsoredCard:
+      type: object
+      additionalProperties: false
+      properties:
+        partnerId: *id001
+        title: *id001
+        text: *id001
+        logoUrl: *id001
+        clickUrl: *id001
+        label:
+          const: Patrocinado
+      required:
+      - partnerId
+      - title
+      - text
+      - logoUrl
+      - clickUrl
+      - label
+    Destinations:
+      type: object
+      additionalProperties: false
+      properties:
+        mode:
+          type: string
+          enum:
+          - LIST
+          - ANY_OPEN
+        cityIds:
+          type: array
+          items: *id001
+          maxItems: 5
+      required:
+      - mode
+      - cityIds
+    Availability:
+      type: object
+      additionalProperties: false
+      properties:
+        windowIds:
+          type: array
+          items: *id001
+        ranges:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              start: *id006
+              end: *id006
+            required:
+            - start
+            - end
+          maxItems: 5
+      required:
+      - windowIds
+      - ranges
+    Travelers:
+      type: object
+      additionalProperties: false
+      properties:
+        count:
+          type: integer
+          minimum: 1
+          maximum: 12
+        withPet: *id004
+      required:
+      - count
+      - withPet
+    HomeInput:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 70
+        description:
+          type: string
+          minLength: 50
+          maxLength: 1500
+        cityId: *id001
+        zone:
+          type: string
+          maxLength: 60
+        type:
+          $ref: '#/components/schemas/HomeType'
+        tenure:
+          type: string
+          enum:
+          - OWNER
+          - TENANT
+        residenceUse:
+          type: string
+          enum:
+          - PRIMARY
+          - SECONDARY
+        sizeM2:
+          type: integer
+          minimum: 10
+          maximum: 1000
+        bedrooms:
+          type: integer
+          minimum: 0
+          maximum: 10
+        beds:
+          type: integer
+          minimum: 1
+          maximum: 20
+        bathrooms:
+          type: integer
+          minimum: 1
+          maximum: 10
+        maxGuests:
+          type: integer
+          minimum: 1
+          maximum: 12
+        petsAllowed: *id004
+        amenities:
+          type: array
+          items: *id001
+        houseRules:
+          type: string
+          maxLength: 500
+    HomeOwnerView:
+      allOf:
+      - $ref: '#/components/schemas/HomeInput'
+      - type: object
+        additionalProperties: false
+        properties:
+          status:
+            $ref: '#/components/schemas/HomeStatus'
+          visible: *id004
+          photos:
+            type: array
+            items:
+              $ref: '#/components/schemas/Photo'
+          destinations:
+            $ref: '#/components/schemas/Destinations'
+          availability:
+            $ref: '#/components/schemas/Availability'
+          travelers:
+            $ref: '#/components/schemas/Travelers'
+    PublicProfile:
+      type: object
+      additionalProperties: false
+      properties:
+        uid: *id001
+        displayName: *id001
+        photoUrl:
+          oneOf:
+          - *id001
+          - type: 'null'
+        about: *id001
+        languages:
+          type: array
+          items: *id001
+        travelsWith:
+          type: string
+          enum:
+          - SOLO
+          - COUPLE
+          - FAMILY
+          - FRIENDS
+        memberSince: *id008
+        identityVerified: *id004
+        foundingMember: *id004
+        isTopHost: *id004
+        ratingAvg:
+          oneOf:
+          - *id010
+          - type: 'null'
+        reviewsCount: *id005
+    Review:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        authorDisplayName: *id001
+        overall: *id005
+        sub:
+          type: object
+          additionalProperties: false
+          properties:
+            cleanliness: *id005
+            accuracy: *id005
+            communication: *id005
+            care: *id005
+        comment:
+          oneOf:
+          - *id001
+          - type: 'null'
+        publishedAt: *id008
+    Exchange:
+      type: object
+      additionalProperties: false
+      properties:
+        id: *id001
+        matchId: *id001
+        participants:
+          type: array
+          items: *id001
+        proposedBy: *id001
+        startDate: *id006
+        endDate: *id006
+        nights: *id005
+        guests:
+          type: object
+          additionalProperties: *id005
+        pets:
+          type: object
+          additionalProperties: *id005
+        note:
+          oneOf:
+          - *id001
+          - type: 'null'
+        status:
+          type: string
+          enum:
+          - PROPOSED
+          - CONFIRMED
+          - DECLINED
+          - EXPIRED
+          - CANCELLED
+          - COMPLETED
+        expiresAt:
+          oneOf:
+          - *id008
+          - type: 'null'
+    Me:
+      type: object
+      additionalProperties: false
+      properties:
+        uid: *id001
+        email: *id001
+        firstName: *id001
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+          - BANNED
+          - DELETION_PENDING
+          - DELETED
+        verification:
+          type: object
+          additionalProperties: false
+          properties:
+            emailVerified: *id004
+            phoneVerified: *id004
+            identity:
+              $ref: '#/components/schemas/IdentityStatus'
+        onboarding:
+          type: object
+          additionalProperties: false
+          properties:
+            step:
+              type: integer
+              minimum: 1
+              maximum: 6
+            completed: *id004
+            percent: *id005
+        home:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            properties:
+              id: *id001
+              status:
+                $ref: '#/components/schemas/HomeStatus'
+              visible: *id004
+              cityId:
+                oneOf:
+                - *id001
+                - type: 'null'
+          - type: 'null'
+        city:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            properties:
+              id: *id001
+              name: *id001
+              status:
+                type: string
+                enum:
+                - WAITLIST
+                - OPEN
+                - CLOSED
+              progress:
+                type: object
+                additionalProperties: false
+                properties:
+                  count: *id005
+                  threshold: *id005
+          - type: 'null'
+        premium:
+          type: object
+          additionalProperties: false
+          properties:
+            active: *id004
+            until:
+              oneOf:
+              - *id008
+              - type: 'null'
+            source:
+              oneOf:
+              - $ref: '#/components/schemas/PremiumSource'
+              - type: 'null'
+            plan:
+              oneOf:
+              - type: string
+                enum:
+                - MONTHLY
+                - YEARLY
+              - type: 'null'
+            cancelAtPeriodEnd: *id004
+            canWithdraw: *id004
+        likes:
+          type: object
+          additionalProperties: false
+          properties:
+            remainingToday:
+              oneOf:
+              - *id005
+              - type: 'null'
+            resetsAt: *id008
+        canLike: *id004
+        blockers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Blocker'
+        legalPending:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              slug: *id001
+              version: *id001
+              requiresReacceptance: *id004
+        foundingMember: *id004
+        referralCode: *id001
+        roles:
+          type: array
+          items:
+            type: string
+            enum:
+            - admin
+            - superadmin
+    StatementOfReasons:
+      type: object
+      additionalProperties: false
+      properties:
+        templateId: *id001
+        facts: *id001
+        ground:
+          type: string
+          enum:
+          - LAW
+          - TERMS
+        groundDetail: *id001
+      required:
+      - templateId
+      - facts
+      - ground
+      - groundDetail
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          properties:
+            status: *id001
+            message: *id001
+            details:
+              type: object
+              additionalProperties: false
+              properties:
+                code: *id001
+                fields:
+                  type: object
+                  additionalProperties: *id001
+                meta:
+                  type: object
+              required:
+              - code
+          required:
+          - status
+          - message
+          - details
+      required:
+      - error
