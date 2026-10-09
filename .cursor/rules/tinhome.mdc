@@ -1,0 +1,13 @@
+---
+description: Reglas del proyecto TinHome para Cursor
+globs: ["**/*.ts", "**/*.tsx", "**/*.rules", "docs/**/*.md"]
+alwaysApply: true
+---
+
+- Lee y sigue `CLAUDE.md` y `AGENTS.md` (válidos para cualquier agente).
+- Fuente de verdad: `docs/01_PRD.md`, `docs/04_DATABASE_SCHEMA.md`, `docs/05_API_CONTRACT.md`; estilo en `docs/06_CODING_STANDARDS.md`.
+- TypeScript estricto: sin `any` ni `@ts-ignore`; tipos y zod en `packages/shared`.
+- Escrituras de negocio solo por callables (zod + guardas + transacción + auditoría). Reglas de seguridad con denegación por defecto y pruebas.
+- UI: tokens de `assets/brand/tokens.css` (nunca hex), temas claro/oscuro/negro, logo vía `TinHomeLogo` con los PNG de `assets/brand/logo/`, textos en `apps/web/src/i18n/es.json`, estados de carga/vacío/error, mobile-first, WCAG 2.2 AA.
+- No implementar Fase 2 (limpieza, llaves, depósito, seguro, pagos entre usuarios, archivos en el chat). El chat de texto tras el match sí es Fase 1.
+- Ante contradicciones, anótalas en `docs/10_DECISIONS_AND_OPEN_ITEMS.md` §5 y pregunta.
