@@ -46,6 +46,12 @@ export const PUBLIC_DOCS: Record<string, Record<string, unknown>> = {
     count: 3,
   },
   'legalDocs/privacidad': { title: 'Política de privacidad', currentVersion: '0.1-provisional' },
+  'legalDocs/terminos': { title: 'Términos y condiciones', currentVersion: '0.1-provisional' },
+  'legalDocs/terminos/versions/0.1-provisional': {
+    markdown: '# Términos y condiciones\n\n> **PROVISIONAL**',
+    requiresReacceptance: true,
+    changeSummary: 'Aclaramos cómo funciona la verificación.',
+  },
   'legalDocs/privacidad/versions/0.1-provisional': {
     markdown:
       '# Política de privacidad\n\n> **PROVISIONAL**\n\n## Responsable\n\nTexto <script>alert(1)</script> [enlace](javascript:alert(1)) y [web](https://example.com).',

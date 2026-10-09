@@ -32,10 +32,12 @@ function ThemePreview({ preference }: { preference: ThemePreference }) {
 
 interface ThemeSwitcherProps {
   className?: string;
+  /** Called instead of only storing locally (e.g. to also save it in the account). */
+  onChange?: (preference: ThemePreference) => void;
 }
 
 /** C-26 — Sistema / Claro / Oscuro / Negro with a thumbnail preview (radio group). */
-export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
+export function ThemeSwitcher({ className, onChange }: ThemeSwitcherProps) {
   const { t } = useTranslation();
   const { preference, setPreference } = useTheme();
   const labelId = useId();
@@ -50,7 +52,7 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
         value={preference}
         onValueChange={(value) => {
           const next = THEME_PREFERENCES.find((option) => option === value);
-          if (next) setPreference(next);
+          if (next) (onChange ?? setPreference)(next);
         }}
         className="grid grid-cols-2 gap-2 sm:grid-cols-4"
       >

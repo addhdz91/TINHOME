@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { lazy, Suspense, useState, type ReactNode } from 'react';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { createQueryClient } from '@/lib/query-client';
 import { useTheme } from './theme-context';
 import { ThemeProvider } from './ThemeProvider';
@@ -9,6 +10,7 @@ const Toaster = lazy(async () => ({ default: (await import('sonner')).Toaster })
 
 function ThemedToaster() {
   const { theme } = useTheme();
+  if (!useHydrated()) return null;
   return (
     <Suspense fallback={null}>
       <Toaster position="top-center" theme={theme === 'light' ? 'light' : 'dark'} />

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CITY_STATUS } from '../constants/enums.js';
+import { CITY_STATUS, FAQ_CATEGORIES } from '../constants/enums.js';
 import { IsoDateSchema } from './common.js';
 
 /**
@@ -49,3 +49,14 @@ export const LegalDocVersionSchema = z.object({
   requiresReacceptance: z.boolean(),
   changeSummary: z.string().optional(),
 });
+
+/** `faqs/{slug}` (04 §2.24b), FR-66. Only published articles are readable. */
+export const FaqDocSchema = z.object({
+  category: z.enum(FAQ_CATEGORIES),
+  question: z.string(),
+  answerMarkdown: z.string(),
+  order: z.number(),
+  published: z.literal(true),
+  tags: z.array(z.string()).default([]),
+});
+export type FaqDoc = z.infer<typeof FaqDocSchema>;

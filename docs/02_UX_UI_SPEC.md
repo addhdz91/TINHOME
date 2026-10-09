@@ -70,7 +70,7 @@
 | `/admin/*` | Panel (ver §9) | admin/superadmin + 2FA |
 
 ### 2.3 Guardas de ruta (orden)
-1. Sin sesión → `/entrar?next=…`. 2. Email sin verificar → `/verifica-email`. 3. Onboarding incompleto (pasos 2–4) → `/app/onboarding/:siguiente` (los pasos 5–6 se pueden completar después; Descubrir muestra el bloqueo explicativo). 4. Textos legales pendientes de reaceptación → modal bloqueante. 5. `/admin` sin rol o sin 2FA → 404 (no revelar existencia).
+1. Sin sesión → `/entrar?next=…` (cuenta de Auth sin perfil, p. ej. primer acceso con Google → `/registro` «Completa tu registro»). 2. Email sin verificar → `/verifica-email`. 3. Onboarding incompleto (pasos 2–4) → `/app/onboarding/:siguiente` (los pasos 5–6 se pueden completar después; Descubrir muestra el bloqueo explicativo). 4. Textos legales pendientes de reaceptación → modal bloqueante. 5. `/admin` sin rol o sin 2FA → 404 (no revelar existencia).
 
 ---
 

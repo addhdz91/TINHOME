@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router';
 import type { LegalDocSlug } from '@tinhome/shared/constants';
+import { NavigationProgress } from '@/components/NavigationProgress';
 import { TinHomeLogo } from '@/components/TinHomeLogo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,7 @@ export function PublicLayout() {
   const { t } = useTranslation();
   return (
     <div className="flex min-h-dvh flex-col">
+      <NavigationProgress />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2"
@@ -50,8 +52,14 @@ export function PublicLayout() {
             >
               {t('nav.pricing')}
             </NavLink>
+            <Link
+              to="/entrar"
+              className="inline-flex min-h-11 items-center rounded-md px-3 font-semibold hover:bg-surface-muted"
+            >
+              {t('nav.signIn')}
+            </Link>
             <Button asChild size="sm">
-              <Link to="/lista-espera">{t('nav.joinWaitlist')}</Link>
+              <Link to="/registro">{t('nav.signUp')}</Link>
             </Button>
           </nav>
         </div>
@@ -77,6 +85,9 @@ export function PublicLayout() {
             </Link>
             <Link to="/lista-espera" className="inline-flex min-h-11 items-center hover:underline">
               {t('nav.waitlist')}
+            </Link>
+            <Link to="/ayuda" className="inline-flex min-h-11 items-center hover:underline">
+              {t('footer.help')}
             </Link>
             {/* TODO(M9): point to /denunciar (FR-43); until then the DSA page holds the contact point. */}
             <Link

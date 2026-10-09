@@ -28,14 +28,14 @@
 
 | Callable | Guardas | Entrada | Salida | Errores | Efectos |
 |---|---|---|---|---|---|
-| `completeSignup` | A | `{ firstName, lastName, birthDate, referralCode?, acceptedTerms: version, acceptedPrivacy: version }` | `{ me: Me }` | `E_UNDERAGE`, `E_LEGAL_VERSION`, `E_ALREADY_EXISTS` | Crea `users`, `publicProfiles`, `legalAcceptances`; `referrals` si hay código válido |
-| `getMe` | A | `{}` | `Me` (ver §4) | — | — |
+| `completeSignup` | A | `{ firstName, lastName, birthDate, referralCode?, acceptedTerms: version, acceptedPrivacy: version }` | `{ me: Me }` | `E_UNDERAGE`, `E_LEGAL_VERSION`, `E_ALREADY_EXISTS`, `E_VALIDATION` (fecha futura o > 110 años) | Crea `users` (`onboarding.step = 2`), `publicProfiles`, `legalAcceptances` (TERMS, PRIVACY, IP /24), `referralCodes/{código propio}`; `referrals` si el código es válido (uno desconocido se ignora); si hay `waitlist` con ese email → `CONVERTED` + `users.waitlistPrefill`; encola N-02 |
+| `getMe` | A | `{}` | `Me` (ver §4) | `E_NOT_FOUND` (cuenta de Auth sin `completeSignup`: el cliente muestra «Completa tu registro») | — |
 | `updateProfile` | A, EV | `{ displayFirstName?, about?, languages?, travelsWith?, avatarPath? }` | `{ profile: PublicProfile }` | `E_TEXT_VIOLATION`, `E_VALIDATION` | Actualiza `publicProfiles` |
 | `updateSettings` | A | `{ theme?: 'system'\|'light'\|'dark'\|'black', notifications? }` | `{ ok: true }` | — | — |
-| `confirmPhoneLinked` | A, EV | `{}` | `{ phoneVerified: true }` | `E_PHONE_NOT_LINKED`, `E_PHONE_NOT_ES` | Lee el teléfono de Auth, marca `phoneVerified` |
-| `acceptLegalDocs` | A | `{ items: { slug, version }[] }` | `{ ok: true }` | `E_LEGAL_VERSION` | `legalAcceptances`, `users.legal` |
+| `confirmPhoneLinked` | A, EV | `{}` | `{ phoneVerified: true }` | `E_PHONE_NOT_LINKED`, `E_PHONE_NOT_ES` (solo móviles `+34 6/7…`) | Lee el teléfono de Auth, marca `phoneVerified`, guarda `phoneE164` y pasa el onboarding al paso 3 |
+| `acceptLegalDocs` | A | `{ items: { slug, version }[] }` (slugs aceptables: `terminos`, `privacidad`, `normas-comunidad`) | `{ ok: true }` | `E_LEGAL_VERSION`, `E_VALIDATION` | `legalAcceptances`, `users.legal` |
 | `requestAccountDeletion` | A (reautenticado < 5 min) | `{ confirm: 'ELIMINAR' }` | `{ purgeAt }` | `E_REAUTH_REQUIRED` | BR-29, cancela Stripe al fin de periodo, N-18 |
-| `signOutEverywhere` | A (reautenticado) | `{}` | `{ ok: true }` | `E_REAUTH_REQUIRED` | Revoca los *refresh tokens*; N-27 |
+| `signOutEverywhere` | A (reautenticado: `auth_time` < 5 min) | `{}` | `{ ok: true }` | `E_REAUTH_REQUIRED` | Revoca los *refresh tokens*; N-27 |
 | `registerPushToken` / `unregisterPushToken` | A | `{ token }` | `{ ok: true }` | `E_VALIDATION` | `users/{uid}/pushTokens` |
 
 ### 2.2 Casa y preferencias (HOME, PREF)
@@ -285,6 +285,7 @@ interface Me {
   legalPending: { slug: string; version: string; requiresReacceptance: boolean }[];
   foundingMember: boolean; referralCode: string;
   roles: ('admin'|'superadmin')[];
+  settings: { theme: 'system'|'light'|'dark'|'black' }; // M2: tema guardado en la cuenta (C-26)
 }
 
 interface HomeCard {

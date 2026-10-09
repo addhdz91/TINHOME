@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/app/theme-context';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { cn } from '@/lib/utils';
 import {
   LOGO_RATIO,
@@ -30,7 +31,9 @@ export function TinHomeLogo({
 }: TinHomeLogoProps) {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const resolvedTone = tone === 'auto' ? toneForTheme(theme) : tone;
+  // The prerendered landing uses the light logo; switch after hydration to avoid a mismatch.
+  const hydrated = useHydrated();
+  const resolvedTone = tone === 'auto' ? toneForTheme(hydrated ? theme : 'light') : tone;
   const width = Math.round(LOGO_RATIO[variant] * height);
   const { src, srcSet } = logoSources(variant, resolvedTone);
 

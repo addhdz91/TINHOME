@@ -16,6 +16,10 @@ describe('routes', () => {
       'href',
       '#main',
     );
+    expect(screen.getAllByRole('link', { name: 'Crear cuenta gratis' })[0]).toHaveAttribute(
+      'href',
+      '/registro',
+    );
 
     const malaga = await screen.findByRole('progressbar', { name: 'Málaga' });
     expect(malaga).toHaveAttribute('aria-valuenow', '87');
@@ -29,9 +33,12 @@ describe('routes', () => {
     expect(screen.queryByText(/personas de Málaga quieren ir/)).toBeNull();
   });
 
-  it('links the footer to the legal texts', async () => {
+  it('links the header to sign-in and the footer to help and legal texts', async () => {
     renderRoutes(buildRoutes(), '/');
-    const footer = await screen.findByRole('contentinfo');
+    const banner = await screen.findByRole('banner');
+    expect(within(banner).getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/entrar');
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByRole('link', { name: 'Ayuda' })).toHaveAttribute('href', '/ayuda');
     expect(within(footer).getByRole('link', { name: 'Privacidad' })).toHaveAttribute(
       'href',
       '/legal/privacidad',
@@ -47,8 +54,8 @@ describe('routes', () => {
     expect(screen.getAllByRole('region', { name: /Claro|Oscuro|Negro/ })).toHaveLength(3);
   });
 
-  it('shows a friendly 404 for unknown public, app and admin paths', async () => {
-    for (const path of ['/no-existe', '/app/no-existe', '/admin/no-existe']) {
+  it('shows a friendly 404 for unknown public and admin paths', async () => {
+    for (const path of ['/no-existe', '/admin/no-existe']) {
       const { unmount } = renderRoutes(buildRoutes(), path);
       expect(
         await screen.findByRole('heading', { name: 'No encontramos esta página' }),

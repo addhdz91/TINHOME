@@ -27,6 +27,29 @@ describe('N-19 waitlist confirmation', () => {
   });
 });
 
+describe('N-02 and N-27', () => {
+  it('render subject, HTML and text without personal data beyond the first name', () => {
+    const welcomeMail = renderEmail({
+      to: 'a@b.es',
+      templateId: 'N-02',
+      data: { firstName: 'Laura', onboardingUrl: 'http://x/app' },
+    });
+    expect(welcomeMail.subject).toContain('Laura');
+    expect(welcomeMail.text).toContain('http://x/app');
+    const securityMail = renderEmail({
+      to: 'a@b.es',
+      templateId: 'N-27',
+      data: {
+        event: 'SIGNED_OUT_EVERYWHERE',
+        when: '1 de marzo de 2027, 10:00',
+        helpUrl: 'http://x/ayuda',
+      },
+    });
+    expect(securityMail.text).toContain('todos los dispositivos');
+    expect(securityMail.html).not.toContain('a@b.es');
+  });
+});
+
 describe('email providers', () => {
   it('uses the console provider only inside the emulator', async () => {
     vi.stubEnv('FUNCTIONS_EMULATOR', 'true');

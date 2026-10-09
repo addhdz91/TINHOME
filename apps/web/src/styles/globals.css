@@ -21,6 +21,11 @@
 
 @import './tokens.css';
 
+/* Extra semantic tokens derived from tokens.css (no new colours). */
+@theme inline {
+  --color-overlay: var(--overlay);
+}
+
 /* Elevation tokens (light theme only; dark and black use borders). */
 @utility shadow-card {
   box-shadow: var(--shadow-card);
@@ -123,4 +128,18 @@
 
 @utility paused {
   animation-play-state: paused;
+}
+
+/* NavigationProgress — indeterminate bar while a lazy route loads. */
+@keyframes navigation-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+@utility animate-navigation-progress {
+  animation: navigation-progress 1.2s var(--ease-brand) infinite;
 }

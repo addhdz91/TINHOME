@@ -1,5 +1,7 @@
 import type { EmailTemplateId } from '@tinhome/shared/constants';
+import type { WelcomeData } from './templates/n02-welcome.js';
 import type { WaitlistConfirmationData } from './templates/n19-waitlist-confirmation.js';
+import type { SecurityData } from './templates/n27-security.js';
 
 export interface RenderedEmail {
   subject: string;
@@ -10,7 +12,9 @@ export interface RenderedEmail {
 
 /** Template data by id, so `mailQueue` items are type-checked end to end. */
 export interface EmailTemplateData {
+  'N-02': WelcomeData;
   'N-19': WaitlistConfirmationData;
+  'N-27': SecurityData;
 }
 
 export type MailQueueItem = {

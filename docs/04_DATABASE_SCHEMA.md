@@ -31,6 +31,7 @@
 | `waitlist` | `sha256(email)` | ✗ | ✗ |
 | `demandCounters` | `{from}_{to}_{window}` | ✗ | ✗ |
 | `rateLimits` | `{scope}_{hash}_{ventana}` | ✗ | ✗ |
+| `referralCodes` | código (8 caracteres) | ✗ | ✗ |
 | `entitlements` | auto | Propietario · admin | ✗ |
 | `subscriptions` | `uid` | Propietario · admin | ✗ |
 | `referrals` | `inviteeUid` | Invitador · admin | ✗ |
@@ -89,6 +90,7 @@
 | `legal` | `{ [docSlug]: version }` | R,S | Versiones aceptadas |
 | `settings` | `{ theme: 'system'\|'light'\|'dark'\|'black', notifications: { [category]: bool } }` | R | Vía `updateSettings` |
 | `deletionRequestedAt` | Timestamp | O,S | |
+| `waitlistPrefill` | `{ cityId, destinations, windowIds }` | O,S | M2 · copia de la lista de espera con el mismo email (FR-19) para precargar los pasos 3–4 |
 
 ### 2.2 `publicProfiles/{uid}` (proyección pública, la mantiene el servidor)
 `displayName` (nombre + inicial), `photoUrl?`, `about?` (≤ 300), `languages: string[]`, `travelsWith?: 'SOLO'|'COUPLE'|'FAMILY'|'FRIENDS'`, `memberSince: Timestamp`, `identityVerified: bool`, `foundingMember: bool`, `isTopHost: bool`, `ratingAvg?: number`, `reviewsCount: number`, `homeId?: string`, `active: bool`.
@@ -190,6 +192,9 @@
 
 ### 2.17 `subscriptions/{uid}`
 `stripeCustomerId`, `stripeSubscriptionId`, `plan: MONTHLY|YEARLY`, `status` (estado Stripe), `currentPeriodEnd`, `cancelAtPeriodEnd`, `startedAt`, `updatedAt`.
+
+### 2.17b `referralCodes/{code}` (solo servidor, M2)
+`uid`, `createdAt`. Garantiza que cada código de invitación es único (se reserva con `create` en la transacción de `completeSignup`) y permite resolver `?ref=` sin consultas.
 
 ### 2.18 `referrals/{inviteeUid}`
 `inviterUid`, `inviteeUid`, `code`, `status: REGISTERED|REWARDED|INELIGIBLE`, `ineligibleReason?`, `rewardedAt?`.

@@ -3,6 +3,7 @@ import { render, type RenderResult } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { createMemoryRouter, type RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
+import { AuthContext, type AuthContextValue } from '@/app/auth/auth-context';
 import { ThemeProvider } from '@/app/ThemeProvider';
 
 function testQueryClient(): QueryClient {
@@ -27,6 +28,24 @@ export function renderRoutes(routes: RouteObject[], path: string): RenderResult 
     <ThemeProvider>
       <QueryClientProvider client={testQueryClient()}>
         <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ThemeProvider>,
+  );
+}
+
+/** Renders routes with a fixed session (no Firebase), e.g. to test the guards. */
+export function renderRoutesWithAuth(
+  routes: RouteObject[],
+  path: string,
+  auth: AuthContextValue,
+): RenderResult {
+  const router = createMemoryRouter(routes, { initialEntries: [path] });
+  return render(
+    <ThemeProvider>
+      <QueryClientProvider client={testQueryClient()}>
+        <AuthContext value={auth}>
+          <RouterProvider router={router} />
+        </AuthContext>
       </QueryClientProvider>
     </ThemeProvider>,
   );

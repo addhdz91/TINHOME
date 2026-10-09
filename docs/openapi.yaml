@@ -5709,6 +5709,20 @@ components:
             enum:
             - admin
             - superadmin
+        settings:
+          type: object
+          additionalProperties: false
+          description: Añadido en M2 para sincronizar el tema entre dispositivos (C-26).
+          properties:
+            theme:
+              type: string
+              enum:
+              - system
+              - light
+              - dark
+              - black
+          required:
+          - theme
     StatementOfReasons:
       type: object
       additionalProperties: false

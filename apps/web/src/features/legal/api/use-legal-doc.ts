@@ -7,6 +7,7 @@ export interface LegalDocument {
   title: string;
   version: string;
   markdown: string;
+  changeSummary: string | null;
   publishedAt: Date | null;
 }
 
@@ -52,6 +53,7 @@ export function useLegalDoc(slug: string) {
         title: meta.data.title,
         version: meta.data.currentVersion,
         markdown: version.data.markdown,
+        changeSummary: version.data.changeSummary ?? null,
         publishedAt: toDate(raw?.publishedAt),
       };
     },

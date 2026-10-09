@@ -46,7 +46,7 @@ stripe listen --forward-to http://127.0.0.1:5001/demo-tinhome/europe-southwest1/
 
 Firebase CLI: dependencia de desarrollo; úsala con `pnpm exec firebase …` (no hace falta instalación global).
 
-Usuarios demo (emulador): `laura@demo.tinhome` (gratis, Madrid), `javier@demo.tinhome` (Premium, Valencia), `admin@demo.tinhome` (superadmin). Contraseña: `Demo1234!`.
+Usuarios demo (emulador): `laura@demo.tinhome` (gratis, Madrid), `javier@demo.tinhome` (Premium, Valencia), `admin@demo.tinhome` (superadmin), `marta@demo.tinhome` (Valencia; debe reaceptar los Términos, para probar FR-58). Contraseña: `Demo1234!`.
 
 ## 4. Reglas de oro (no negociables)
 

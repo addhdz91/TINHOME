@@ -19,7 +19,7 @@
     "seed": "tsx scripts/seed.ts",
     "prepare": "husky",
     "test:unit": "pnpm -r --filter !@tinhome/rules-tests --filter !@tinhome/e2e test",
-    "test:int": "pnpm exec firebase emulators:exec --only firestore --project demo-tinhome \"pnpm --filter @tinhome/functions test:int\"",
+    "test:int": "pnpm exec firebase emulators:exec --only auth,firestore --project demo-tinhome \"pnpm --filter @tinhome/functions test:int\"",
     "brand:assets": "tsx scripts/brand-web-assets.ts"
   },
   "lint-staged": {

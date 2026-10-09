@@ -13,6 +13,8 @@ export default defineConfig({
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
+  // The dev server compiles lazy chunks (e.g. the Auth SDK) on first use.
+  expect: { timeout: 10_000 },
   use: {
     baseURL: 'http://localhost:5173',
     locale: 'es-ES',

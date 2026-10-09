@@ -13,7 +13,15 @@
     "pricing": "Precios",
     "waitlist": "Lista de espera",
     "joinWaitlist": "Apúntate",
-    "mainLabel": "Principal"
+    "mainLabel": "Principal",
+    "signIn": "Entrar",
+    "signUp": "Crear cuenta",
+    "discover": "Descubrir",
+    "explore": "Explorar",
+    "likes": "Me gusta",
+    "chats": "Chats",
+    "profile": "Perfil",
+    "appLabel": "Secciones de la app"
   },
   "theme": {
     "label": "Tema",
@@ -35,8 +43,9 @@
     "hero": {
       "title": "Intercambia tu casa. Viaja por España sin pagar alojamiento.",
       "subtitle": "Haz match con casas de personas verificadas que quieren venir a tu ciudad.",
-      "ctaPrimary": "Apúntate a la lista de espera",
-      "ctaSecondary": "Cómo funciona"
+      "ctaPrimary": "Crear cuenta gratis",
+      "ctaSecondary": "Cómo funciona",
+      "ctaWaitlist": "Apúntate a la lista de espera"
     },
     "mock": {
       "label": "Ejemplo de tarjeta de casa que se desliza a la derecha con un me gusta",
@@ -121,7 +130,8 @@
     "tagline": "TinHome conecta a las personas; el acuerdo lo cerráis vosotros.",
     "legalTitle": "Legal",
     "productTitle": "TinHome",
-    "report": "Denunciar contenido"
+    "report": "Denunciar contenido",
+    "help": "Ayuda"
   },
   "notFound": {
     "title": "No encontramos esta página",
@@ -138,7 +148,8 @@
     "title": "Panel de administración"
   },
   "appShell": {
-    "title": "Tu espacio en TinHome"
+    "title": "Tu espacio en TinHome",
+    "comingSoonBody": "Estamos preparando esta sección."
   },
   "dev": {
     "brand": {
@@ -244,7 +255,15 @@
     "loading": "Cargando…",
     "backHome": "Volver al inicio",
     "optional": "opcional",
-    "requiredMark": "obligatorio"
+    "requiredMark": "obligatorio",
+    "continue": "Continuar",
+    "cancel": "Cancelar",
+    "back": "Atrás",
+    "close": "Cerrar",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "or": "o",
+    "comingSoon": "Disponible muy pronto"
   },
   "seo": {
     "landing": {
@@ -265,6 +284,31 @@
     },
     "legal": {
       "title": "{{title}} — TinHome"
+    },
+    "register": {
+      "title": "Crear cuenta — TinHome"
+    },
+    "signIn": {
+      "title": "Entrar — TinHome"
+    },
+    "recover": {
+      "title": "Recuperar contraseña — TinHome"
+    },
+    "verify": {
+      "title": "Verifica tu email — TinHome"
+    },
+    "onboarding": {
+      "title": "Paso {{step}} de 6 — TinHome"
+    },
+    "profile": {
+      "title": "Perfil — TinHome"
+    },
+    "help": {
+      "title": "Ayuda — TinHome",
+      "description": "Preguntas frecuentes sobre TinHome: verificación, me gusta y match, intercambios, Premium y privacidad."
+    },
+    "app": {
+      "title": "TinHome"
     }
   },
   "cities": {
@@ -408,6 +452,202 @@
       "declaracion-responsable": "Declaración responsable",
       "autorizacion-arrendador": "Autorización del arrendador",
       "acuerdo-intercambio": "Acuerdo de intercambio"
+    }
+  },
+  "authErrors": {
+    "emailInUse": "Ya existe una cuenta con este email.",
+    "invalidCredential": "El email o la contraseña no son correctos.",
+    "invalidEmail": "Escribe un email válido.",
+    "weakPassword": "La contraseña es demasiado débil.",
+    "tooManyRequests": "Demasiados intentos. Espera unos minutos y vuelve a probar.",
+    "network": "Sin conexión. Revisa tu internet y vuelve a probar.",
+    "popupClosed": "Has cerrado la ventana de Google antes de terminar.",
+    "popupBlocked": "Tu navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes y vuelve a probar.",
+    "invalidPhone": "Revisa el número: debe ser un móvil español de 9 cifras.",
+    "invalidCode": "El código no es correcto. Revísalo y vuelve a probar.",
+    "codeExpired": "El código ha caducado. Pide uno nuevo.",
+    "phoneInUse": "Este número ya está en otra cuenta de TinHome.",
+    "differentCredential": "Ya tienes una cuenta con este email. Entra con tu contraseña.",
+    "providerLinked": "Ya hay un teléfono vinculado a tu cuenta.",
+    "recentLogin": "Por seguridad, vuelve a introducir tu contraseña.",
+    "generic": "Algo ha fallado. Inténtalo de nuevo."
+  },
+  "auth": {
+    "google": "Continuar con Google",
+    "orEmail": "o con tu email",
+    "fields": {
+      "firstName": "Nombre",
+      "lastName": "Apellidos",
+      "birthDate": "Fecha de nacimiento",
+      "birthDateHint": "Debes ser mayor de edad.",
+      "email": "Email",
+      "password": "Contraseña",
+      "passwordHint": "Mínimo 10 caracteres, con letras y números.",
+      "referralCode": "Código de invitación",
+      "referralHint": "Si alguien te ha invitado."
+    },
+    "strength": {
+      "label": "Seguridad de la contraseña: {{level}}",
+      "weak": "débil",
+      "medium": "media",
+      "strong": "fuerte"
+    },
+    "validation": {
+      "firstName": "Escribe tu nombre.",
+      "lastName": "Escribe tus apellidos.",
+      "birthDate": "Escribe tu fecha de nacimiento.",
+      "underage": "Debes ser mayor de edad para usar TinHome.",
+      "email": "Escribe un email válido.",
+      "password": "Mínimo 10 caracteres, con letras y números.",
+      "passwordCommon": "Esta contraseña es demasiado común. Elige otra.",
+      "referralCode": "El código tiene 8 letras o números.",
+      "terms": "Acepta los Términos para continuar.",
+      "privacy": "Acepta la Política de privacidad para continuar."
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Publicar tu casa no cuesta nada. Solo pagas si quieres Premium.",
+      "terms": "Acepto los <1>Términos y condiciones</1>.",
+      "privacy": "He leído la <1>Política de privacidad</1>.",
+      "submit": "Crear cuenta",
+      "submitting": "Creando tu cuenta…",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "signInLink": "Entra",
+      "emailInUseLink": "Entrar con este email",
+      "completeTitle": "Completa tu registro",
+      "completeSubtitle": "Necesitamos unos datos más para crear tu cuenta.",
+      "completeSubmit": "Guardar y continuar",
+      "invited": "Te ha invitado alguien de TinHome: al verificar tu identidad, los dos tendréis un mes de Premium."
+    },
+    "signIn": {
+      "title": "Entra en TinHome",
+      "submit": "Entrar",
+      "submitting": "Entrando…",
+      "forgot": "¿Has olvidado tu contraseña?",
+      "noAccount": "¿No tienes cuenta?",
+      "signUpLink": "Crea una"
+    },
+    "recover": {
+      "title": "Recupera tu contraseña",
+      "intro": "Escribe tu email y te enviaremos un enlace para crear una nueva.",
+      "submit": "Enviar enlace",
+      "sent": "Si hay una cuenta con ese email, te hemos enviado un enlace. Revisa también el spam.",
+      "back": "Volver a entrar"
+    },
+    "verify": {
+      "title": "Revisa tu email",
+      "body": "Te hemos enviado un enlace a <1>{{email}}</1>. Ábrelo para verificar tu cuenta; esta pantalla se actualiza sola.",
+      "resend": "Reenviar email",
+      "resendIn": "Reenviar en {{seconds}} s",
+      "resent": "Te hemos enviado otro email.",
+      "changeEmail": "¿Te has equivocado de email?",
+      "changeEmailBody": "Cierra sesión y crea la cuenta con el email correcto.",
+      "signOut": "Cerrar sesión",
+      "checking": "Comprobando…",
+      "verified": "¡Email verificado!"
+    },
+    "legalSheet": {
+      "loading": "Cargando el texto…",
+      "error": "No hemos podido cargar el texto.",
+      "close": "Cerrar"
+    }
+  },
+  "onboarding": {
+    "stepOf": "Paso {{step}} de 6",
+    "saveAndExit": "Guardar y salir",
+    "progressLabel": "Progreso del registro",
+    "steps": {
+      "1": "Cuenta creada",
+      "2": "Teléfono",
+      "3": "Tu casa",
+      "4": "Tu viaje",
+      "5": "Verificación",
+      "6": "Publicar"
+    },
+    "stepStatus": {
+      "done": "completado",
+      "current": "paso actual",
+      "todo": "pendiente"
+    },
+    "welcome": {
+      "title": "¡Hola, {{name}}!",
+      "body": "En unos 3 minutos vas a: verificar tu teléfono, crear la ficha de tu casa y decirnos adónde y cuándo quieres viajar.",
+      "trust": "Publicar es gratis. Solo pagas si quieres Premium.",
+      "start": "Empezar"
+    },
+    "phone": {
+      "title": "Verifica tu teléfono",
+      "why": "Solo lo verá la persona con la que hagas match, y solo si tú decides compartirlo.",
+      "label": "Móvil",
+      "prefix": "+34",
+      "hint": "Móvil español de 9 cifras.",
+      "send": "Enviar código",
+      "sending": "Enviando…",
+      "codeLabel": "Código de 6 cifras",
+      "codeHint": "Te lo hemos enviado por SMS al {{phone}}.",
+      "confirm": "Verificar",
+      "confirming": "Verificando…",
+      "resend": "Reenviar código",
+      "resendIn": "Reenviar en {{seconds}} s",
+      "changeNumber": "Cambiar número",
+      "invalidNumber": "Escribe un móvil español de 9 cifras (empieza por 6 o 7).",
+      "invalidCode": "El código tiene 6 cifras.",
+      "done": "Tu teléfono está verificado.",
+      "continue": "Continuar"
+    },
+    "pending": {
+      "title": "Este paso llega muy pronto",
+      "body": "Estamos terminando esta parte. Tu progreso está guardado y te avisaremos para continuar."
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "completed": "Perfil completado: {{percent}} %",
+    "continueOnboarding": "Continuar el registro",
+    "theme": "Tema",
+    "account": "Cuenta",
+    "help": "Ayuda",
+    "signOut": "Cerrar sesión",
+    "signOutEverywhere": "Cerrar sesión en todos los dispositivos",
+    "signOutEverywhereTitle": "¿Cerrar sesión en todos los dispositivos?",
+    "signOutEverywhereBody": "Tendrás que volver a entrar en todos tus dispositivos, también en este. Te enviaremos un aviso por email.",
+    "reauthTitle": "Confirma que eres tú",
+    "reauthBody": "Por seguridad, vuelve a introducir tu contraseña.",
+    "reauthGoogle": "Confirmar con Google",
+    "reauthConfirm": "Cerrar todas las sesiones",
+    "signedOutEverywhere": "Hemos cerrado la sesión en todos tus dispositivos.",
+    "themeSaveError": "No hemos podido guardar el tema en tu cuenta."
+  },
+  "legalReaccept": {
+    "title": "Hemos actualizado nuestras condiciones",
+    "body": "Para seguir usando TinHome, revisa los cambios y acéptalos.",
+    "read": "Leer {{title}}",
+    "changes": "Qué cambia: {{summary}}",
+    "accept": "Aceptar y continuar",
+    "accepting": "Guardando…",
+    "signOut": "Ahora no, cerrar sesión"
+  },
+  "help": {
+    "title": "Ayuda",
+    "intro": "Respuestas rápidas sobre TinHome.",
+    "search": "Buscar en la ayuda",
+    "searchPlaceholder": "Por ejemplo: verificación",
+    "results": "{{count}} resultados",
+    "noResults": "No hay resultados para «{{query}}». Prueba con otras palabras.",
+    "empty": "Todavía no hay artículos publicados.",
+    "quickTitle": "Lo más consultado",
+    "categoriesTitle": "Temas",
+    "backToHelp": "Volver a la ayuda",
+    "notFound": "No encontramos este artículo",
+    "categories": {
+      "START": "Empezar",
+      "VERIFICATION": "Verificación",
+      "LIKES_MATCH": "Me gusta y match",
+      "CHAT_SAFETY": "Chat y seguridad",
+      "EXCHANGES": "Intercambios",
+      "PREMIUM_PAYMENTS": "Premium y pagos",
+      "PRIVACY": "Privacidad",
+      "REPORTS": "Denuncias"
     }
   }
 }

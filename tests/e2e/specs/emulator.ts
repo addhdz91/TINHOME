@@ -29,3 +29,40 @@ export async function confirmUrlFor(email: string): Promise<string> {
   }
   throw new Error(`No confirmation e-mail queued for ${email}`);
 }
+
+const AUTH = 'http://127.0.0.1:9099/emulator/v1/projects/demo-tinhome';
+
+/** Applies the e-mail verification link the Auth emulator "sent" to `email`. */
+export async function verifyEmailInEmulator(email: string): Promise<void> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const res = await fetch(`${AUTH}/oobCodes`);
+    const { oobCodes } = (await res.json()) as {
+      oobCodes: { email: string; requestType: string; oobLink: string }[];
+    };
+    const link = oobCodes.findLast(
+      (code) => code.email === email && code.requestType === 'VERIFY_EMAIL',
+    )?.oobLink;
+    if (link) {
+      const applied = await fetch(link, { redirect: 'manual' });
+      if (applied.status >= 400)
+        throw new Error(`verification link failed: ${String(applied.status)}`);
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(`No verification e-mail for ${email}`);
+}
+
+/** Last SMS code the Auth emulator generated for `phoneNumber` (E.164). */
+export async function smsCodeFor(phoneNumber: string): Promise<string> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const res = await fetch(`${AUTH}/verificationCodes`);
+    const { verificationCodes } = (await res.json()) as {
+      verificationCodes: { phoneNumber: string; code: string }[];
+    };
+    const code = verificationCodes.findLast((entry) => entry.phoneNumber === phoneNumber)?.code;
+    if (code) return code;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error(`No SMS code for ${phoneNumber}`);
+}

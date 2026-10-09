@@ -1,28 +1,33 @@
 import './i18n';
 import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 import { PublicLayout } from './app/layouts/PublicLayout';
-import { ThemeProvider } from './app/ThemeProvider';
+import { Providers } from './app/Providers';
 import { LandingPage } from './features/landing/pages/LandingPage';
 
 /**
  * Build-time prerender of the landing (S-01) so the hero paints before the JavaScript runs
  * (Lighthouse M1). The data sections are lazy and render as their skeleton here; the client
- * then mounts the full app over this markup (scripts/prerender.ts).
+ * hydrates this markup (main.tsx) with the same providers, so the DOM is reused.
  */
 export function render(): string {
+  // A data router (no loaders, no lazy routes) is ready synchronously and supports useNavigation.
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/',
+        element: <PublicLayout />,
+        children: [{ index: true, element: <LandingPage /> }],
+      },
+    ],
+    { initialEntries: ['/'] },
+  );
   return renderToString(
     <StrictMode>
-      <ThemeProvider>
-        <MemoryRouter initialEntries={['/']}>
-          <Routes>
-            <Route element={<PublicLayout />}>
-              <Route index element={<LandingPage />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      </ThemeProvider>
+      <Providers>
+        <RouterProvider router={router} />
+      </Providers>
     </StrictMode>,
   );
 }

@@ -13,7 +13,7 @@ export function Hero() {
         <p className="text-lg text-muted">{t('landing.hero.subtitle')}</p>
         <div className="flex flex-wrap gap-3">
           <Button asChild variant="gradient" size="lg">
-            <Link to="/lista-espera">{t('landing.hero.ctaPrimary')}</Link>
+            <Link to="/registro">{t('landing.hero.ctaPrimary')}</Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
             <Link to="/como-funciona">{t('landing.hero.ctaSecondary')}</Link>

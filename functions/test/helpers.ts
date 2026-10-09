@@ -13,6 +13,39 @@ export async function clearFirestore(): Promise<void> {
   if (!res.ok) throw new Error(`clearFirestore failed: ${res.status}`);
 }
 
+/** Wipes the Auth emulator between tests. */
+export async function clearAuth(): Promise<void> {
+  const host = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+  if (!host) return;
+  const res = await fetch(`http://${host}/emulator/v1/projects/${projectId}/accounts`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`clearAuth failed: ${String(res.status)}`);
+}
+
+export interface TestToken {
+  uid: string;
+  email?: string;
+  email_verified?: boolean;
+  role?: string;
+  auth_time?: number;
+  firebase?: Record<string, unknown>;
+}
+
+/** Signed-in callable request with the given ID-token claims. */
+export function authedRequest<T>(
+  data: T,
+  token: TestToken,
+  ip = '203.0.113.7',
+): CallableRequest<T> {
+  return {
+    data,
+    auth: { uid: token.uid, token: { email_verified: false, ...token }, rawToken: 'raw' },
+    rawRequest: { ip, headers: {} },
+    acceptsStreaming: false,
+  } as unknown as CallableRequest<T>;
+}
+
 /** Minimal public callable request (no auth), as Cloud Functions builds it. */
 export function publicRequest<T>(data: T, ip = '203.0.113.7'): CallableRequest<T> {
   return {
@@ -29,6 +62,19 @@ export async function errorCode(promise: Promise<unknown>): Promise<string | und
     return undefined;
   } catch (error) {
     return (error as { details?: { code?: string } }).details?.code;
+  }
+}
+
+/** Terms and privacy texts (current version `0.1`; terms can require re-acceptance). */
+export async function seedLegal(termsRequiresReacceptance = false): Promise<void> {
+  const firestore = db();
+  for (const slug of ['terminos', 'privacidad']) {
+    await firestore.doc(`legalDocs/${slug}`).set({ title: slug, currentVersion: '0.1' });
+    await firestore.doc(`legalDocs/${slug}/versions/0.1`).set({
+      markdown: '# x',
+      requiresReacceptance: slug === 'terminos' && termsRequiresReacceptance,
+      changeSummary: 'test',
+    });
   }
 }
 

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { isIsoDate } from '../domain/dates.js';
-import type { IsoDate } from '../types/common.js';
 
 /** `YYYY-MM-DD` calendar date that exists in the calendar. */
-export const IsoDateSchema = z.custom<IsoDate>(isIsoDate, { message: 'invalid_iso_date' });
+/** Input: string · output: `IsoDate` (the type guard narrows it). */
+export const IsoDateSchema = z.string().refine(isIsoDate, { message: 'invalid_iso_date' });
 
 /** 05_API_CONTRACT.md §1 — pagination input. */
 export const PaginationInput = z.object({

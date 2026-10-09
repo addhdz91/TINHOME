@@ -20,6 +20,14 @@ function draft(title: string, sections: string[]): string {
   ].join('\n');
 }
 
+/**
+ * FR-58 demo: the current Terms version requires re-acceptance, so a user who accepted an older
+ * version (marta@demo.tinhome) sees the blocking modal. New sign-ups accept the current one.
+ */
+export const REACCEPTANCE: Partial<Record<LegalDocSlug, string>> = {
+  terminos: 'Ejemplo del seed: aclaramos cómo funciona la verificación de identidad y de la casa.',
+};
+
 export const LEGAL_DOCS: Record<LegalDocSlug, { title: string; markdown: string }> = {
   'aviso-legal': {
     title: 'Aviso legal',

@@ -4,8 +4,8 @@
 |---|---|---|---|
 | M0 — Arranque del monorepo | ✅ Hecho (con 2 pendientes externos) | 09/10/2026 | Rama `feat/m0-bootstrap`. Firebase CLI vía `pnpm exec firebase` (sin instalación global). Monorepo, core de Functions, reglas + pruebas, web con marca y 3 temas, `/dev/brand`, CI. Pendiente fuera del código: DSN de Sentry UE y alertas de presupuesto (requieren cuentas reales). |
 | M1 — Público: landing, lista de espera y textos legales | ✅ Hecho | 09/10/2026 | Landing prerenderizada, `/como-funciona`, `/precios`, `/lista-espera` (+ `/confirmar`), `/legal/:slug`; `joinWaitlist`/`confirmWaitlist`, `mailQueue` + N-19; Lighthouse landing 92/100/100/100. Rama `feat/m1-public`. |
-| M2 — Cuenta, sesión y onboarding (pasos 1–2) | ⏳ Siguiente | — | Persistir tema con `updateSettings` (TODO en `ThemeProvider`). CTA de la landing → «Crear cuenta gratis». Enlace a Ayuda en el pie. Precargar datos de la lista de espera al registrarse (FR-19). |
-| M3 — Casa, fotos, preferencias y publicación | Pendiente | — | |
+| M2 — Cuenta, sesión y onboarding (pasos 1–2) | ✅ Hecho | 09/10/2026 | Registro email/Google, verificación, entrar/recuperar, `AuthProvider` + guardas, `AppShell`, onboarding 1–2 (teléfono), referidos, reaceptación, cerrar sesión en todos los dispositivos, `/ayuda`. Rama `feat/m2-account`. |
+| M3 — Casa, fotos, preferencias y publicación | ⏳ Siguiente | — | Usar `users.waitlistPrefill` en los pasos 3–4. Sustituir los marcadores de los pasos 3–6. |
 | M4 — Verificación de identidad y panel de administración base | Pendiente | — | |
 | M5 — Descubrir, Explorar y ficha de casa | Pendiente | — | |
 | M6 — Me gusta, match y chat | Pendiente | — | |
@@ -36,3 +36,17 @@
 - [x] Casos importantes registrados en `10_DECISIONS_AND_OPEN_ITEMS.md` §5 (18 filas M1).
 
 Pendiente de M1 para más adelante: rendimiento de páginas secundarias (M10), J-08 recálculo de demanda (M9), `HttpEmailProvider` (M8, DEC-69).
+
+## M2 — Detalle de la DoD
+
+- [x] **E2E:** registro → verificar email (emulador de Auth) → teléfono (código SMS del emulador) → llega al paso 3. También: menor rechazado, usuario demo entra en su paso guardado y el modal de reaceptación bloquea hasta aceptar (FR-58). 7/7 E2E en verde (con M1).
+- [x] **Menores rechazados:** formulario (dominio compartido), servidor (`E_UNDERAGE`, T-D01 en dominio e integración) y borrado de la cuenta de Auth si el servidor la rechaza.
+- [x] **Reglas** de `users` y `publicProfiles` (y `legalAcceptances`, `referrals`, `referralCodes`, `faqs`): 23 pruebas de reglas en total.
+- [x] Pruebas: shared 60 (dominio 100 % líneas, 96 % ramas), functions 27 unitarias + 26 de integración (Auth + Firestore), web 76, reglas 23, E2E 7.
+- [x] Contratos sincronizados (`Me.settings`, errores y efectos de las 6 callables en `05` y `openapi`); `04` actualizado (`waitlistPrefill`, `referralCodes`).
+- [x] UI en claro/oscuro/negro a 360 px sin desbordes ni errores de consola; teclado y lector (etiquetas, errores enlazados, modal con foco atrapado); textos en `es.json`.
+- [x] Landing sin regresión: Lighthouse 90–92 / 100 / 100 / 100 (ahora hidratada).
+- [x] Seed: 4 usuarios demo (Auth + `users` + `publicProfiles`, superadmin con claim), 11 artículos de ayuda, Términos con reaceptación para el usuario demo Marta.
+- [x] 17 casos importantes registrados en `10_DECISIONS_AND_OPEN_ITEMS.md` §5.
+
+Pendiente fuera del código: política de contraseñas y bloqueo por intentos en Identity Platform (staging/prod); personalizar la plantilla de verificación de Firebase.
