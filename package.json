@@ -8,10 +8,10 @@
   },
   "scripts": {
     "dev": "concurrently -k -n functions,emulators,web -c yellow,cyan,blue \"pnpm --filter @tinhome/functions build:watch\" \"pnpm emulators\" \"pnpm --filter @tinhome/web dev\"",
-    "emulators": "pnpm --filter @tinhome/functions build && firebase emulators:start --project demo-tinhome",
+    "emulators": "pnpm --filter @tinhome/functions build && pnpm exec firebase emulators:start --project demo-tinhome",
     "build": "pnpm -r build",
     "test": "pnpm -r --filter !@tinhome/rules-tests test",
-    "test:rules": "firebase emulators:exec --only firestore,storage --project demo-tinhome \"pnpm --filter @tinhome/rules-tests test\"",
+    "test:rules": "pnpm exec firebase emulators:exec --only firestore,storage --project demo-tinhome \"pnpm --filter @tinhome/rules-tests test\"",
     "test:e2e": "echo \"E2E (Playwright) llega con el primer flujo crítico (M1)\"",
     "lint": "eslint . --max-warnings 0 && prettier --check .",
     "format": "prettier --write .",

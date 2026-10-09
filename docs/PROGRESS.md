@@ -2,7 +2,7 @@
 
 | Hito | Estado | Fecha | Notas |
 |---|---|---|---|
-| M0 — Arranque del monorepo | ✅ Hecho (con 2 pendientes externos) | 09/10/2026 | Monorepo, core de Functions, reglas + pruebas, web con marca y 3 temas, `/dev/brand`, CI. Pendiente fuera del código: DSN de Sentry UE y alertas de presupuesto (requieren cuentas reales). |
+| M0 — Arranque del monorepo | ✅ Hecho (con 2 pendientes externos) | 09/10/2026 | Rama `feat/m0-bootstrap`. Firebase CLI vía `pnpm exec firebase` (sin instalación global). Monorepo, core de Functions, reglas + pruebas, web con marca y 3 temas, `/dev/brand`, CI. Pendiente fuera del código: DSN de Sentry UE y alertas de presupuesto (requieren cuentas reales). |
 | M1 — Público: landing, lista de espera y textos legales | ⏳ Siguiente | — | Incluir: logos redimensionados para web (los PNG pesan 200–570 KB) para cumplir Lighthouse ≥ 90. |
 | M2 — Cuenta, sesión y onboarding (pasos 1–2) | Pendiente | — | Persistir tema con `updateSettings` (TODO en `ThemeProvider`). |
 | M3 — Casa, fotos, preferencias y publicación | Pendiente | — | |
