@@ -1,0 +1,44 @@
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/app/theme-context';
+import { cn } from '@/lib/utils';
+import { LOGO_ASSETS, toneForTheme, type LogoTone, type LogoVariant } from './brand-assets';
+
+interface TinHomeLogoProps {
+  variant?: LogoVariant;
+  /** `auto` follows the active theme: `light` in light, `dark` in dark and black. */
+  tone?: 'auto' | LogoTone;
+  /** Rendered height in px; width keeps the aspect ratio. */
+  height?: number;
+  /** Use when adjacent text already says «TinHome» (alt=""). */
+  decorative?: boolean;
+  className?: string;
+}
+
+/** C-25 — Always the official PNGs; never redrawn or recoloured. */
+export function TinHomeLogo({
+  variant = 'horizontal',
+  tone = 'auto',
+  height = 32,
+  decorative = false,
+  className,
+}: TinHomeLogoProps) {
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const asset = LOGO_ASSETS[variant];
+  const resolvedTone = tone === 'auto' ? toneForTheme(theme) : tone;
+  const width = Math.round((asset.width / asset.height) * height);
+
+  return (
+    <img
+      src={asset.src[resolvedTone]}
+      alt={decorative ? '' : t('logo.alt')}
+      width={width}
+      height={height}
+      decoding="async"
+      data-tone={resolvedTone}
+      className={cn('inline-block h-auto max-w-full select-none', className)}
+      style={{ height }}
+      draggable={false}
+    />
+  );
+}

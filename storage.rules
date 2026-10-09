@@ -1,0 +1,33 @@
+rules_version = '2';
+// 04_DATABASE_SCHEMA.md §4.2 — deny by default.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isImage() { return request.resource.contentType.matches('image/(jpeg|png|webp|heic|heif)'); }
+    function isDoc() { return isImage() || request.resource.contentType == 'application/pdf'; }
+    function under10MB() { return request.resource.size < 10 * 1024 * 1024; }
+
+    match /{all=**} { allow read, write: if false; }
+
+    // Original home photos: the owner uploads; nobody reads (the trigger processes and deletes them)
+    match /homes/{userId}/raw/{photoId} {
+      allow create: if signedIn() && request.auth.uid == userId && isImage() && under10MB();
+    }
+    // Processed photos: readable by users with a verified e-mail; written only by the server
+    match /homes/{userId}/photos/{file} {
+      allow read: if signedIn() && request.auth.token.email_verified == true;
+    }
+    match /avatars/{userId}/{file} {
+      allow read: if signedIn() && request.auth.token.email_verified == true;
+      allow create, update: if signedIn() && request.auth.uid == userId && isImage() && request.resource.size < 5 * 1024 * 1024;
+    }
+    // Verification documents: the owner only creates; read only through a server-signed URL
+    match /private/verifications/{userId}/{verificationId}/{file} {
+      allow create: if signedIn() && request.auth.uid == userId && isDoc() && under10MB();
+    }
+    // Report attachments (authenticated user)
+    match /private/reports/{userId}/{file} {
+      allow create: if signedIn() && request.auth.uid == userId && isImage() && request.resource.size < 5 * 1024 * 1024;
+    }
+  }
+}

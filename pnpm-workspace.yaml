@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - functions
+  - packages/*
+  - tests/*
+
+onlyBuiltDependencies:
+  - '@firebase/util'
+  - esbuild
+  - protobufjs
+  - unrs-resolver
+  - sharp

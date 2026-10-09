@@ -1,0 +1,70 @@
+rules_version = '2';
+// 04_DATABASE_SCHEMA.md §4.1 — deny by default; every business write goes through callables.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function emailVerified() { return signedIn() && request.auth.token.email_verified == true; }
+    function role() { return signedIn() ? request.auth.token.get('role', '') : ''; }
+    function isAdmin() { return role() in ['admin', 'superadmin']
+                         && request.auth.token.get('firebase', {}).get('sign_in_second_factor', null) != null; }
+    function isSuperadmin() { return isAdmin() && role() == 'superadmin'; }
+
+    // By default: nothing
+    match /{document=**} { allow read, write: if false; }
+
+    match /users/{userId} { allow read: if signedIn() && (uid() == userId || isAdmin()); }
+    match /publicProfiles/{userId} { allow read: if emailVerified(); }
+    match /homes/{homeId} {
+      allow read: if emailVerified() && (resource.data.visible == true || uid() == homeId || isAdmin());
+    }
+    match /likes/{likeId} { allow read: if signedIn() && resource.data.fromUid == uid(); }
+    match /matches/{matchId} {
+      allow read: if signedIn() && (uid() in resource.data.participants || isAdmin());
+      // Messages: read-only for participants; written by the sendMessage callable
+      match /messages/{messageId} {
+        allow read: if signedIn() && (uid() in get(/databases/$(db)/documents/matches/$(matchId)).data.participants || isAdmin());
+      }
+    }
+    match /locationChecks/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    match /strikes/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    match /supportTickets/{id} {
+      allow read: if signedIn() && (resource.data.uid == uid() || isAdmin());
+      match /messages/{m} { allow read: if signedIn() && (get(/databases/$(db)/documents/supportTickets/$(id)).data.uid == uid() || isAdmin()); }
+    }
+    match /faqs/{slug} { allow read: if resource.data.published == true || isAdmin(); }
+    match /adminAlerts/{id} { allow read: if isAdmin(); }
+    match /exchanges/{id} { allow read: if signedIn() && (uid() in resource.data.participants || isAdmin()); }
+    match /reviews/{id} {
+      allow read: if emailVerified() && (resource.data.status == 'PUBLISHED' || resource.data.authorUid == uid() || isAdmin());
+    }
+    match /blocks/{id} { allow read: if signedIn() && resource.data.blockerUid == uid(); }
+    match /verifications/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    match /cities/{id} { allow read: if true; }
+    match /windows/{id} { allow read: if true; }
+    match /demandStats/{id} { allow read: if true; }
+    match /legalDocs/{slug} { allow read: if true;
+      match /versions/{v} { allow read: if true; } }
+    match /config/public { allow read: if true; }
+    match /config/params { allow read: if isAdmin(); }
+    match /entitlements/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    match /subscriptions/{userId} { allow read: if signedIn() && (uid() == userId || isAdmin()); }
+    match /referrals/{id} { allow read: if signedIn() && (resource.data.inviterUid == uid() || isAdmin()); }
+    match /legalAcceptances/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    match /gdprRequests/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    match /moderationActions/{id} { allow read: if signedIn() && (resource.data.targetUid == uid() || isAdmin()); }
+    match /appeals/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    match /notifications/{userId}/items/{id} {
+      allow read: if signedIn() && uid() == userId;
+      allow update: if signedIn() && uid() == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt'])
+        && request.resource.data.readAt is timestamp;
+    }
+    match /reports/{id} { allow read: if isAdmin(); }
+    match /partners/{id} { allow read: if isAdmin(); }
+    match /partnerClicks/{id} { allow read: if isAdmin(); }
+    match /auditLog/{id} { allow read: if isSuperadmin(); }
+    // passes, docHashes, waitlist, likeCounters, chatCounters, events, mailQueue, stripeEvents,
+    // photoHashIndex, users/{uid}/pushTokens: no client access (default deny)
+  }
+}

@@ -1,0 +1,74 @@
+@import 'tailwindcss';
+
+/* Only brand tokens: the default Tailwind palette is disabled so `bg-red-500` & co. do not exist. */
+@theme {
+  --color-*: initial;
+  --ease-brand: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --text-display: 2.25rem;
+  --text-display--line-height: 1.1;
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 1.2;
+  --text-h2: 1.375rem;
+  --text-h2--line-height: 1.25;
+  --text-h3: 1.125rem;
+  --text-h3--line-height: 1.3;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+}
+
+@import './tokens.css';
+
+/* Elevation tokens (light theme only; dark and black use borders). */
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@utility shadow-sheet {
+  box-shadow: var(--shadow-sheet);
+}
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *, [data-theme='black'], [data-theme='black'] *));
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg font-sans text-text antialiased;
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-extrabold;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* 02_UX_UI_SPEC.md §3.3 — 16 px minimum in inputs avoids zoom on iOS. */
+  input,
+  select,
+  textarea {
+    font-size: max(1rem, 16px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

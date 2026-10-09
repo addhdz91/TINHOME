@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "demo-tinhome",
+    "staging": "tinhome-staging",
+    "prod": "tinhome-prod"
+  }
+}

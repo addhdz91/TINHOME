@@ -1,0 +1,152 @@
+{
+  "app": {
+    "name": "TinHome",
+    "skipToContent": "Saltar al contenido"
+  },
+  "logo": {
+    "alt": "TinHome"
+  },
+  "nav": {
+    "home": "Inicio",
+    "help": "Ayuda"
+  },
+  "theme": {
+    "label": "Tema",
+    "description": "Elige cómo quieres ver TinHome.",
+    "options": {
+      "system": "Sistema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "black": "Negro"
+    },
+    "hints": {
+      "system": "Igual que tu dispositivo",
+      "light": "Fondo claro",
+      "dark": "Azul noche",
+      "black": "Negro puro, ideal para OLED"
+    }
+  },
+  "landing": {
+    "title": "Intercambia tu casa. Viaja por España sin pagar alojamiento.",
+    "subtitle": "Haz match con casas de personas verificadas que quieren venir a tu ciudad.",
+    "comingSoon": "Estamos preparando TinHome. Muy pronto podrás apuntarte."
+  },
+  "footer": {
+    "rights": "© {{year}} TinHome"
+  },
+  "notFound": {
+    "title": "No encontramos esta página",
+    "body": "Puede que el enlace esté mal o que la página ya no exista.",
+    "cta": "Volver al inicio"
+  },
+  "routeError": {
+    "title": "Algo ha fallado",
+    "body": "No es culpa tuya. Prueba a recargar la página.",
+    "retry": "Reintentar",
+    "home": "Volver al inicio"
+  },
+  "admin": {
+    "title": "Panel de administración"
+  },
+  "appShell": {
+    "title": "Tu espacio en TinHome"
+  },
+  "dev": {
+    "brand": {
+      "title": "Marca y tokens",
+      "intro": "Página interna (solo en desarrollo) para revisar tokens, botones y logo en los tres temas.",
+      "themesTitle": "Los tres temas",
+      "tokensTitle": "Colores de la interfaz",
+      "buttonsTitle": "Botones",
+      "logosTitle": "Logo",
+      "typographyTitle": "Tipografía",
+      "displaySample": "Intercambia tu casa",
+      "bodySample": "Haz match con casas de personas verificadas que quieren venir a tu ciudad.",
+      "sentryTitle": "Monitorización de errores",
+      "sentryBody": "Lanza un error de prueba para comprobar que Sentry lo recibe sin datos personales.",
+      "sentryEnabled": "Sentry activo",
+      "sentryDisabled": "Sentry desactivado (falta VITE_SENTRY_DSN)",
+      "sentryThrow": "Lanzar error de prueba",
+      "sentrySent": "Error de prueba enviado",
+      "buttons": {
+        "primary": "Publicar mi casa",
+        "secondary": "Cómo funciona",
+        "ghost": "Ahora no",
+        "danger": "Bloquear",
+        "gradient": "Me gusta",
+        "disabled": "No disponible"
+      },
+      "linkSample": "Cómo funciona TinHome"
+    }
+  },
+  "errors": {
+    "E_VALIDATION": "Revisa los campos marcados.",
+    "E_UNAUTHENTICATED": "Inicia sesión para continuar.",
+    "E_EMAIL_NOT_VERIFIED": "Verifica tu email para continuar.",
+    "E_PHONE_NOT_VERIFIED": "Verifica tu teléfono para continuar.",
+    "E_PHONE_NOT_LINKED": "Verifica tu teléfono para continuar.",
+    "E_PHONE_NOT_ES": "De momento solo admitimos móviles españoles (+34).",
+    "E_UNDERAGE": "Debes ser mayor de edad para usar TinHome.",
+    "E_LEGAL_VERSION": "Hemos actualizado nuestras condiciones. Revísalas para continuar.",
+    "E_LEGAL_OUTDATED": "Hemos actualizado nuestras condiciones. Revísalas para continuar.",
+    "E_IDENTITY_NOT_APPROVED": "Para esto necesitamos verificar tu identidad.",
+    "E_HOME_INCOMPLETE": "Completa y publica tu casa para continuar.",
+    "E_HOME_NOT_PUBLISHED": "Completa y publica tu casa para continuar.",
+    "E_DECLARATION_REQUIRED": "Acepta la declaración responsable para publicar.",
+    "E_TEXT_VIOLATION": "No incluyas teléfonos, emails, enlaces ni precios. TinHome es intercambio, no alquiler.",
+    "E_PHOTOS_MIN": "Tu casa necesita al menos 5 fotos.",
+    "E_CITY_NOT_OPEN": "Tu ciudad aún no está abierta. Puedes mirar casas mientras tanto.",
+    "E_NO_AVAILABILITY": "Añade al menos unas fechas o una ventana en la que puedas viajar.",
+    "E_LIKE_LIMIT": "Has usado tus me gusta de hoy.",
+    "E_RATE_LIMIT": "Vas muy rápido. Espera un momento.",
+    "E_SELF_LIKE": "Esta acción no es posible.",
+    "E_SELF_BLOCK": "Esta acción no es posible.",
+    "E_SELF_RESPONSE": "Esta acción no es posible.",
+    "E_UNDO_LIMIT": "Con Premium puedes deshacer sin límite.",
+    "E_NOT_FOUND": "Este contenido ya no está disponible.",
+    "E_NOT_PARTICIPANT": "No tienes acceso a esto.",
+    "E_ROLE_REQUIRED": "No tienes acceso a esto.",
+    "E_MATCH_INACTIVE": "Este match ya no está activo.",
+    "E_EXCHANGE_DATES": "Revisa las fechas del intercambio.",
+    "E_EXCHANGE_CAPACITY": "Sois más personas de las que admite la casa.",
+    "E_EXCHANGE_PETS": "Esta casa no admite mascotas.",
+    "E_EXCHANGE_PENDING_EXISTS": "Ya hay un intercambio pendiente de confirmar en este match.",
+    "E_EXCHANGE_STATE": "Esta acción ya no está disponible.",
+    "E_HOME_STATE": "Esta acción ya no está disponible.",
+    "E_STATE": "Esta acción ya no está disponible.",
+    "E_REVIEW_WINDOW_CLOSED": "El plazo para valorar ha terminado o ya has valorado.",
+    "E_REVIEW_EXISTS": "El plazo para valorar ha terminado o ya has valorado.",
+    "E_PREMIUM_REQUIRED": "Esta función es de Premium.",
+    "E_ALREADY_SUBSCRIBED": "Revisa el estado de tu suscripción.",
+    "E_NO_SUBSCRIPTION": "Revisa el estado de tu suscripción.",
+    "E_WITHDRAWAL_EXPIRED": "El plazo de desistimiento ha terminado.",
+    "E_WITHDRAWAL_USED": "El plazo de desistimiento ha terminado.",
+    "E_FILES_MISSING": "Falta algún documento. Revisa la lista.",
+    "E_LANDLORD_AUTH_REQUIRED": "Falta algún documento. Revisa la lista.",
+    "E_VERIFICATION_PENDING": "Tu verificación ya está en curso o aprobada.",
+    "E_ALREADY_APPROVED": "Tu verificación ya está en curso o aprobada.",
+    "E_DOC_DUPLICATE": "Documento ya asociado a otra cuenta.",
+    "E_ACCOUNT_SUSPENDED": "Tu cuenta tiene restricciones. Revisa tu email.",
+    "E_ACCOUNT_BANNED": "Tu cuenta tiene restricciones. Revisa tu email.",
+    "E_MFA_REQUIRED": "Activa la verificación en dos pasos.",
+    "E_REAUTH_REQUIRED": "Por seguridad, vuelve a introducir tu contraseña.",
+    "E_REASON_REQUIRED": "Indica el motivo.",
+    "E_STATEMENT_REQUIRED": "Indica la declaración de motivos.",
+    "E_APPEAL_WINDOW_CLOSED": "No es posible recurrir esta decisión.",
+    "E_APPEAL_EXISTS": "No es posible recurrir esta decisión.",
+    "E_TOKEN_INVALID": "El enlace no es válido o ha caducado.",
+    "E_ALREADY_EXISTS": "Ya existe.",
+    "E_CITY_UNKNOWN": "Elige una ciudad de la lista.",
+    "E_RANGE_INVALID": "Revisa las fechas: el inicio debe ser anterior al fin y dentro de los próximos 12 meses.",
+    "E_FILES_PURGED": "Los documentos ya se han borrado por plazo de conservación.",
+    "E_SAME_ADMIN": "Este recurso debería revisarlo otro administrador.",
+    "E_MESSAGE_TOO_LONG": "El mensaje es demasiado largo.",
+    "E_MESSAGE_LIMIT": "Has usado tus me gusta con mensaje de hoy.",
+    "E_PHONE_NOT_SHARED": "Esta persona no ha compartido su teléfono. Podéis seguir hablando por el chat.",
+    "E_ON_HOLD": "Tu cuenta o tu casa está en revisión. Te avisaremos al terminar.",
+    "E_LOCATION_INACCURATE": "No hemos podido ubicarte con precisión. Activa el GPS y prueba junto a una ventana.",
+    "E_LOCATION_ATTEMPTS": "Has hecho muchos intentos hoy. Prueba mañana o solicita revisión manual.",
+    "E_TICKET_CLOSED": "Esta solicitud está cerrada. Abre una nueva si lo necesitas.",
+    "E_INTERNAL": "Algo ha fallado. Inténtalo de nuevo."
+  }
+}

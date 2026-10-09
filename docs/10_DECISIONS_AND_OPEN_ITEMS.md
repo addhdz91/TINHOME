@@ -75,4 +75,10 @@
 
 | Fecha | Documentos | Descripción | Resolución |
 |---|---|---|---|
-| — | — | (vacío) | — |
+| 09/10/2026 | `10_DECISIONS` §4 ↔ DEC-84, DEC-88 | §4 sigue listando «Chat interno» y «Notificaciones push» como Fase 2, pero DEC-84 (chat) y DEC-88 (web push) los incluyen en Fase 1. | Se sigue DEC-84/DEC-88 y `CLAUDE.md` (chat y push son Fase 1). Pendiente de limpiar §4. |
+| 09/10/2026 | `07_ADR` ADR-013 ↔ ADR-020 | ADR-013 dice «Sin push nativo en Fase 1»; ADR-020 introduce web push con FCM. | Prevalece ADR-020 (más reciente). Proponer marcar ADR-013 como parcialmente sustituido. |
+| 09/10/2026 | `04_DATABASE_SCHEMA` §3 ↔ `03_TECHNICAL_SPEC` §5.5 | El esquema atribuye la purga de mensajes de chats cerrados a J-05; la spec la asigna a J-14. | Se implementará como J-14 (spec técnica). |
+| 09/10/2026 | `03_TECHNICAL_SPEC` §2 («última estable») | TypeScript 7.0 es la última estable pero `typescript-eslint` solo admite `< 6.1`; `eslint-plugin-jsx-a11y` no admite ESLint 10. | Se fija **TypeScript 6.0** y **ESLint 9** hasta que el ecosistema los soporte. |
+| 09/10/2026 | `03_TECHNICAL_SPEC` §2 (Sentry `sendDefaultPii: false`) | Sentry v11 eliminó `sendDefaultPii`. | Se usa `dataCollection` con todo desactivado + `beforeSend` con limpieza (misma intención, NFR-13). |
+| 09/10/2026 | `assets/brand/tokens.css` | Para previsualizar el tema claro dentro de un contenedor oscuro (ThemeSwitcher, `/dev/brand`) hace falta poder anidar el tema claro. | Se añadió el selector `[data-theme='light']` junto a `:root` (sin cambiar ningún color). |
+| 09/10/2026 | `03_TECHNICAL_SPEC` §5.1 (CORS) | No está decidido el dominio público de producción. | CORS admite `*.web.app`/`*.firebaseapp.com` y orígenes extra por `CORS_ORIGINS`. **Pregunta abierta:** ¿dominio definitivo? |

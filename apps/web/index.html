@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>TinHome — Intercambia tu casa</title>
+    <meta
+      name="description"
+      content="Haz match con casas de personas verificadas que quieren venir a tu ciudad."
+    />
+    <!-- TinHome — fragmento para <head> de apps/web/index.html -->
+    <!-- Iconos (copiar assets/brand/favicon/* a apps/web/public/ y public/icons/ según rutas) -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Color de la barra del navegador por tema (se ajusta también por JS al cambiar de tema) -->
+    <meta name="theme-color" content="#F7F6FB" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F0D1A" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="TinHome" />
+    <meta property="og:title" content="TinHome — Intercambia tu casa" />
+    <meta
+      property="og:description"
+      content="Haz match con casas de personas verificadas que quieren venir a tu ciudad."
+    />
+    <meta property="og:image" content="/og-image-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Tema sin parpadeo: aplica data-theme antes del primer pintado.
+     Preferencia guardada en localStorage 'tinhome-theme' = system | light | dark | black
+     (se sincroniza con users.settings.theme al iniciar sesión). -->
+    <script>
+      (function () {
+        var COLORS = { light: '#F7F6FB', dark: '#0F0D1A', black: '#000000' };
+        var pref = 'system';
+        try {
+          pref = localStorage.getItem('tinhome-theme') || 'system';
+        } catch (e) {}
+        var theme =
+          pref === 'system'
+            ? window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+            : pref;
+        if (theme !== 'light') document.documentElement.setAttribute('data-theme', theme);
+        var meta = document.querySelector('meta[name="theme-color"]:not([media])');
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.name = 'theme-color';
+          document.head.appendChild(meta);
+        }
+        meta.content = COLORS[theme];
+        // An explicit preference must win over the media-based metas above.
+        document.querySelectorAll('meta[name="theme-color"][media]').forEach(function (m) {
+          m.content = COLORS[theme];
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
