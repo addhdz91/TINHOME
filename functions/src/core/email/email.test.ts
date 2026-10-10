@@ -58,7 +58,7 @@ describe('N-03, N-04 and N-13 (M4)', () => {
       },
     });
     expect(matched.subject).toBe('¡Tienes un match con Javier S.!');
-    expect(matched.text).toContain('Nunca envíes dinero');
+    expect(matched.text).toContain('nunca envíes dinero');
     expect(referral.text).toContain('La persona que invitaste');
   });
 });
