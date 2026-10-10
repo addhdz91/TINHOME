@@ -39,7 +39,8 @@ service cloud.firestore {
       allow read: if emailVerified() && (resource.data.status == 'PUBLISHED' || resource.data.authorUid == uid() || isAdmin());
     }
     match /blocks/{id} { allow read: if signedIn() && resource.data.blockerUid == uid(); }
-    match /verifications/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    // The owner sees their status through getMyVerification (no hashes or duplicate uids).
+    match /verifications/{id} { allow read: if isAdmin(); }
     match /cities/{id} { allow read: if true; }
     match /windows/{id} { allow read: if true; }
     match /demandStats/{id} { allow read: if true; }

@@ -9,3 +9,6 @@ export * from './referral-code.js';
 export * from './dhash.js';
 export * from './home.js';
 export * from './text-validation.js';
+export * from './location.js';
+export * from './identity-doc.js';
+export * from './rewards.js';

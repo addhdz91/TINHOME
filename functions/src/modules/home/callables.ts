@@ -11,19 +11,10 @@ import {
 } from '@tinhome/shared/schemas';
 import { defineCallable } from '../../core/callable.js';
 import { db } from '../../core/firebase.js';
-import { requireAuth, requireEmailVerified } from '../../core/guards.js';
+import { verifiedUid } from '../../core/guards.js';
 import { getParams } from '../../core/params.js';
 import { requestIp } from '../../core/rate-limit.js';
 import * as homes from './service.js';
-
-type Request = Parameters<typeof requireAuth>[0];
-
-/** Guards `A, EV` shared by every home callable. */
-function verifiedUid(request: Request): string {
-  const auth = requireAuth(request);
-  requireEmailVerified(auth);
-  return auth.uid;
-}
 
 /** FR-10 — A, EV, ACT. */
 export const upsertHome = defineCallable(

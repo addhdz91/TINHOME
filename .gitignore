@@ -20,3 +20,6 @@ playwright-report/
 test-results/
 dist-ssr/
 firebase.*-sandbox.json
+
+# Local scratch files
+.tmp/

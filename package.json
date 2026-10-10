@@ -20,7 +20,8 @@
     "prepare": "husky",
     "test:unit": "pnpm -r --filter !@tinhome/rules-tests --filter !@tinhome/e2e test",
     "test:int": "pnpm exec firebase emulators:exec --only auth,firestore,storage --project demo-tinhome \"pnpm --filter @tinhome/functions test:int\"",
-    "brand:assets": "tsx scripts/brand-web-assets.ts"
+    "brand:assets": "tsx scripts/brand-web-assets.ts",
+    "set-role": "tsx scripts/set-role.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [

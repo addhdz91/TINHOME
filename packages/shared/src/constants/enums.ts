@@ -68,7 +68,7 @@ export const MAIL_STATUS = ['QUEUED', 'SENT', 'FAILED'] as const;
 export type MailStatus = (typeof MAIL_STATUS)[number];
 
 /** Email templates (02_UX_UI_SPEC.md §8). Grows milestone by milestone. */
-export const EMAIL_TEMPLATES = ['N-02', 'N-19', 'N-23', 'N-27'] as const;
+export const EMAIL_TEMPLATES = ['N-02', 'N-03', 'N-04', 'N-13', 'N-19', 'N-23', 'N-27'] as const;
 export type EmailTemplateId = (typeof EMAIL_TEMPLATES)[number];
 
 /** 05_API_CONTRACT.md §4 — reasons why a user cannot like yet (BR-05), in resolution order. */
@@ -182,3 +182,47 @@ export type LocationCheckStatus = (typeof LOCATION_CHECK_STATUS)[number];
 
 /** Legal slug of the responsible declaration accepted per home (FR-12). */
 export const DECLARATION_SLUG = 'declaracion-responsable';
+
+/** 04 §2.10 — document proving the relation with the home (FR-08). */
+export const PROPERTY_DOC_TYPES = [
+  'DEED',
+  'LAND_REGISTRY_NOTE',
+  'IBI_RECEIPT',
+  'RENTAL_CONTRACT',
+  'UTILITY_BILL',
+] as const;
+export type PropertyDocType = (typeof PROPERTY_DOC_TYPES)[number];
+
+/** 04 §2.10 — files of an identity verification (Storage `private/verifications/{uid}/{id}/{key}`). */
+export const VERIFICATION_FILES = [
+  'idFront',
+  'idBack',
+  'selfie',
+  'propertyDoc',
+  'landlordAuthorization',
+] as const;
+export type VerificationFile = (typeof VERIFICATION_FILES)[number];
+
+export const VERIFICATION_STATUS = ['PENDING', 'INFO_REQUESTED', 'APPROVED', 'REJECTED'] as const;
+export type VerificationStatus = (typeof VERIFICATION_STATUS)[number];
+
+export const VERIFICATION_DECISIONS = ['APPROVE', 'REJECT', 'REQUEST_INFO'] as const;
+export type VerificationDecision = (typeof VERIFICATION_DECISIONS)[number];
+
+/** BR-39 — outcome of one location reading. */
+export const LOCATION_RESULTS = ['PASS', 'FAIL', 'INACCURATE'] as const;
+export type LocationResult = (typeof LOCATION_RESULTS)[number];
+
+export const REVIEW_DECISIONS = ['APPROVE', 'REJECT'] as const;
+export type ReviewDecision = (typeof REVIEW_DECISIONS)[number];
+
+/** 04 §2.27 — admin alert types (VERIFICATION_DUPLICATE added in M4, 10_DECISIONS §5). */
+export const ADMIN_ALERT_TYPES = [
+  'REPORT_HIGH',
+  'PHOTO_DUPLICATE',
+  'HOLD_DUE',
+  'COMPLAINT_DUE',
+  'LOCATION_MANUAL',
+  'VERIFICATION_DUPLICATE',
+] as const;
+export type AdminAlertType = (typeof ADMIN_ALERT_TYPES)[number];

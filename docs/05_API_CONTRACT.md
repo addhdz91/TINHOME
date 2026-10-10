@@ -55,10 +55,11 @@
 
 | Callable | Guardas | Entrada | Salida | Errores | Efectos |
 |---|---|---|---|---|---|
-| `submitIdentityVerification` | A, EV, PV | `{ tenure, propertyDocType, docNumber, files: { idFront, idBack, selfie, propertyDoc, landlordAuthorization? } }` (rutas en `private/verifications/{uid}/{verificationId}/`) | `{ verificationId, status: 'PENDING' }` | `E_FILES_MISSING`, `E_LANDLORD_AUTH_REQUIRED`, `E_VERIFICATION_PENDING`, `E_ALREADY_APPROVED` | Crea `verifications`, `docNumberHash` (no guarda el número), detecta duplicados, avisa a admins |
+| `submitIdentityVerification` | A, EV, PV, ACT | `{ tenure, propertyDocType, docNumber, files: { idFront, idBack, selfie, propertyDoc, landlordAuthorization? } }` (rutas `private/verifications/{uid}/{verificationId}/{clave}`; todas con el mismo `verificationId`, que es el id del documento) | `{ verificationId, status: 'PENDING' }` | `E_FILES_MISSING` (`meta.missing`; también si un fichero no se subió), `E_LANDLORD_AUTH_REQUIRED`, `E_VERIFICATION_PENDING`, `E_ALREADY_APPROVED`, `E_VALIDATION` (DNI/NIE con letra incorrecta o rutas ajenas) | Crea `verifications`, `docNumberHash` con *pepper* (no guarda el número), detecta duplicados (no bloquea: `duplicateOfUid` + alerta `VERIFICATION_DUPLICATE`), programa el borrado de los ficheros de un envío anterior |
+| `getMyVerification` | A, EV | `{}` | `{ verification: MyVerification \| null }` (`status`, `tenure`, `propertyDocType`, `decisionReason`, `infoRequest`, fechas) | — | — (el propietario ya no lee `verifications` directamente: contiene el hash y posibles uids duplicados) |
 | `adminListVerifications` | ADM | `{ status?, cursor?, limit? }` | `{ items: VerificationSummary[], nextCursor }` | — | — |
 | `adminGetVerification` | ADM | `{ id }` | `{ verification, user, home, duplicateUser? }` | `E_NOT_FOUND` | Auditoría |
-| `adminGetVerificationFileUrl` | ADM | `{ id, file: 'idFront'\|'idBack'\|'selfie'\|'propertyDoc'\|'landlordAuthorization' }` | `{ url, expiresAt }` (5 min) | `E_NOT_FOUND`, `E_FILES_PURGED` | **Auditoría obligatoria** |
+| `adminGetVerificationFileUrl` | ADM | `{ id, file: 'idFront'\|'idBack'\|'selfie'\|'propertyDoc'\|'landlordAuthorization' }` | `{ url, contentType, expiresAt }` (5 min; en el emulador `url` es `data:`) | `E_NOT_FOUND`, `E_FILES_PURGED` | **Auditoría obligatoria** |
 | `adminDecideVerification` | ADM | `{ id, decision: 'APPROVE'\|'REJECT'\|'REQUEST_INFO', reason?, infoRequest?, fraudSuspicion? }` | `{ verification }` | `E_REASON_REQUIRED`, `E_STATE` | Estado de usuario, `filesPurgeAt`, fundador (BR-19), referido (BR-20), N-03/N-04/N-13, auditoría |
 
 ### 2.4 Ciudades y lista de espera (CITY)
@@ -155,8 +156,9 @@ Los mensajes se leen en tiempo real desde Firestore (`matches/{id}/messages`, or
 
 | Callable | Guardas | Entrada | Salida | Errores |
 |---|---|---|---|---|
-| `verifyHomeLocation` | A, EV | `{ lat, lng, accuracyM, isMobile }` | `{ result: 'PASS'\|'FAIL'\|'INACCURATE', distanceKm }` | `E_LOCATION_INACCURATE`, `E_LOCATION_ATTEMPTS`, `E_HOME_INCOMPLETE` |
-| `requestLocationReview` | A, EV | `{ note }` | `{ ok: true }` | `E_STATE` |
+| `verifyHomeLocation` | A, EV, ACT | `{ lat, lng, accuracyM, isMobile }` | `{ result: 'PASS'\|'FAIL'\|'INACCURATE', distanceKm, attemptsLeft }` (precisión > 200 m → `INACCURATE` como resultado, cuenta como intento) | `E_LOCATION_ATTEMPTS` (5 al día, zona Madrid), `E_HOME_INCOMPLETE` (sin casa) | `locationChecks` (coordenadas a 2 decimales, `purgeAt` P-13); `homes.locationCheck` → `PASS`/`FAIL` (una vez verificada no se deshace) |
+| `requestLocationReview` | A, EV | `{ note }` (10–500) | `{ ok: true }` | `E_STATE` (solo tras `FAIL` o `MANUAL_REJECTED`) | `locationCheck = MANUAL_PENDING`, alerta `LOCATION_MANUAL` |
+| `adminListLocationReviews` | ADM | `{}` | `{ items: LocationReviewSummary[] }` (nota, última lectura) | — | — |
 | `adminDecideLocationReview` | ADM | `{ homeId, decision: 'APPROVE'\|'REJECT', reason }` | `{ home }` | `E_STATE` |
 | `adminResolveHold` | ADM | `{ homeId \| uid, decision: 'RELEASE'\|'CONFIRM', statement? }` | `{ ok: true }` | `E_STATE` |
 | `adminListAlerts` / `adminHandleAlert` | ADM | — / `{ alertId }` | — | — |
@@ -180,7 +182,7 @@ Los mensajes se leen en tiempo real desde Firestore (`matches/{id}/messages`, or
 
 | Callable | Guardas | Entrada | Salida |
 |---|---|---|---|
-| `adminGetDashboard` | ADM | `{}` | KPIs de FR-49 |
+| `adminGetDashboard` | ADM | `{}` | KPIs de FR-49: `pendingVerifications {count, oldestAt}`, `pendingLocationReviews`, `openReports`, `newUsers7d`, `cities[]` (visibles vs umbral, fundadores), `matches7d`, `exchangesConfirmed30d`, `premiumBySource` |
 | `adminSearchUsers` | ADM | `{ q, cursor?, limit? }` | `{ items: UserAdminSummary[], nextCursor }` |
 | `adminGetUser` | ADM | `{ uid }` | `{ user, profile, home, verification, matchesCount, reports, actions, entitlements, audit }` |
 | `adminGrantPremium` | ADM | `{ uid, days (1–365), reason }` | `{ premiumUntil }` |

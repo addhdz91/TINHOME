@@ -1,5 +1,8 @@
 import type { EmailTemplateId } from '@tinhome/shared/constants';
 import type { WelcomeData } from './templates/n02-welcome.js';
+import type { IdentityData } from './templates/n03-identity.js';
+import type { FounderData } from './templates/n04-founder.js';
+import type { ReferralData } from './templates/n13-referral.js';
 import type { WaitlistConfirmationData } from './templates/n19-waitlist-confirmation.js';
 import type { HoldData } from './templates/n23-hold.js';
 import type { SecurityData } from './templates/n27-security.js';
@@ -14,6 +17,9 @@ export interface RenderedEmail {
 /** Template data by id, so `mailQueue` items are type-checked end to end. */
 export interface EmailTemplateData {
   'N-02': WelcomeData;
+  'N-03': IdentityData;
+  'N-04': FounderData;
+  'N-13': ReferralData;
   'N-19': WaitlistConfirmationData;
   'N-23': HoldData;
   'N-27': SecurityData;

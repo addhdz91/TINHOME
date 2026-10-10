@@ -21,5 +21,20 @@ export {
   upsertHome,
 } from './modules/home/callables.js';
 export { onHomePhotoUploaded } from './modules/home/triggers.js';
+export { adminGetDashboard } from './modules/admin/callables.js';
+export {
+  adminDecideLocationReview,
+  adminDecideVerification,
+  adminGetVerification,
+  adminGetVerificationFileUrl,
+  adminListLocationReviews,
+  adminListVerifications,
+  getMyVerification,
+  jobPurgeLocationCoordinates,
+  jobPurgeVerificationFiles,
+  requestLocationReview,
+  submitIdentityVerification,
+  verifyHomeLocation,
+} from './modules/verification/callables.js';
 export { onMailQueued } from './modules/mail/triggers.js';
 export { confirmWaitlist, joinWaitlist } from './modules/waitlist/callables.js';

@@ -1,4 +1,4 @@
-import type { AdminRole } from '@tinhome/shared/constants';
+import type { AdminRole, IdentityStatus } from '@tinhome/shared/constants';
 
 /**
  * CLAUDE.md §3 demo users (emulator only). The password `Demo1234!` predates the FR-71 policy
@@ -20,6 +20,10 @@ export interface DemoUser {
   /** Accepted Terms version; an older one makes the re-acceptance modal appear (FR-58). */
   acceptedTerms: 'current' | '0.0-provisional';
   theme: 'system' | 'light' | 'dark' | 'black';
+  /** Identity verification state (M4). `PENDING` users get documents in the admin queue. */
+  identity: IdentityStatus;
+  /** Second factor (SMS in the emulator, which has no TOTP) for /admin (FR-48). */
+  mfa?: boolean;
 }
 
 export const DEMO_USERS: DemoUser[] = [
@@ -36,6 +40,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: null,
     acceptedTerms: 'current',
     theme: 'system',
+    identity: 'NONE',
   },
   {
     uid: 'demo-javier',
@@ -50,6 +55,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: null,
     acceptedTerms: 'current',
     theme: 'system',
+    identity: 'APPROVED',
   },
   {
     uid: 'demo-admin',
@@ -64,6 +70,8 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'superadmin',
     acceptedTerms: 'current',
     theme: 'system',
+    identity: 'NONE',
+    mfa: true,
   },
   {
     uid: 'demo-marta',
@@ -78,6 +86,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: null,
     acceptedTerms: '0.0-provisional',
     theme: 'dark',
+    identity: 'PENDING',
   },
   {
     // Starts at step 3 without a home; E2E-03 publishes a home with it.
@@ -93,5 +102,22 @@ export const DEMO_USERS: DemoUser[] = [
     role: null,
     acceptedTerms: 'current',
     theme: 'light',
+    identity: 'NONE',
+  },
+  {
+    // Published home in Madrid without location check; E2E-04 tries it from Valencia.
+    uid: 'demo-sofia',
+    email: 'sofia@demo.tinhome',
+    firstName: 'Sofía',
+    lastName: 'Navarro',
+    birthDate: '1993-02-17',
+    phone: '+34600000006',
+    cityId: 'madrid',
+    referralCode: 'SFNV2345',
+    premiumMonths: 0,
+    role: null,
+    acceptedTerms: 'current',
+    theme: 'black',
+    identity: 'NONE',
   },
 ];

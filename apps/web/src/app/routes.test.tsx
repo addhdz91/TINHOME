@@ -54,8 +54,8 @@ describe('routes', () => {
     expect(screen.getAllByRole('region', { name: /Claro|Oscuro|Negro/ })).toHaveLength(3);
   });
 
-  it('shows a friendly 404 for unknown public and admin paths', async () => {
-    for (const path of ['/no-existe', '/admin/no-existe']) {
+  it('shows a friendly 404 for unknown public paths', async () => {
+    for (const path of ['/no-existe', '/legal/no-existe/otra']) {
       const { unmount } = renderRoutes(buildRoutes(), path);
       expect(
         await screen.findByRole('heading', { name: 'No encontramos esta página' }),

@@ -32,3 +32,18 @@ export const MIN_AGE_YEARS = 18;
 
 /** Oldest birth year accepted by the form (sanity check). */
 export const MAX_AGE_YEARS = 110;
+
+/** BR-39 — maximum accuracy (metres) of a location reading. */
+export const LOCATION_MAX_ACCURACY_M = 200;
+
+/** BR-39 — location readings per user and calendar day. */
+export const LOCATION_ATTEMPTS_PER_DAY = 5;
+
+/** AC-08.3 — maximum size of a verification document. */
+export const VERIFICATION_FILE_MAX_BYTES = 10 * 1024 * 1024;
+
+/** 05 §2.2 — lifetime of the signed URL of a verification document. */
+export const VERIFICATION_URL_MINUTES = 5;
+
+/** FR-48 — the admin session ends after this much inactivity. */
+export const ADMIN_IDLE_MINUTES = 30;

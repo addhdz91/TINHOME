@@ -9,7 +9,7 @@ import { HomeStep } from '../components/HomeStep';
 import { PhoneStep } from '../components/PhoneStep';
 import { ReviewStep } from '../components/ReviewStep';
 import { TravelStep } from '../components/TravelStep';
-import { VerificationLaterStep } from '../components/VerificationLaterStep';
+import { VerificationStep } from '../components/VerificationStep';
 import { WelcomeStep } from '../components/WelcomeStep';
 
 function toStep(value: string | undefined): OnboardingStep | null {
@@ -21,7 +21,7 @@ const STEP_COMPONENTS: Record<OnboardingStep, () => React.JSX.Element> = {
   2: PhoneStep,
   3: HomeStep,
   4: TravelStep,
-  5: VerificationLaterStep,
+  5: VerificationStep,
   6: ReviewStep,
 };
 

@@ -27,6 +27,31 @@ describe('N-19 waitlist confirmation', () => {
   });
 });
 
+describe('N-03, N-04 and N-13 (M4)', () => {
+  it('render HTML and plain text with the reason or request when there is one', () => {
+    const rejected = renderEmail({
+      to: 'a@b.es',
+      templateId: 'N-03',
+      data: { result: 'REJECTED', message: 'Documento caducado <b>', url: 'https://x.test/app' },
+    });
+    expect(rejected.text).toContain('Motivo: Documento caducado <b>');
+    expect(rejected.html).toContain('Documento caducado &lt;b&gt;');
+    const founder = renderEmail({
+      to: 'a@b.es',
+      templateId: 'N-04',
+      data: { months: 12, cityName: 'Madrid', url: 'https://x.test/app' },
+    });
+    expect(founder.text).toContain('12 meses de Premium');
+    const referral = renderEmail({
+      to: 'a@b.es',
+      templateId: 'N-13',
+      data: { days: 30, role: 'INVITER', url: 'https://x.test/app' },
+    });
+    expect(referral.subject).toBe('Tienes 30 días de Premium');
+    expect(referral.text).toContain('La persona que invitaste');
+  });
+});
+
 describe('N-02 and N-27', () => {
   it('render subject, HTML and text without personal data beyond the first name', () => {
     const welcomeMail = renderEmail({

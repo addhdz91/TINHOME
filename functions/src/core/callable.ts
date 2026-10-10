@@ -1,3 +1,4 @@
+import type { SecretParam } from 'firebase-functions/params';
 import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
 import type { z } from 'zod';
 import { toAppError } from './app-error.js';
@@ -20,10 +21,13 @@ export interface CallableContext<I> {
  */
 export function defineCallable<I extends z.ZodType, O extends z.ZodType>(
   name: string,
-  schemas: { input: I; output: O },
+  schemas: { input: I; output: O; secrets?: SecretParam[] },
   handler: (ctx: CallableContext<z.output<I>>) => Promise<z.input<O>>,
 ) {
-  return onCall(callableOptions, async (request): Promise<z.output<O>> => {
+  const options = schemas.secrets
+    ? { ...callableOptions, secrets: schemas.secrets }
+    : callableOptions;
+  return onCall(options, async (request): Promise<z.output<O>> => {
     const startedAt = Date.now();
     const requestId = `${name}-${String(startedAt)}-${Math.random().toString(36).slice(2, 8)}`;
     const uid = request.auth ? pseudonymize(request.auth.uid) : null;

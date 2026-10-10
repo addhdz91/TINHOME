@@ -5,22 +5,31 @@ import {
   MessageCircleHeart,
   Plane,
   Search,
+  ShieldCheck,
   Sparkles,
   User,
   type LucideIcon,
 } from 'lucide-react';
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router';
+import { useMe } from '@/app/auth/auth-context';
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { TinHomeLogo } from '@/components/TinHomeLogo';
 import { cn } from '@/lib/utils';
 
+// Only founding members ever load it (FR-40), so it stays out of the shell chunk.
+const FounderWelcome = lazy(async () => ({
+  default: (await import('@/features/verification/components/FounderWelcome')).FounderWelcome,
+}));
+
 type NavKey = 'discover' | 'explore' | 'likes' | 'chats' | 'profile';
 
 /** Desktop sidebar extras (02_UX §2.1). */
-const EXTRA: { key: 'myHome' | 'trip'; to: string; icon: LucideIcon }[] = [
+const EXTRA: { key: 'myHome' | 'trip' | 'verification'; to: string; icon: LucideIcon }[] = [
   { key: 'myHome', to: '/app/mi-casa', icon: Home },
   { key: 'trip', to: '/app/viaje', icon: Plane },
+  { key: 'verification', to: '/app/verificacion', icon: ShieldCheck },
 ];
 
 const TABS: { key: NavKey; to: string; icon: LucideIcon }[] = [
@@ -37,6 +46,7 @@ const TABS: { key: NavKey; to: string; icon: LucideIcon }[] = [
  */
 export function AppShell() {
   const { t } = useTranslation();
+  const me = useMe();
   return (
     <div className="min-h-dvh lg:flex">
       <NavigationProgress />
@@ -103,6 +113,11 @@ export function AppShell() {
         className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-4 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
       >
         <Outlet />
+        {me.foundingMember ? (
+          <Suspense fallback={null}>
+            <FounderWelcome />
+          </Suspense>
+        ) : null}
       </main>
 
       <nav

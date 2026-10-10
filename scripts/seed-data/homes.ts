@@ -20,9 +20,11 @@ export interface DemoHome {
   destinations: string[];
   windowIds: string[];
   travelers: { count: number; withPet: boolean };
+  /** FR-63 — `PASS` once the owner checked it at home. */
+  locationCheck: 'PASS' | 'NONE';
 }
 
-/** Homes of the CLAUDE.md demo users. Laura and Marta start without one to try step 3. */
+/** Homes of the CLAUDE.md demo users. Laura and Pablo start without one to try step 3. */
 export const DEMO_HOMES: DemoHome[] = [
   {
     ownerUid: 'demo-javier',
@@ -44,5 +46,51 @@ export const DEMO_HOMES: DemoHome[] = [
     destinations: ['madrid'],
     windowIds: ['semana-santa-2027', 'puente-mayo-2027'],
     travelers: { count: 2, withPet: true },
+    locationCheck: 'PASS',
+  },
+  {
+    // Identity pending in the admin queue: approving it makes this home visible (M4 DoD).
+    ownerUid: 'demo-marta',
+    title: 'Piso con balcón en el Cabanyal',
+    description:
+      'Piso tranquilo a dos calles de la playa de la Malvarrosa, con balcón, mucha luz por la mañana y bicicletas para moverse por el barrio marinero.',
+    cityId: 'valencia',
+    zone: 'Cabanyal',
+    type: 'FLAT',
+    sizeM2: 70,
+    bedrooms: 2,
+    beds: 2,
+    bathrooms: 1,
+    maxGuests: 3,
+    petsAllowed: false,
+    amenities: ['WIFI', 'KITCHEN', 'WASHER', 'HEATING'],
+    houseRules: 'No se puede fumar dentro de casa.',
+    photoCount: 5,
+    destinations: ['madrid'],
+    windowIds: ['semana-santa-2027'],
+    travelers: { count: 2, withPet: false },
+    locationCheck: 'PASS',
+  },
+  {
+    ownerUid: 'demo-sofia',
+    title: 'Estudio luminoso en Lavapiés',
+    description:
+      'Estudio reformado en una calle tranquila de Lavapiés, con cocina completa, escritorio para teletrabajar y cines, mercados y teatros a un paseo.',
+    cityId: 'madrid',
+    zone: 'Lavapiés',
+    type: 'STUDIO',
+    sizeM2: 38,
+    bedrooms: 0,
+    beds: 1,
+    bathrooms: 1,
+    maxGuests: 2,
+    petsAllowed: true,
+    amenities: ['WIFI', 'KITCHEN', 'WORKSPACE', 'AIR_CONDITIONING'],
+    houseRules: 'Recicla, por favor: los cubos están en la cocina.',
+    photoCount: 5,
+    destinations: ['valencia'],
+    windowIds: ['puente-mayo-2027'],
+    travelers: { count: 1, withPet: true },
+    locationCheck: 'NONE',
   },
 ];

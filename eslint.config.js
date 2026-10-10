@@ -16,6 +16,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/lib/**',
       '**/coverage/**',
+      '**/.tmp/**',
       'docs/**',
       'assets/**',
       'apps/web/public/**',
@@ -107,7 +108,8 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['**/features/admin/**'],
+              // The route table only holds lazy imports, so it does not pull admin code in.
+              group: ['**/features/admin/**', '!**/features/admin/routes'],
               message: 'User area must not import the admin area.',
             },
           ],

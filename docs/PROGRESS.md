@@ -7,13 +7,22 @@
 | M2 — Cuenta, sesión y onboarding (pasos 1–2) | ✅ Hecho | 09/10/2026 | Registro email/Google, verificación, entrar/recuperar, `AuthProvider` + guardas, `AppShell`, onboarding 1–2 (teléfono), referidos, reaceptación, cerrar sesión en todos los dispositivos, `/ayuda`. Rama `feat/m2-account`. |
 | M3 — Casa, fotos, preferencias y publicación | ✅ Hecho | 10/10/2026 | Pasos 3–6 del onboarding, editor de casa con vista previa, fotos (trigger sharp: EXIF fuera, 3 WebP, dHash, retención por duplicado/cambios), preferencias de viaje, declaración responsable, publicar, `/app/mi-casa`, `/app/viaje`. Rama `feat/m3-home`. |
 
-| M4 — Verificación de identidad y panel de administración base | ⏳ Siguiente | — | |
-| M5 — Descubrir, Explorar y ficha de casa | Pendiente | — | |
+| M4 — Verificación de identidad y panel de administración base | ✅ Hecho | 10/10/2026 | Paso 5 real (documentos + ubicación), `/app/verificacion` (+ `/ubicacion` con QR), revisión en `/admin` (rol + 2FA, visor seguro con marca de agua y auditoría), fundadores y referidos, J-04/J-10, N-03/N-04/N-13, KPIs. Rama `feat/m4-verification`. |
+| M5 — Descubrir, Explorar y ficha de casa | ⏳ Siguiente | — | |
 | M6 — Me gusta, match y chat | Pendiente | — | |
 | M7 — Premium y crecimiento | Pendiente | — | |
 | M8 — Intercambios, valoraciones y notificaciones | Pendiente | — | |
 | M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | Pendiente | — | |
 | M10 — Endurecimiento y lanzamiento | Pendiente | — | |
+
+## M4 — Detalle de la DoD
+
+- ✅ Admin aprueba → la casa pasa a visible y, si corresponde, Premium de fundador — integración (`approval makes the home visible, awards founder and referral rewards`) y E2E-04 (Marta).
+- ✅ Los documentos no son legibles desde el cliente — pruebas de reglas de Storage (ni propietario ni admin) y de Firestore (`verifications` solo admin con 2FA).
+- ✅ Cada apertura queda en `auditLog` — integración (`verification.view`, `verification.file.open`).
+- ✅ Ubicación fuera del radio → `FAIL` y la casa no se hace visible — integración y E2E-04 con geolocalización simulada (Valencia → casa de Madrid).
+- Pruebas: dominio 88, web 93, integración 58, reglas 34, E2E 10/10.
+- Límite del entorno: el emulador de Auth no admite TOTP; el admin demo usa SMS como segundo factor (la guarda del servidor exige cualquier segundo factor). El alta TOTP guiada está implementada para producción y no se ha podido probar aquí.
 
 ## M3 — Detalle de la DoD
 

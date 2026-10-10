@@ -1,4 +1,5 @@
 import { Navigate, type RouteObject } from 'react-router';
+import { adminRoutes } from '@/features/admin/routes';
 import { authRoutes } from '@/features/auth/routes';
 import { devRoutes } from '@/features/dev/routes';
 import { helpRoutes } from '@/features/help/routes';
@@ -9,6 +10,7 @@ import { legalRoutes } from '@/features/legal/routes';
 import { onboardingRoutes } from '@/features/onboarding/routes';
 import { pricingRoutes } from '@/features/pricing/routes';
 import { profileRoutes } from '@/features/profile/routes';
+import { verificationRoutes } from '@/features/verification/routes';
 import { waitlistRoutes } from '@/features/waitlist/routes';
 import { PublicLayout } from './layouts/PublicLayout';
 import { NotFoundPage } from './NotFoundPage';
@@ -58,6 +60,12 @@ export function buildRoutes(): RouteObject[] {
           children: authRoutes,
         },
         {
+          path: '/admin',
+          // Separate chunk: nothing from the admin area is imported by the user area.
+          lazy: async () => ({ Component: (await import('./layouts/AdminLayout')).AdminLayout }),
+          children: [...adminRoutes, { path: '*', element: <NotFoundPage /> }],
+        },
+        {
           path: '/app',
           lazy: async () => ({ Component: (await import('./layouts/AppLayout')).AppLayout }),
           children: [
@@ -75,23 +83,13 @@ export function buildRoutes(): RouteObject[] {
                 })),
                 ...profileRoutes,
                 ...homeRoutes,
+                ...verificationRoutes,
                 { path: '*', element: <NotFoundPage /> },
               ],
             },
           ],
         },
       ],
-    },
-    {
-      path: '/admin',
-      errorElement: <RouteErrorPage />,
-      hydrateFallbackElement: <RouteFallback />,
-      // Separate chunk: nothing from the admin area is imported by the user area.
-      lazy: async () => {
-        const { AdminLayout } = await import('./layouts/AdminLayout');
-        return { Component: AdminLayout };
-      },
-      children: [{ path: '*', element: <NotFoundPage /> }],
     },
   ];
 }

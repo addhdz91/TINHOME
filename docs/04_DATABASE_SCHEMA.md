@@ -23,7 +23,7 @@
 | `exchanges` | auto | Participantes | ✗ |
 | `reviews` | `{exchangeId}_{authorUid}` | `status == PUBLISHED` (verificados) · autor · admin | ✗ |
 | `blocks` | `{blockerUid}_{blockedUid}` | Solo quien bloquea | ✗ |
-| `verifications` | auto | Propietario (su estado) · admin | ✗ |
+| `verifications` | `verificationId` (generado por el cliente; carpeta de Storage) | Admin (el propietario lee su estado con `getMyVerification`, M4) | ✗ |
 | `docHashes` | `hash` | ✗ | ✗ |
 | `cities` | slug (`madrid`) | Pública | ✗ |
 | `windows` | auto | Pública | ✗ |
@@ -73,7 +73,7 @@
 | `phoneE164` | string | O,S | Tras FR-07 |
 | `status` | `ACTIVE`\|`SUSPENDED`\|`BANNED`\|`DELETION_PENDING`\|`DELETED` | R,S | |
 | `suspendedUntil` | Timestamp | O,S | |
-| `verification` | `{ emailVerified: bool, phoneVerified: bool, identity: IdentityStatus, identityDecidedAt?: Timestamp }` | R,S | |
+| `verification` | `{ emailVerified: bool, phoneVerified: bool, identity: IdentityStatus, identityDecidedAt?: Timestamp, latestId?: string, docHash?: string }` | R,S | `latestId`: última verificación (M4); `docHash`: hash con *pepper* del documento aprobado, para BR-20 |
 | `onboarding` | `{ step: 1..6, completedAt?: Timestamp }` | R,S | |
 | `cityId` | string | O,S | Ciudad de su casa (copia) |
 | `premiumUntil` | Timestamp \| null | R,S | BR-17 |
@@ -122,7 +122,7 @@
 | `declaration` | `{ version: string, acceptedAt: Timestamp }` | O,S | FR-12 |
 | `rating` | `{ avg: number, count: int, sub: { cleanliness, accuracy, communication, care } }` | R,S | |
 | `isTop` | bool | R,S | BR-13 |
-| `locationCheck` | `{ status: 'NONE'\|'PASS'\|'FAIL'\|'MANUAL_PENDING'\|'MANUAL_APPROVED'\|'MANUAL_REJECTED', checkedAt?, distanceKm?, accuracyM? }` | R,S | BR-39; `PASS` o `MANUAL_APPROVED` cuentan como verificada |
+| `locationCheck` | `{ status: 'NONE'\|'PASS'\|'FAIL'\|'MANUAL_PENDING'\|'MANUAL_APPROVED'\|'MANUAL_REJECTED', checkedAt?, distanceKm?, note?, requestedAt?, reason?, decidedBy?, decidedAt? }` | R,S | BR-39; `PASS` o `MANUAL_APPROVED` cuentan como verificada y no se deshacen con una lectura posterior |
 | `moderationHold` | `{ active: bool, reason: 'PHOTO_DUPLICATE'\|'PHOTO_CHANGES'\|'CITY_CHANGE'\|'REPORT', since, reportId?, dueAt } \| null` | O,S | BR-42 |
 | `photoChangeLog` | `{ at: Timestamp, replaced: int }[]` | O,S | FR-65 (últimos 30 días) |
 | `ownerPremium` | bool | R,S | Copia para ranking |
@@ -164,7 +164,7 @@
 `blockerUid`, `blockedUid`, `createdAt`.
 
 ### 2.10 `verifications/{id}`
-`uid`, `status: PENDING|INFO_REQUESTED|APPROVED|REJECTED`, `tenure`, `propertyDocType: DEED|LAND_REGISTRY_NOTE|IBI_RECEIPT|RENTAL_CONTRACT|UTILITY_BILL`, `files: { idFront, idBack, selfie, propertyDoc, landlordAuthorization? }` (rutas de Storage), `docNumberHash` (S), `duplicateOfUid?` (S), `reviewerUid?`, `decisionReason?`, `infoRequest?`, `fraudSuspicion: bool`, `submittedAt`, `decidedAt?`, `filesPurgeAt?`, `filesPurgedAt?`.
+`uid`, `status: PENDING|INFO_REQUESTED|APPROVED|REJECTED`, `tenure`, `propertyDocType: DEED|LAND_REGISTRY_NOTE|IBI_RECEIPT|RENTAL_CONTRACT|UTILITY_BILL`, `files: { idFront, idBack, selfie, propertyDoc, landlordAuthorization? }` (rutas de Storage), `docNumberHash` (S), `duplicateOfUid?` (S), `reviewerUid?`, `decisionReason?`, `infoRequest?`, `fraudSuspicion: bool`, `submittedAt`, `decidedAt?`, `filesPurgeAt?` (`null` con sospecha de fraude: no se borra), `filesPurgedAt?`. Ficheros en `private/verifications/{uid}/{id}/{clave}`.
 
 ### 2.11 `docHashes/{hash}`
 `uid`, `createdAt`. Garantiza un documento por cuenta (BR-02).
@@ -221,13 +221,13 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 - `appeals/{id}`: `actionId`, `uid`, `text`, `status: OPEN|UPHELD|REJECTED`, `reviewerUid?`, `decisionText?`, `createdAt`, `decidedAt?`.
 
 ### 2.24b Seguridad, ayuda y atención
-- `locationChecks/{id}`: `uid`, `homeId`, `cityId`, `latRounded`, `lngRounded` (2 decimales), `accuracyM`, `distanceKm` (entero), `result: PASS|FAIL|INACCURATE`, `userAgentMobile: bool`, `createdAt`, `purgeAt` (coordenadas borradas a P-13 días; el resto se conserva).
+- `locationChecks/{id}`: `uid`, `homeId`, `cityId`, `latRounded`, `lngRounded` (2 decimales), `accuracyM`, `distanceKm` (entero), `result: PASS|FAIL|INACCURATE`, `userAgentMobile: bool`, `createdAt`, `purgeAt` (coordenadas borradas a P-13 días por J-10, que deja `coordinatesPurgedAt`; el resto se conserva). Intentos diarios (5) en `rateLimits/location_{hash(uid)}_{fecha}`.
 - `photoHashIndex/{band}_{value}`: `entries: { homeId, photoId, dhash }[]` — índice por bandas de 8 bits del `dhash` de 64 bits (8 bandas) para buscar candidatos a duplicado (FR-64).
 - `strikes/{id}`: `uid`, `actionId`, `reason`, `severity: 'MINOR'|'SERIOUS'`, `createdAt`, `expiresAt` (P-31), `revokedAt?` (si prospera un recurso).
 - `supportTickets/{id}`: `number` (`TH-AAAA-NNNNNN`, contador atómico), `uid?` (null si visitante), `email`, `category: ACCOUNT|VERIFICATION|PREMIUM_BILLING|MODERATION_DECISION|TECHNICAL|OTHER`, `subject`, `description`, `attachments`, `status: RECEIVED|IN_REVIEW|WAITING_USER|RESOLVED|CLOSED`, `assignedTo?`, `dueAt` (P-38), `createdAt`, `resolvedAt?`. Subcolección `messages`: `authorType: USER|ADMIN`, `authorUid?`, `text`, `createdAt`.
 - `faqs/{slug}`: `category`, `question`, `answerMarkdown`, `order`, `published`, `tags[]`, `helpfulYes`, `helpfulNo` (S), `updatedAt`.
 - `users/{uid}/pushTokens/{sha256(token)}`: `token`, `platform: 'web'`, `userAgent`, `createdAt`, `lastSeenAt`. Se borran si FCM responde «no registrado».
-- `adminAlerts/{id}`: `type: REPORT_HIGH|PHOTO_DUPLICATE|HOLD_DUE|COMPLAINT_DUE|LOCATION_MANUAL`, `refType`, `refId`, `priority`, `createdAt`, `handledBy?`, `handledAt?`.
+- `adminAlerts/{id}`: `type: REPORT_HIGH|PHOTO_DUPLICATE|HOLD_DUE|COMPLAINT_DUE|LOCATION_MANUAL|VERIFICATION_DUPLICATE` (M4), `refType`, `refId`, `priority`, `createdAt`, `handledBy?`, `handledAt?`.
 
 ### 2.25 Otros
 - `gdprRequests/{id}`: `uid`, `type: ACCESS|RECTIFICATION|ERASURE|OBJECTION|RESTRICTION|PORTABILITY`, `details`, `status: OPEN|DONE|REJECTED`, `dueAt`, `exportPath?`, `createdAt`, `closedAt?`.
@@ -318,7 +318,8 @@ service cloud.firestore {
       allow read: if emailVerified() && (resource.data.status == 'PUBLISHED' || resource.data.authorUid == uid() || isAdmin());
     }
     match /blocks/{id} { allow read: if signedIn() && resource.data.blockerUid == uid(); }
-    match /verifications/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    // M4: el propietario usa getMyVerification (el documento incluye el hash y posibles uids duplicados)
+    match /verifications/{id} { allow read: if isAdmin(); }
     match /cities/{id} { allow read: if true; }
     match /windows/{id} { allow read: if true; }
     match /demandStats/{id} { allow read: if true; }

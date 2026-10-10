@@ -23,7 +23,8 @@
     "profile": "Perfil",
     "appLabel": "Secciones de la app",
     "myHome": "Mi casa",
-    "trip": "Mi viaje"
+    "trip": "Mi viaje",
+    "verification": "Verificación"
   },
   "theme": {
     "label": "Tema",
@@ -147,11 +148,122 @@
     "home": "Volver al inicio"
   },
   "admin": {
-    "title": "Panel de administración"
+    "title": "Panel de administración",
+    "skip": "Saltar al contenido",
+    "nav": {
+      "label": "Administración",
+      "home": "Inicio",
+      "verifications": "Verificaciones",
+      "locations": "Ubicación manual",
+      "backToApp": "Volver a la app",
+      "signOut": "Cerrar sesión"
+    },
+    "denied": {
+      "title": "No tienes acceso",
+      "body": "Esta zona es solo para el equipo de TinHome.",
+      "back": "Volver a TinHome"
+    },
+    "idle": "Hemos cerrado tu sesión de administración por inactividad.",
+    "home": {
+      "title": "Inicio",
+      "pendingVerifications": "Verificaciones pendientes",
+      "oldest": "La más antigua: {{age}}",
+      "none": "Ninguna",
+      "locationReviews": "Revisiones de ubicación",
+      "openReports": "Denuncias abiertas",
+      "newUsers": "Usuarios nuevos (7 días)",
+      "matches": "Matches (7 días)",
+      "exchanges": "Intercambios confirmados (30 días)",
+      "premium": "Premium activos por origen",
+      "sources": {
+        "STRIPE": "Pago",
+        "FOUNDER": "Fundador",
+        "REFERRAL": "Referidos",
+        "ADMIN": "Admin"
+      },
+      "cities": "Casas visibles por ciudad",
+      "city": "Ciudad",
+      "status": "Estado",
+      "visible": "Visibles",
+      "threshold": "Umbral",
+      "founders": "Fundadores",
+      "cityStatus": {
+        "WAITLIST": "Lista de espera",
+        "OPEN": "Abierta",
+        "CLOSED": "Cerrada"
+      }
+    },
+    "verifications": {
+      "title": "Verificaciones",
+      "statusFilter": "Estado",
+      "statuses": {
+        "PENDING": "Pendientes",
+        "INFO_REQUESTED": "Info solicitada",
+        "APPROVED": "Aprobadas",
+        "REJECTED": "Rechazadas"
+      },
+      "age": "Antigüedad",
+      "name": "Persona",
+      "city": "Ciudad",
+      "tenure": "Régimen",
+      "flags": "Avisos",
+      "duplicate": "Documento duplicado",
+      "fraud": "Sospecha de fraude",
+      "empty": "No hay verificaciones en este estado.",
+      "loadMore": "Cargar más",
+      "open": "Revisar"
+    },
+    "detail": {
+      "title": "Verificación de {{name}}",
+      "back": "Volver a la cola",
+      "declared": "Datos declarados",
+      "fullName": "Nombre",
+      "birthDate": "Fecha de nacimiento",
+      "email": "Email",
+      "city": "Ciudad",
+      "tenure": "Régimen",
+      "propertyDoc": "Documento de la casa",
+      "home": "Casa",
+      "noHome": "Aún no ha creado su casa.",
+      "duplicateAlert": "Este número de documento ya está en otra cuenta: {{name}}",
+      "files": "Documentos",
+      "purged": "Los documentos ya se han borrado (BR-25).",
+      "watermark": "Solo revisión · {{admin}} · {{date}}",
+      "pdfNote": "PDF: revísalo sin descargarlo.",
+      "loadingFile": "Cargando documento…",
+      "shortcuts": "Atajos: A aprobar · R rechazar · I pedir información",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "requestInfo": "Pedir información",
+      "reason": "Motivo del rechazo (lo verá la persona)",
+      "infoRequest": "Qué necesitas (lo verá la persona)",
+      "fraud": "Marcar sospecha de fraude (conserva los documentos)",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "decided": "Decisión guardada",
+      "status": "Estado: {{status}}"
+    },
+    "locations": {
+      "title": "Revisión manual de ubicación",
+      "empty": "No hay solicitudes de revisión.",
+      "note": "Explicación",
+      "lastCheck": "Última lectura: {{result}} · {{km}} km · precisión {{accuracy}} m",
+      "noCheck": "Sin lecturas",
+      "results": {
+        "PASS": "Coincide",
+        "FAIL": "No coincide",
+        "INACCURATE": "Imprecisa"
+      },
+      "reason": "Motivo de la decisión",
+      "approve": "Aprobar ubicación",
+      "reject": "Rechazar",
+      "decided": "Decisión guardada"
+    }
   },
   "appShell": {
     "title": "Tu espacio en TinHome",
-    "comingSoonBody": "Estamos preparando esta sección."
+    "comingSoonBody": "Estamos preparando esta sección.",
+    "verification": "Verificación"
   },
   "dev": {
     "brand": {
@@ -599,9 +711,10 @@
     },
     "verificationLater": {
       "title": "Verificación",
-      "body": "Aquí podrás subir tu documento de identidad y verificar la ubicación de tu casa. Puedes hacerlo después.",
+      "body": "Comprobamos dos cosas antes de que tu casa sea visible: tu identidad y que tu casa está donde dices. Puedes hacerlo ahora o después.",
       "trust": "Lo revisa una persona del equipo, no un algoritmo. Borramos los documentos 30 días después.",
-      "continue": "Hacerlo después y revisar"
+      "continue": "Hacerlo después y revisar",
+      "next": "Continuar y revisar"
     }
   },
   "profile": {
@@ -832,5 +945,116 @@
     "verify": "Verificar ahora",
     "waitlistInvite": "Invita a alguien de {{city}}",
     "fix": "Completar"
+  },
+  "verification": {
+    "title": "Verificación",
+    "identityTitle": "Tu identidad",
+    "docNumber": "Número de DNI o NIE",
+    "docNumberHint": "No lo guardamos: solo una huella cifrada para evitar cuentas duplicadas.",
+    "propertyDocType": "Documento que acredita tu relación con la casa",
+    "propertyDocs": {
+      "DEED": "Escritura",
+      "LAND_REGISTRY_NOTE": "Nota simple del Registro",
+      "IBI_RECEIPT": "Recibo del IBI",
+      "RENTAL_CONTRACT": "Contrato de arrendamiento",
+      "UTILITY_BILL": "Factura de suministro (menos de 3 meses)"
+    },
+    "files": {
+      "idFront": "DNI/NIE: anverso",
+      "idBack": "DNI/NIE: reverso",
+      "selfie": "Selfie sosteniendo tu documento",
+      "propertyDoc": "Documento de la casa",
+      "landlordAuthorization": "Autorización de la persona propietaria"
+    },
+    "hints": {
+      "idFront": "Foto nítida, sin reflejos y con las cuatro esquinas visibles.",
+      "idBack": "La otra cara del mismo documento.",
+      "selfie": "Tu cara y el documento juntos, bien iluminados. Una persona lo compara a simple vista.",
+      "propertyDoc": "A tu nombre. JPG, PNG, WEBP, HEIC o PDF de hasta 10 MB.",
+      "landlordAuthorization": "Firmada por la persona propietaria de la vivienda."
+    },
+    "landlordModel": "Si vives como inquilino o inquilina, necesitas la autorización por escrito de la persona propietaria. Descarga el <1>modelo de autorización</1>.",
+    "chooseFile": "Elegir archivo o hacer foto",
+    "removeFile": "Quitar {{label}}",
+    "uploading": "Subiendo {{progress}} %",
+    "privacy": "Lo revisa una persona del equipo, sin reconocimiento facial. Borramos los documentos 30 días después de la decisión y solo guardamos el resultado.",
+    "send": "Enviar para revisión",
+    "sending": "Enviando…",
+    "submitted": "Documentos enviados. Te avisaremos cuando los revisemos.",
+    "problems": {
+      "missing": "Falta este documento.",
+      "docNumber": "Revisa el número: DNI (8 cifras y letra) o NIE (X, Y o Z, 7 cifras y letra).",
+      "summary": "Revisa los campos marcados.",
+      "tooBig": "El archivo pesa más de 10 MB.",
+      "badType": "Usa JPG, PNG, WEBP, HEIC o PDF.",
+      "upload": "No hemos podido subir los documentos. Comprueba tu conexión y prueba de nuevo."
+    },
+    "status": {
+      "PENDING": "En revisión",
+      "pendingBody": "Normalmente lo revisamos en 48 horas. Te avisaremos por email.",
+      "APPROVED": "Identidad verificada",
+      "INFO_REQUESTED": "Necesitamos algo más",
+      "REJECTED": "No hemos podido verificar tu identidad",
+      "reason": "Motivo: {{reason}}",
+      "resendBody": "Puedes volver a enviar tus documentos aquí debajo."
+    }
+  },
+  "location": {
+    "title": "Ubicación de tu casa",
+    "intro": "Para evitar anuncios falsos, comprobamos una sola vez que tu casa está en {{city}}. Hazlo desde el móvil, estando en tu casa.",
+    "keptTitle": "Lo que guardamos",
+    "kept": "El resultado, la distancia al centro de la ciudad redondeada a 1 km y la precisión de la lectura. Las coordenadas aproximadas se borran a los 30 días.",
+    "notKeptTitle": "Lo que no guardamos",
+    "notKept": "Tu dirección exacta. Nunca la mostramos ni la pedimos.",
+    "desktopTitle": "Continúa en el móvil",
+    "desktopBody": "Escanea este código con la cámara del móvil estando en tu casa.",
+    "qrLabel": "Código QR para verificar la ubicación desde el móvil",
+    "desktopAnyway": "Estoy en casa con este dispositivo",
+    "verify": "Verificar ubicación",
+    "checking": "Comprobando…",
+    "verified": "Ubicación verificada en {{city}}.",
+    "reviewPending": "Una persona del equipo está revisando tu ubicación. Te avisaremos.",
+    "needsHome": "Primero crea tu casa.",
+    "problems": {
+      "denied": "No tenemos permiso para ver tu ubicación. Actívalo en los ajustes del navegador para TinHome y vuelve a intentarlo.",
+      "unavailable": "No hemos podido obtener tu ubicación. Activa el GPS e inténtalo de nuevo.",
+      "timeout": "La lectura ha tardado demasiado. Acércate a una ventana e inténtalo de nuevo.",
+      "unsupported": "Este navegador no permite leer la ubicación. Prueba con otro navegador del móvil."
+    },
+    "inaccurateTitle": "Precisión insuficiente",
+    "inaccurateTips": "Activa el GPS (ubicación precisa), acércate a una ventana y vuelve a intentarlo.",
+    "failBody": "La lectura no coincide con {{city}} (a unos {{km}} km del centro). Puedes reintentarlo o pedir una revisión manual.",
+    "attemptsLeft_one": "Te queda {{count}} intento hoy.",
+    "attemptsLeft_other": "Te quedan {{count}} intentos hoy.",
+    "reviewLabel": "Solicitar revisión manual",
+    "reviewHint": "Cuéntanos por qué no coincide (por ejemplo, vives en el límite de la ciudad). Mínimo 10 caracteres.",
+    "reviewSend": "Solicitar revisión"
+  },
+  "founder": {
+    "title": "¡Eres socio fundador!",
+    "body": "Eres de las primeras personas verificadas en tu ciudad. Te regalamos Premium y verás el distintivo «Fundador» en tu perfil.",
+    "close": "¡Genial!",
+    "badge": "Fundador"
+  },
+  "mfa": {
+    "title": "Segundo factor",
+    "codeLabel": "Código de 6 cifras",
+    "totpHint": "Abre tu app de autenticación (Google Authenticator, 1Password…) y escribe el código de TinHome.",
+    "smsHint": "Te hemos enviado un código por SMS al {{phone}}.",
+    "sendSms": "Enviar código por SMS",
+    "verify": "Verificar",
+    "verifying": "Verificando…",
+    "invalid": "El código no es correcto o ha caducado.",
+    "cancel": "Cancelar",
+    "setupTitle": "Activa la verificación en dos pasos",
+    "setupBody": "El panel de administración exige un segundo factor (TOTP). Escanea el código con tu app de autenticación y escribe el código que te muestre.",
+    "secretLabel": "Clave para introducir a mano",
+    "qrLabel": "Código QR para tu app de autenticación",
+    "start": "Empezar",
+    "enroll": "Activar",
+    "enrolled": "Verificación en dos pasos activada. Vuelve a entrar para usarla.",
+    "reauth": "Tu sesión no usa el segundo factor. Vuelve a entrar con tu código.",
+    "signInAgain": "Volver a entrar",
+    "unsupported": "No se ha podido activar el segundo factor en este entorno."
   }
 }

@@ -58,3 +58,19 @@ export function requireActive(status: UserStatus): void {
       throw appError('E_ACCOUNT_BANNED');
   }
 }
+
+type GuardRequest = Pick<CallableRequest, 'auth'>;
+
+/** Guards `A, EV` shared by user callables. Returns the uid. */
+export function verifiedUid(request: GuardRequest): string {
+  const auth = requireAuth(request);
+  requireEmailVerified(auth);
+  return auth.uid;
+}
+
+/** Guard `ADM`. Returns the actor for the audit log. */
+export function requireAdmin(request: GuardRequest): { uid: string; role: AdminRole } {
+  const auth = requireAuth(request);
+  requireRole(auth, 'admin');
+  return { uid: auth.uid, role: auth.role ?? 'admin' };
+}

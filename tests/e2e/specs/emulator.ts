@@ -66,3 +66,22 @@ export async function smsCodeFor(phoneNumber: string): Promise<string> {
   }
   throw new Error(`No SMS code for ${phoneNumber}`);
 }
+
+interface DocumentValue {
+  stringValue?: string;
+  booleanValue?: boolean;
+  mapValue?: { fields?: Record<string, DocumentValue> };
+}
+
+/** Top-level fields of a document as plain values (strings, booleans and one level of maps). */
+export async function readDoc(path: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BASE}/${path}`, { headers: { Authorization: 'Bearer owner' } });
+  const { fields = {} } = (await res.json()) as { fields?: Record<string, DocumentValue> };
+  const plain = (value: DocumentValue): unknown =>
+    value.mapValue
+      ? Object.fromEntries(
+          Object.entries(value.mapValue.fields ?? {}).map(([key, inner]) => [key, plain(inner)]),
+        )
+      : (value.stringValue ?? value.booleanValue ?? null);
+  return Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, plain(value)]));
+}

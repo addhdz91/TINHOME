@@ -4,13 +4,18 @@
  * M1 → cities, windows, provisional legal texts, demand counters.
  * M2 → demo users (Auth emulator + users/publicProfiles), FAQ articles.
  * M3 → Javier's published home (photos uploaded to the Storage emulator), travel preferences.
+ * M4 → identities (Javier approved, Marta pending with sample documents), admin second factor,
+ *      location checks (Sofía's home still unchecked).
  *
  * Usage: `pnpm emulators` in one terminal, then `pnpm seed`. Idempotent (overwrites).
  * Needs the Auth, Firestore and Storage emulators.
  */
+import { createHash } from 'node:crypto';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
+import sharp from 'sharp';
 import {
   DECLARATION_SLUG,
   DEMO_PROJECT_ID,
@@ -115,6 +120,16 @@ async function seedUsers(): Promise<void> {
       password: DEMO_PASSWORD,
       phoneNumber: demo.phone,
       displayName: `${demo.firstName} ${demo.lastName}`,
+      // FR-48 — the Auth emulator has no TOTP, so demo admins use an SMS second factor.
+      ...(demo.mfa
+        ? {
+            multiFactor: {
+              enrolledFactors: [
+                { phoneNumber: demo.phone, factorId: 'phone', displayName: 'Móvil' },
+              ],
+            },
+          }
+        : {}),
     });
     if (demo.role) await auth.setCustomUserClaims(demo.uid, { role: demo.role });
 
@@ -130,7 +145,12 @@ async function seedUsers(): Promise<void> {
       birthDate: demo.birthDate,
       phoneE164: demo.phone,
       status: 'ACTIVE',
-      verification: { emailVerified: true, phoneVerified: true, identity: 'NONE' },
+      verification: {
+        emailVerified: true,
+        phoneVerified: true,
+        identity: demo.identity,
+        ...(demo.identity === 'PENDING' ? { latestId: `seed${demo.uid}` } : {}),
+      },
       // Users with a demo home finished onboarding; the rest start at step 3 (FR-06).
       onboarding: DEMO_HOMES.some((home) => home.ownerUid === demo.uid)
         ? { step: 6, completedAt: now }
@@ -156,7 +176,7 @@ async function seedUsers(): Promise<void> {
       photoUrl: null,
       languages: ['es'],
       memberSince: now,
-      identityVerified: false,
+      identityVerified: demo.identity === 'APPROVED',
       foundingMember: false,
       isTopHost: false,
       reviewsCount: 0,
@@ -177,7 +197,7 @@ async function seedUsers(): Promise<void> {
 }
 
 /** Same shape `upsertHome` + `updateTravelPrefs` + `publishHome` leave (04 §homes). */
-function homeDoc(home: DemoHome, photos: SeedPhoto[], ownerPremium: boolean) {
+function homeDoc(home: DemoHome, photos: SeedPhoto[], ownerPremium: boolean, visible: boolean) {
   return {
     ownerUid: home.ownerUid,
     title: home.title,
@@ -197,8 +217,8 @@ function homeDoc(home: DemoHome, photos: SeedPhoto[], ownerPremium: boolean) {
     houseRules: home.houseRules,
     searchKeys: { capacityBucket: home.maxGuests, hasPets: home.petsAllowed },
     status: 'PUBLISHED',
-    // BR-04: not visible until identity and location are verified (M4).
-    visible: false,
+    // BR-04: visible once identity and location are verified (city OPEN, no hold).
+    visible,
     complete: true,
     photos,
     photoChangeLog: [],
@@ -208,11 +228,11 @@ function homeDoc(home: DemoHome, photos: SeedPhoto[], ownerPremium: boolean) {
     declaration: { version: LEGAL_VERSION, acceptedAt: now },
     rating: { avg: 0, count: 0, sub: { cleanliness: 0, accuracy: 0, communication: 0, care: 0 } },
     isTop: false,
-    locationCheck: { status: 'NONE' },
+    locationCheck: { status: home.locationCheck },
     moderationHold: null,
     ownerPremium,
     ownerFounding: false,
-    countedCityId: null,
+    countedCityId: visible ? home.cityId : null,
     publishedAt: now,
     createdAt: now,
     updatedAt: now,
@@ -230,9 +250,18 @@ async function seedHomes(): Promise<void> {
   const batch = db.batch();
   DEMO_HOMES.forEach((home, index) => {
     const owner = DEMO_USERS.find((user) => user.uid === home.ownerUid);
+    const visible =
+      owner?.identity === 'APPROVED' &&
+      home.locationCheck === 'PASS' &&
+      CITIES[home.cityId]?.status === 'OPEN';
     batch.set(
       db.doc(`homes/${home.ownerUid}`),
-      homeDoc(home, photosFor(pool, index, home.photoCount), (owner?.premiumMonths ?? 0) > 0),
+      homeDoc(
+        home,
+        photosFor(pool, index, home.photoCount),
+        (owner?.premiumMonths ?? 0) > 0,
+        visible,
+      ),
     );
     batch.set(db.doc(`legalAcceptances/seed-${home.ownerUid}-${DECLARATION_SLUG}`), {
       uid: home.ownerUid,
@@ -261,6 +290,46 @@ async function seedHomes(): Promise<void> {
   await indexBatch.commit();
 }
 
+/** Placeholder «document» images; never real documents or people. */
+async function sampleDocument(label: string): Promise<Buffer> {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560">
+    <rect width="900" height="560" rx="32" fill="#E9E4F7"/>
+    <text x="50%" y="45%" text-anchor="middle" font-family="sans-serif" font-size="44" fill="#3D2A7A">DOCUMENTO DE PRUEBA</text>
+    <text x="50%" y="60%" text-anchor="middle" font-family="sans-serif" font-size="32" fill="#3D2A7A">${label} · no es real</text>
+  </svg>`;
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
+/** FR-09 — pending verifications (with sample files) for the admin queue. */
+async function seedVerifications(): Promise<number> {
+  const bucket = getStorage().bucket(bucketName);
+  const pending = DEMO_USERS.filter((demo) => demo.identity === 'PENDING');
+  for (const demo of pending) {
+    const id = `seed${demo.uid}`;
+    const files: Record<string, string> = {};
+    for (const key of ['idFront', 'idBack', 'selfie', 'propertyDoc'] as const) {
+      const path = `private/verifications/${demo.uid}/${id}/${key}`;
+      await bucket.file(path).save(await sampleDocument(key), { contentType: 'image/png' });
+      files[key] = path;
+    }
+    const docNumberHash = createHash('sha256').update(`seed-${demo.uid}`).digest('hex');
+    await db.doc(`verifications/${id}`).set({
+      uid: demo.uid,
+      status: 'PENDING',
+      tenure: 'OWNER',
+      propertyDocType: 'IBI_RECEIPT',
+      files,
+      docNumberHash,
+      duplicateOfUid: null,
+      fraudSuspicion: false,
+      submittedAt: Timestamp.fromMillis(Date.now() - 26 * 3_600_000),
+      filesPurgeAt: null,
+    });
+    await db.doc(`docHashes/${docNumberHash}`).set({ uid: demo.uid, createdAt: now });
+  }
+  return pending.length;
+}
+
 async function main(): Promise<void> {
   console.log(`Seeding ${projectId} at ${emulatorHost}…`);
   await seedConfig();
@@ -279,6 +348,7 @@ async function main(): Promise<void> {
   );
   await seedHomes();
   console.log(`✔ ${DEMO_HOMES.length} demo homes (photos in the Storage emulator)`);
+  console.log(`✔ ${await seedVerifications()} pending verifications with sample documents`);
   console.log('Done.');
 }
 

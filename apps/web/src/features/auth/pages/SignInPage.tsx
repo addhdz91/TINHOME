@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { MultiFactorResolver } from 'firebase/auth';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +14,9 @@ import { Button } from '@/components/ui/button';
 import { authErrorKey } from '@/lib/auth-errors';
 import { GoogleButton } from '../components/GoogleButton';
 import { PasswordField } from '../components/PasswordField';
+import { SecondFactorStep } from '../components/SecondFactorStep';
 import { signInWithEmail, signInWithGoogle } from '../lib/auth-actions';
+import { mfaResolver } from '../lib/mfa';
 
 const SignInSchema = z.object({
   email: z.string().trim().pipe(z.email('email')),
@@ -27,6 +30,7 @@ export function SignInPage() {
   const [params] = useSearchParams();
   const { state } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
+  const [resolver, setResolver] = useState<MultiFactorResolver | null>(null);
   const next = safeNext(params.get('next'));
   const {
     register,
@@ -46,10 +50,14 @@ export function SignInPage() {
     try {
       await signInWithEmail(values.email, values.password);
     } catch (error) {
+      const mfa = mfaResolver(error);
       // Same message whether the e-mail exists or not.
-      setFormError(t(`authErrors.${authErrorKey(error)}`));
+      if (mfa) setResolver(mfa);
+      else setFormError(t(`authErrors.${authErrorKey(error)}`));
     }
   };
+
+  if (resolver) return <SecondFactorStep resolver={resolver} onCancel={() => setResolver(null)} />;
 
   return (
     <section className="flex flex-col gap-6">

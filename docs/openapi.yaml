@@ -885,8 +885,8 @@ paths:
       operationId: submitIdentityVerification
       tags:
       - Verificación
-      summary: Envía documentos de identidad
-      description: 'Callable de Firebase. Guardas: A,EV,PV. Ver 05_API_CONTRACT.md.'
+      summary: Envía la verificación de identidad
+      description: 'Callable de Firebase. Guardas: A,EV,PV,ACT. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -897,7 +897,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     tenure:
                       type: string
@@ -912,21 +911,28 @@ paths:
                       - IBI_RECEIPT
                       - RENTAL_CONTRACT
                       - UTILITY_BILL
-                    docNumber: *id001
+                    docNumber:
+                      type: string
+                      minLength: 8
+                      maxLength: 20
                     files:
                       type: object
-                      additionalProperties: false
                       properties:
-                        idFront: *id001
-                        idBack: *id001
-                        selfie: *id001
-                        propertyDoc: *id001
-                        landlordAuthorization: *id001
-                      required:
-                      - idFront
-                      - idBack
-                      - selfie
-                      - propertyDoc
+                        idFront:
+                          type: string
+                          pattern: ^private\/verifications\/[A-Za-z0-9_-]{1,128}\/[A-Za-z0-9_-]{8,64}\/[A-Za-z]+$
+                        idBack:
+                          type: string
+                          pattern: ^private\/verifications\/[A-Za-z0-9_-]{1,128}\/[A-Za-z0-9_-]{8,64}\/[A-Za-z]+$
+                        selfie:
+                          type: string
+                          pattern: ^private\/verifications\/[A-Za-z0-9_-]{1,128}\/[A-Za-z0-9_-]{8,64}\/[A-Za-z]+$
+                        propertyDoc:
+                          type: string
+                          pattern: ^private\/verifications\/[A-Za-z0-9_-]{1,128}\/[A-Za-z0-9_-]{8,64}\/[A-Za-z]+$
+                        landlordAuthorization:
+                          type: string
+                          pattern: ^private\/verifications\/[A-Za-z0-9_-]{1,128}\/[A-Za-z0-9_-]{8,64}\/[A-Za-z]+$
                   required:
                   - tenure
                   - propertyDocType
@@ -945,14 +951,16 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      verificationId: *id001
+                      verificationId:
+                        type: string
                       status:
+                        type: string
                         const: PENDING
                     required:
                     - verificationId
                     - status
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2818,7 +2826,7 @@ paths:
       operationId: adminGetDashboard
       tags:
       - Admin
-      summary: KPIs del panel
+      summary: KPIs del panel de inicio (FR-49)
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2828,7 +2836,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
               required:
               - data
       responses:
@@ -2842,6 +2853,105 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      pendingVerifications:
+                        type: object
+                        properties:
+                          count:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          oldestAt:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - count
+                        - oldestAt
+                        additionalProperties: false
+                      pendingLocationReviews:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      openReports:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      newUsers7d:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      cities:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - WAITLIST
+                              - OPEN
+                              - CLOSED
+                            visibleCandidates:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            threshold:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            foundersAwarded:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - id
+                          - name
+                          - status
+                          - visibleCandidates
+                          - threshold
+                          - foundersAwarded
+                          additionalProperties: false
+                      matches7d:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      exchangesConfirmed30d:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      premiumBySource:
+                        type: object
+                        propertyNames:
+                          type: string
+                          enum:
+                          - STRIPE
+                          - FOUNDER
+                          - REFERRAL
+                          - ADMIN
+                        additionalProperties:
+                          type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        required:
+                        - STRIPE
+                        - FOUNDER
+                        - REFERRAL
+                        - ADMIN
+                    required:
+                    - pendingVerifications
+                    - pendingLocationReviews
+                    - openReports
+                    - newUsers7d
+                    - cities
+                    - matches7d
+                    - exchangesConfirmed30d
+                    - premiumBySource
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2858,7 +2968,7 @@ paths:
       operationId: adminListVerifications
       tags:
       - Admin
-      summary: Cola de verificaciones
+      summary: Cola de verificaciones por antigüedad
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2870,12 +2980,23 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
                     status:
-                      $ref: '#/components/schemas/IdentityStatus'
-                    cursor: *id001
-                    limit: *id007
+                      default: PENDING
+                      type: string
+                      enum:
+                      - PENDING
+                      - INFO_REQUESTED
+                      - APPROVED
+                      - REJECTED
               required:
               - data
       responses:
@@ -2889,19 +3010,59 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
+                          properties:
+                            id:
+                              type: string
+                            uid:
+                              type: string
+                            displayName:
+                              type: string
+                            cityId:
+                              type:
+                              - string
+                              - 'null'
+                            tenure:
+                              type: string
+                              enum:
+                              - OWNER
+                              - TENANT
+                            status:
+                              type: string
+                              enum:
+                              - PENDING
+                              - INFO_REQUESTED
+                              - APPROVED
+                              - REJECTED
+                            submittedAt:
+                              type: string
+                            duplicate:
+                              type: boolean
+                            fraudSuspicion:
+                              type: boolean
+                          required:
+                          - id
+                          - uid
+                          - displayName
+                          - cityId
+                          - tenure
+                          - status
+                          - submittedAt
+                          - duplicate
+                          - fraudSuspicion
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - items
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2918,7 +3079,7 @@ paths:
       operationId: adminGetVerification
       tags:
       - Admin
-      summary: Detalle de verificación
+      summary: Detalle de una verificación (auditado)
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2930,9 +3091,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                   required:
                   - id
               required:
@@ -2948,6 +3111,166 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      verification:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          uid:
+                            type: string
+                          displayName:
+                            type: string
+                          cityId:
+                            type:
+                            - string
+                            - 'null'
+                          tenure:
+                            type: string
+                            enum:
+                            - OWNER
+                            - TENANT
+                          status:
+                            type: string
+                            enum:
+                            - PENDING
+                            - INFO_REQUESTED
+                            - APPROVED
+                            - REJECTED
+                          submittedAt:
+                            type: string
+                          duplicate:
+                            type: boolean
+                          fraudSuspicion:
+                            type: boolean
+                          propertyDocType:
+                            type: string
+                            enum:
+                            - DEED
+                            - LAND_REGISTRY_NOTE
+                            - IBI_RECEIPT
+                            - RENTAL_CONTRACT
+                            - UTILITY_BILL
+                          files:
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                              - idFront
+                              - idBack
+                              - selfie
+                              - propertyDoc
+                              - landlordAuthorization
+                          filesPurged:
+                            type: boolean
+                          reviewerUid:
+                            type:
+                            - string
+                            - 'null'
+                          decisionReason:
+                            type:
+                            - string
+                            - 'null'
+                          infoRequest:
+                            type:
+                            - string
+                            - 'null'
+                          decidedAt:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - uid
+                        - displayName
+                        - cityId
+                        - tenure
+                        - status
+                        - submittedAt
+                        - duplicate
+                        - fraudSuspicion
+                        - propertyDocType
+                        - files
+                        - filesPurged
+                        - reviewerUid
+                        - decisionReason
+                        - infoRequest
+                        - decidedAt
+                        additionalProperties: false
+                      user:
+                        type: object
+                        properties:
+                          uid:
+                            type: string
+                          firstName:
+                            type: string
+                          lastName:
+                            type: string
+                          birthDate:
+                            type: string
+                          email:
+                            type: string
+                          cityId:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - uid
+                        - firstName
+                        - lastName
+                        - birthDate
+                        - email
+                        - cityId
+                        additionalProperties: false
+                      home:
+                        anyOf:
+                        - type: object
+                          properties:
+                            title:
+                              type:
+                              - string
+                              - 'null'
+                            cityId:
+                              type:
+                              - string
+                              - 'null'
+                            zone:
+                              type:
+                              - string
+                              - 'null'
+                            tenure:
+                              anyOf:
+                              - type: string
+                                enum:
+                                - OWNER
+                                - TENANT
+                              - type: 'null'
+                          required:
+                          - title
+                          - cityId
+                          - zone
+                          - tenure
+                          additionalProperties: false
+                        - type: 'null'
+                      duplicateUser:
+                        anyOf:
+                        - type: object
+                          properties:
+                            uid:
+                              type: string
+                            displayName:
+                              type: string
+                          required:
+                          - uid
+                          - displayName
+                          additionalProperties: false
+                        - type: 'null'
+                    required:
+                    - verification
+                    - user
+                    - home
+                    - duplicateUser
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2964,8 +3287,8 @@ paths:
       operationId: adminGetVerificationFileUrl
       tags:
       - Admin
-      summary: URL firmada (5 min) de un documento; auditada
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: URL de 5 minutos de un documento (auditada)
+      description: 'Callable de Firebase. Guardas: ADM. En el emulador devuelve una URL data: (las URL firmadas necesitan cuenta de servicio). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -2976,9 +3299,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     file:
                       type: string
                       enum:
@@ -3003,13 +3328,18 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      url: *id001
-                      expiresAt: *id008
+                      url:
+                        type: string
+                      contentType:
+                        type: string
+                      expiresAt:
+                        type: string
                     required:
                     - url
+                    - contentType
                     - expiresAt
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3026,7 +3356,7 @@ paths:
       operationId: adminDecideVerification
       tags:
       - Admin
-      summary: Aprobar, rechazar o pedir información
+      summary: Aprueba, rechaza o pide información
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -3038,18 +3368,25 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     decision:
                       type: string
                       enum:
                       - APPROVE
                       - REJECT
                       - REQUEST_INFO
-                    reason: *id001
-                    infoRequest: *id001
-                    fraudSuspicion: *id004
+                    reason:
+                      type: string
+                      maxLength: 1000
+                    infoRequest:
+                      type: string
+                      maxLength: 1000
+                    fraudSuspicion:
+                      type: boolean
                   required:
                   - id
                   - decision
@@ -3066,6 +3403,95 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      verification:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          uid:
+                            type: string
+                          displayName:
+                            type: string
+                          cityId:
+                            type:
+                            - string
+                            - 'null'
+                          tenure:
+                            type: string
+                            enum:
+                            - OWNER
+                            - TENANT
+                          status:
+                            type: string
+                            enum:
+                            - PENDING
+                            - INFO_REQUESTED
+                            - APPROVED
+                            - REJECTED
+                          submittedAt:
+                            type: string
+                          duplicate:
+                            type: boolean
+                          fraudSuspicion:
+                            type: boolean
+                          propertyDocType:
+                            type: string
+                            enum:
+                            - DEED
+                            - LAND_REGISTRY_NOTE
+                            - IBI_RECEIPT
+                            - RENTAL_CONTRACT
+                            - UTILITY_BILL
+                          files:
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                              - idFront
+                              - idBack
+                              - selfie
+                              - propertyDoc
+                              - landlordAuthorization
+                          filesPurged:
+                            type: boolean
+                          reviewerUid:
+                            type:
+                            - string
+                            - 'null'
+                          decisionReason:
+                            type:
+                            - string
+                            - 'null'
+                          infoRequest:
+                            type:
+                            - string
+                            - 'null'
+                          decidedAt:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - uid
+                        - displayName
+                        - cityId
+                        - tenure
+                        - status
+                        - submittedAt
+                        - duplicate
+                        - fraudSuspicion
+                        - propertyDocType
+                        - files
+                        - filesPurged
+                        - reviewerUid
+                        - decisionReason
+                        - infoRequest
+                        - decidedAt
+                        additionalProperties: false
+                    required:
+                    - verification
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -4530,7 +4956,7 @@ paths:
       tags:
       - Verificación
       summary: Verifica la ubicación de la casa (desde el móvil)
-      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: A,EV,ACT. INACCURATE se devuelve como resultado (cuenta como intento), no como error. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -4541,7 +4967,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     lat:
                       type: number
@@ -4554,7 +4979,9 @@ paths:
                     accuracyM:
                       type: number
                       minimum: 0
-                    isMobile: *id004
+                      maximum: 100000
+                    isMobile:
+                      type: boolean
                   required:
                   - lat
                   - lng
@@ -4573,7 +5000,6 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       result:
                         type: string
@@ -4581,10 +5007,19 @@ paths:
                         - PASS
                         - FAIL
                         - INACCURATE
-                      distanceKm: *id005
+                      distanceKm:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      attemptsLeft:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
                     required:
                     - result
                     - distanceKm
+                    - attemptsLeft
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -4613,11 +5048,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     note:
                       type: string
-                      maxLength: 1000
+                      minLength: 10
+                      maxLength: 500
                   required:
                   - note
               required:
@@ -4631,7 +5066,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -4823,7 +5266,7 @@ paths:
       operationId: adminDecideLocationReview
       tags:
       - Admin
-      summary: Resolver revisión manual de ubicación
+      summary: Decide una revisión manual de ubicación
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -4835,15 +5278,20 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    homeId: *id001
+                    homeId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     decision:
                       type: string
                       enum:
                       - APPROVE
                       - REJECT
-                    reason: *id001
+                    reason:
+                      type: string
+                      minLength: 3
+                      maxLength: 1000
                   required:
                   - homeId
                   - decision
@@ -4861,6 +5309,22 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      homeId:
+                        type: string
+                      locationCheck:
+                        type: string
+                        enum:
+                        - NONE
+                        - PASS
+                        - FAIL
+                        - MANUAL_PENDING
+                        - MANUAL_APPROVED
+                        - MANUAL_REJECTED
+                    required:
+                    - homeId
+                    - locationCheck
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5247,6 +5711,196 @@ paths:
         '404':
           description: Partner inactivo
       security: []
+  /getMyVerification:
+    post:
+      operationId: getMyVerification
+      tags:
+      - Verificación
+      summary: Estado de la última verificación de identidad del usuario (S-14)
+      description: 'Callable de Firebase. Guardas: A,EV. Sin hashes ni datos de otras cuentas. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      verification:
+                        anyOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - PENDING
+                              - INFO_REQUESTED
+                              - APPROVED
+                              - REJECTED
+                            tenure:
+                              type: string
+                              enum:
+                              - OWNER
+                              - TENANT
+                            propertyDocType:
+                              type: string
+                              enum:
+                              - DEED
+                              - LAND_REGISTRY_NOTE
+                              - IBI_RECEIPT
+                              - RENTAL_CONTRACT
+                              - UTILITY_BILL
+                            decisionReason:
+                              type:
+                              - string
+                              - 'null'
+                            infoRequest:
+                              type:
+                              - string
+                              - 'null'
+                            submittedAt:
+                              type: string
+                            decidedAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - id
+                          - status
+                          - tenure
+                          - propertyDocType
+                          - decisionReason
+                          - infoRequest
+                          - submittedAt
+                          - decidedAt
+                          additionalProperties: false
+                        - type: 'null'
+                    required:
+                    - verification
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListLocationReviews:
+    post:
+      operationId: adminListLocationReviews
+      tags:
+      - Admin
+      summary: Solicitudes de revisión manual de ubicación
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            homeId:
+                              type: string
+                            displayName:
+                              type: string
+                            cityId:
+                              type: string
+                            note:
+                              type: string
+                            requestedAt:
+                              type: string
+                            lastCheck:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  result:
+                                    type: string
+                                    enum:
+                                    - PASS
+                                    - FAIL
+                                    - INACCURATE
+                                  distanceKm:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                  accuracyM:
+                                    type: number
+                                required:
+                                - result
+                                - distanceKm
+                                - accuracyM
+                                additionalProperties: false
+                              - type: 'null'
+                          required:
+                          - homeId
+                          - displayName
+                          - cityId
+                          - note
+                          - requestedAt
+                          - lastCheck
+                          additionalProperties: false
+                    required:
+                    - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
 components:
   securitySchemes:
     FirebaseIdToken:
