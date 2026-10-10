@@ -79,4 +79,19 @@ export const DEMO_USERS: DemoUser[] = [
     acceptedTerms: '0.0-provisional',
     theme: 'dark',
   },
+  {
+    // Starts at step 3 without a home; E2E-03 publishes a home with it.
+    uid: 'demo-pablo',
+    email: 'pablo@demo.tinhome',
+    firstName: 'Pablo',
+    lastName: 'Gil',
+    birthDate: '1989-11-03',
+    phone: '+34600000005',
+    cityId: 'madrid',
+    referralCode: 'PBGX2345',
+    premiumMonths: 0,
+    role: null,
+    acceptedTerms: 'current',
+    theme: 'light',
+  },
 ];

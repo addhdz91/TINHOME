@@ -68,7 +68,7 @@ export const MAIL_STATUS = ['QUEUED', 'SENT', 'FAILED'] as const;
 export type MailStatus = (typeof MAIL_STATUS)[number];
 
 /** Email templates (02_UX_UI_SPEC.md §8). Grows milestone by milestone. */
-export const EMAIL_TEMPLATES = ['N-02', 'N-19', 'N-27'] as const;
+export const EMAIL_TEMPLATES = ['N-02', 'N-19', 'N-23', 'N-27'] as const;
 export type EmailTemplateId = (typeof EMAIL_TEMPLATES)[number];
 
 /** 05_API_CONTRACT.md §4 — reasons why a user cannot like yet (BR-05), in resolution order. */
@@ -128,3 +128,57 @@ export type ReferralStatus = (typeof REFERRAL_STATUS)[number];
 /** FR-06 — onboarding steps 1..6. */
 export const ONBOARDING_STEPS = [1, 2, 3, 4, 5, 6] as const;
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
+
+/** 04 §2.3 — home attributes (FR-10). */
+export const HOME_TYPES = [
+  'FLAT',
+  'HOUSE',
+  'STUDIO',
+  'PENTHOUSE',
+  'DUPLEX',
+  'VILLA',
+  'OTHER',
+] as const;
+export type HomeType = (typeof HOME_TYPES)[number];
+
+export const TENURES = ['OWNER', 'TENANT'] as const;
+export type Tenure = (typeof TENURES)[number];
+
+export const RESIDENCE_USES = ['PRIMARY', 'SECONDARY'] as const;
+export type ResidenceUse = (typeof RESIDENCE_USES)[number];
+
+/** FR-10 — closed list of amenities. */
+export const AMENITIES = [
+  'WIFI',
+  'KITCHEN',
+  'WASHER',
+  'AIR_CONDITIONING',
+  'HEATING',
+  'ELEVATOR',
+  'TERRACE',
+  'POOL',
+  'PARKING',
+  'KIDS_FRIENDLY',
+  'WORKSPACE',
+  'ACCESSIBLE',
+] as const;
+export type Amenity = (typeof AMENITIES)[number];
+
+export const DESTINATION_MODES = ['LIST', 'ANY_OPEN'] as const;
+export type DestinationMode = (typeof DESTINATION_MODES)[number];
+
+export const HOLD_REASONS = ['PHOTO_DUPLICATE', 'PHOTO_CHANGES', 'CITY_CHANGE', 'REPORT'] as const;
+export type HoldReason = (typeof HOLD_REASONS)[number];
+
+export const LOCATION_CHECK_STATUS = [
+  'NONE',
+  'PASS',
+  'FAIL',
+  'MANUAL_PENDING',
+  'MANUAL_APPROVED',
+  'MANUAL_REJECTED',
+] as const;
+export type LocationCheckStatus = (typeof LOCATION_CHECK_STATUS)[number];
+
+/** Legal slug of the responsible declaration accepted per home (FR-12). */
+export const DECLARATION_SLUG = 'declaracion-responsable';

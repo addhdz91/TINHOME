@@ -426,7 +426,7 @@ paths:
       tags:
       - Casa
       summary: Crea o actualiza la casa del usuario
-      description: 'Callable de Firebase. Guardas: A,EV,ACT. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: A,EV,ACT. Acepta borradores (AC-06.1): solo `cityId` es obligatorio; la completitud para publicar la comprueba BR-03. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -610,7 +610,14 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        $ref: '#/components/schemas/HomeOwnerView'
+                    required:
+                    - home
                 required:
                 - result
         default:
@@ -658,12 +665,59 @@ paths:
                       visible: *id004
                       pendingReasons:
                         type: array
+                        description: Motivos BR-04 por los que aún no es visible.
                         items:
-                          $ref: '#/components/schemas/Blocker'
+                          $ref: '#/components/schemas/VisibilityProblem'
                     required:
                     - home
                     - visible
                     - pendingReasons
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getMyHome:
+    post:
+      operationId: getMyHome
+      tags:
+      - Casa
+      summary: Devuelve la casa del usuario (vista de propietario)
+      description: 'Callable de Firebase. Guardas: A. `E_NOT_FOUND` si aún no la ha creado. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data: *id002
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      home:
+                        $ref: '#/components/schemas/HomeOwnerView'
+                    required:
+                    - home
                 required:
                 - result
         default:
@@ -5489,9 +5543,41 @@ components:
       - type: object
         additionalProperties: false
         properties:
+          id: *id001
           status:
             $ref: '#/components/schemas/HomeStatus'
           visible: *id004
+          complete: *id004
+          declarationVersion:
+            oneOf:
+            - *id001
+            - type: 'null'
+          locationCheck:
+            type: string
+            enum:
+            - NONE
+            - PASS
+            - FAIL
+            - MANUAL_PENDING
+            - MANUAL_APPROVED
+            - MANUAL_REJECTED
+          moderationHold:
+            oneOf:
+            - type: object
+              additionalProperties: false
+              properties:
+                reason:
+                  type: string
+                  enum:
+                  - PHOTO_DUPLICATE
+                  - PHOTO_CHANGES
+                  - CITY_CHANGE
+                  - REPORT
+            - type: 'null'
+          visibilityProblems:
+            type: array
+            items:
+              $ref: '#/components/schemas/VisibilityProblem'
           photos:
             type: array
             items:
@@ -5502,6 +5588,16 @@ components:
             $ref: '#/components/schemas/Availability'
           travelers:
             $ref: '#/components/schemas/Travelers'
+    VisibilityProblem:
+      type: string
+      description: BR-04 — motivo por el que una casa publicada aún no es visible.
+      enum:
+      - NOT_PUBLISHED
+      - IDENTITY
+      - LOCATION
+      - ON_HOLD
+      - ACCOUNT
+      - CITY
     PublicProfile:
       type: object
       additionalProperties: false

@@ -5,14 +5,25 @@
 | M0 — Arranque del monorepo | ✅ Hecho (con 2 pendientes externos) | 09/10/2026 | Rama `feat/m0-bootstrap`. Firebase CLI vía `pnpm exec firebase` (sin instalación global). Monorepo, core de Functions, reglas + pruebas, web con marca y 3 temas, `/dev/brand`, CI. Pendiente fuera del código: DSN de Sentry UE y alertas de presupuesto (requieren cuentas reales). |
 | M1 — Público: landing, lista de espera y textos legales | ✅ Hecho | 09/10/2026 | Landing prerenderizada, `/como-funciona`, `/precios`, `/lista-espera` (+ `/confirmar`), `/legal/:slug`; `joinWaitlist`/`confirmWaitlist`, `mailQueue` + N-19; Lighthouse landing 92/100/100/100. Rama `feat/m1-public`. |
 | M2 — Cuenta, sesión y onboarding (pasos 1–2) | ✅ Hecho | 09/10/2026 | Registro email/Google, verificación, entrar/recuperar, `AuthProvider` + guardas, `AppShell`, onboarding 1–2 (teléfono), referidos, reaceptación, cerrar sesión en todos los dispositivos, `/ayuda`. Rama `feat/m2-account`. |
-| M3 — Casa, fotos, preferencias y publicación | ⏳ Siguiente | — | Usar `users.waitlistPrefill` en los pasos 3–4. Sustituir los marcadores de los pasos 3–6. |
-| M4 — Verificación de identidad y panel de administración base | Pendiente | — | |
+| M3 — Casa, fotos, preferencias y publicación | ✅ Hecho | 10/10/2026 | Pasos 3–6 del onboarding, editor de casa con vista previa, fotos (trigger sharp: EXIF fuera, 3 WebP, dHash, retención por duplicado/cambios), preferencias de viaje, declaración responsable, publicar, `/app/mi-casa`, `/app/viaje`. Rama `feat/m3-home`. |
+
+| M4 — Verificación de identidad y panel de administración base | ⏳ Siguiente | — | |
 | M5 — Descubrir, Explorar y ficha de casa | Pendiente | — | |
 | M6 — Me gusta, match y chat | Pendiente | — | |
 | M7 — Premium y crecimiento | Pendiente | — | |
 | M8 — Intercambios, valoraciones y notificaciones | Pendiente | — | |
 | M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | Pendiente | — | |
 | M10 — Endurecimiento y lanzamiento | Pendiente | — | |
+
+## M3 — Detalle de la DoD
+
+- ✅ Un usuario publica su casa con 5 fotos — E2E-03 (`pablo@demo.tinhome`).
+- ✅ Textos con teléfono o precio rechazados con mensaje — prueba de integración + E2E-03.
+- ✅ EXIF eliminado — prueba de integración (JPEG con GPS → WebP sin EXIF).
+- ✅ Casa no visible hasta identidad y ubicación aprobadas — `visibilityProblems` (BR-04), integración + E2E.
+- ✅ Foto duplicada de otra casa del seed → retención preventiva — integración; el seed rellena `photoHashIndex` con las fotos de Javier.
+- Pruebas: web 80, integración 38, reglas 27, E2E 8/8.
+- Limitación del sandbox: el proxy bloquea la llamada interna Storage → Functions del emulador; aquí E2E-03 se validó con un puente temporal que invoca el mismo `processHomePhoto` (no se versiona). En CI/local el trigger corre normal.
 
 ## M0 — Detalle de la DoD
 

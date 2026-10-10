@@ -12,14 +12,14 @@
     "build": "pnpm -r build",
     "test": "pnpm -r --filter !@tinhome/rules-tests --filter !@tinhome/e2e test && pnpm test:int",
     "test:rules": "pnpm exec firebase emulators:exec --only firestore,storage --project demo-tinhome \"pnpm --filter @tinhome/rules-tests test\"",
-    "test:e2e": "pnpm --filter @tinhome/functions build && pnpm exec firebase emulators:exec --only auth,firestore,functions --project demo-tinhome \"pnpm seed && pnpm --filter @tinhome/e2e test\"",
+    "test:e2e": "pnpm --filter @tinhome/functions build && pnpm exec firebase emulators:exec --only auth,firestore,storage,functions --project demo-tinhome \"pnpm seed && pnpm --filter @tinhome/e2e test\"",
     "lint": "eslint . --max-warnings 0 && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm -r typecheck && tsc -p scripts/tsconfig.json",
     "seed": "tsx scripts/seed.ts",
     "prepare": "husky",
     "test:unit": "pnpm -r --filter !@tinhome/rules-tests --filter !@tinhome/e2e test",
-    "test:int": "pnpm exec firebase emulators:exec --only auth,firestore --project demo-tinhome \"pnpm --filter @tinhome/functions test:int\"",
+    "test:int": "pnpm exec firebase emulators:exec --only auth,firestore,storage --project demo-tinhome \"pnpm --filter @tinhome/functions test:int\"",
     "brand:assets": "tsx scripts/brand-web-assets.ts"
   },
   "lint-staged": {

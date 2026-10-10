@@ -3,23 +3,34 @@
  * M0 → `config/params` + `config/public`.
  * M1 → cities, windows, provisional legal texts, demand counters.
  * M2 → demo users (Auth emulator + users/publicProfiles), FAQ articles.
+ * M3 → Javier's published home (photos uploaded to the Storage emulator), travel preferences.
  *
  * Usage: `pnpm emulators` in one terminal, then `pnpm seed`. Idempotent (overwrites).
+ * Needs the Auth, Firestore and Storage emulators.
  */
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, Timestamp, getFirestore } from 'firebase-admin/firestore';
-import { DEMO_PROJECT_ID, PARAM_DEFAULTS, toPublicConfig } from '@tinhome/shared/constants';
-import { demandStatId } from '@tinhome/shared/domain';
+import {
+  DECLARATION_SLUG,
+  DEMO_PROJECT_ID,
+  PARAM_DEFAULTS,
+  toPublicConfig,
+} from '@tinhome/shared/constants';
+import { demandStatId, dhashBands } from '@tinhome/shared/domain';
 import { CITIES, DEMAND, WINDOWS } from './seed-data/cities.js';
 import { FAQS } from './seed-data/faqs.js';
+import { DEMO_HOMES, type DemoHome } from './seed-data/homes.js';
 import { LEGAL_DOCS, LEGAL_VERSION, REACCEPTANCE } from './seed-data/legal.js';
+import { photosFor, uploadPhotoPool, type SeedPhoto } from './seed-data/photos.js';
 import { DEMO_PASSWORD, DEMO_USERS } from './seed-data/users.js';
 
 const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST ?? '127.0.0.1:8080';
 process.env.FIRESTORE_EMULATOR_HOST = emulatorHost;
 process.env.FIREBASE_AUTH_EMULATOR_HOST =
   process.env.FIREBASE_AUTH_EMULATOR_HOST ?? '127.0.0.1:9099';
+process.env.FIREBASE_STORAGE_EMULATOR_HOST =
+  process.env.FIREBASE_STORAGE_EMULATOR_HOST ?? '127.0.0.1:9199';
 
 const projectId = process.env.GCLOUD_PROJECT ?? DEMO_PROJECT_ID;
 if (!projectId.startsWith('demo-')) {
@@ -28,7 +39,8 @@ if (!projectId.startsWith('demo-')) {
   process.exit(1);
 }
 
-initializeApp({ projectId });
+const bucketName = process.env.STORAGE_BUCKET ?? `${projectId}.appspot.com`;
+initializeApp({ projectId, storageBucket: bucketName });
 const db = getFirestore();
 const auth = getAuth();
 const now = FieldValue.serverTimestamp();
@@ -119,8 +131,10 @@ async function seedUsers(): Promise<void> {
       phoneE164: demo.phone,
       status: 'ACTIVE',
       verification: { emailVerified: true, phoneVerified: true, identity: 'NONE' },
-      // Steps 3–6 (home, trip, verification, publish) arrive with M3/M4 and their seed.
-      onboarding: { step: 3 },
+      // Users with a demo home finished onboarding; the rest start at step 3 (FR-06).
+      onboarding: DEMO_HOMES.some((home) => home.ownerUid === demo.uid)
+        ? { step: 6, completedAt: now }
+        : { step: 3 },
       cityId: demo.cityId,
       premiumUntil,
       premiumSource: premiumUntil ? 'ADMIN' : null,
@@ -162,6 +176,91 @@ async function seedUsers(): Promise<void> {
   }
 }
 
+/** Same shape `upsertHome` + `updateTravelPrefs` + `publishHome` leave (04 §homes). */
+function homeDoc(home: DemoHome, photos: SeedPhoto[], ownerPremium: boolean) {
+  return {
+    ownerUid: home.ownerUid,
+    title: home.title,
+    description: home.description,
+    cityId: home.cityId,
+    zone: home.zone,
+    type: home.type,
+    tenure: 'OWNER',
+    residenceUse: 'PRIMARY',
+    sizeM2: home.sizeM2,
+    bedrooms: home.bedrooms,
+    beds: home.beds,
+    bathrooms: home.bathrooms,
+    maxGuests: home.maxGuests,
+    petsAllowed: home.petsAllowed,
+    amenities: home.amenities,
+    houseRules: home.houseRules,
+    searchKeys: { capacityBucket: home.maxGuests, hasPets: home.petsAllowed },
+    status: 'PUBLISHED',
+    // BR-04: not visible until identity and location are verified (M4).
+    visible: false,
+    complete: true,
+    photos,
+    photoChangeLog: [],
+    destinations: { mode: 'LIST', cityIds: home.destinations },
+    availability: { windowIds: home.windowIds, ranges: [] },
+    travelers: home.travelers,
+    declaration: { version: LEGAL_VERSION, acceptedAt: now },
+    rating: { avg: 0, count: 0, sub: { cleanliness: 0, accuracy: 0, communication: 0, care: 0 } },
+    isTop: false,
+    locationCheck: { status: 'NONE' },
+    moderationHold: null,
+    ownerPremium,
+    ownerFounding: false,
+    countedCityId: null,
+    publishedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+async function seedHomes(): Promise<void> {
+  // Demo users without a demo home start again from step 3 (homes left by manual tests or E2E).
+  for (const demo of DEMO_USERS) {
+    if (!DEMO_HOMES.some((home) => home.ownerUid === demo.uid)) {
+      await db.recursiveDelete(db.doc(`homes/${demo.uid}`));
+    }
+  }
+  const pool = await uploadPhotoPool(bucketName);
+  const batch = db.batch();
+  DEMO_HOMES.forEach((home, index) => {
+    const owner = DEMO_USERS.find((user) => user.uid === home.ownerUid);
+    batch.set(
+      db.doc(`homes/${home.ownerUid}`),
+      homeDoc(home, photosFor(pool, index, home.photoCount), (owner?.premiumMonths ?? 0) > 0),
+    );
+    batch.set(db.doc(`legalAcceptances/seed-${home.ownerUid}-${DECLARATION_SLUG}`), {
+      uid: home.ownerUid,
+      type: 'DECLARATION',
+      version: LEGAL_VERSION,
+      acceptedAt: now,
+      ipTruncated: null,
+      context: home.ownerUid,
+    });
+  });
+  await batch.commit();
+  // FR-64 — duplicate-photo index, so uploading a demo photo to another home triggers a hold.
+  const bands = new Map<string, { homeId: string; photoId: string; dhash: string }[]>();
+  DEMO_HOMES.forEach((home, index) => {
+    for (const photo of photosFor(pool, index, home.photoCount)) {
+      for (const band of dhashBands(photo.dhash)) {
+        const entries = bands.get(band) ?? [];
+        entries.push({ homeId: home.ownerUid, photoId: photo.id, dhash: photo.dhash });
+        bands.set(band, entries);
+      }
+    }
+  });
+  const indexBatch = db.batch();
+  for (const [band, entries] of bands)
+    indexBatch.set(db.doc(`photoHashIndex/${band}`), { entries });
+  await indexBatch.commit();
+}
+
 async function main(): Promise<void> {
   console.log(`Seeding ${projectId} at ${emulatorHost}…`);
   await seedConfig();
@@ -178,6 +277,8 @@ async function main(): Promise<void> {
   console.log(
     `✔ ${DEMO_USERS.length} demo users (password ${DEMO_PASSWORD}): ${DEMO_USERS.map((u) => u.email).join(', ')}`,
   );
+  await seedHomes();
+  console.log(`✔ ${DEMO_HOMES.length} demo homes (photos in the Storage emulator)`);
   console.log('Done.');
 }
 

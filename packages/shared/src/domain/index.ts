@@ -6,3 +6,6 @@ export * from './legal.js';
 export * from './onboarding.js';
 export * from './premium.js';
 export * from './referral-code.js';
+export * from './dhash.js';
+export * from './home.js';
+export * from './text-validation.js';

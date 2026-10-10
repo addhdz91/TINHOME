@@ -1,30 +1,29 @@
-import { Hourglass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useParams } from 'react-router';
 import { ONBOARDING_STEPS, type OnboardingStep } from '@tinhome/shared/constants';
 import { useMe } from '@/app/auth/auth-context';
-import { EmptyState } from '@/components/EmptyState';
 import { ProgressStepper } from '@/components/ProgressStepper';
 import { Seo } from '@/components/Seo';
 import { TinHomeLogo } from '@/components/TinHomeLogo';
+import { HomeStep } from '../components/HomeStep';
 import { PhoneStep } from '../components/PhoneStep';
+import { ReviewStep } from '../components/ReviewStep';
+import { TravelStep } from '../components/TravelStep';
+import { VerificationLaterStep } from '../components/VerificationLaterStep';
 import { WelcomeStep } from '../components/WelcomeStep';
 
 function toStep(value: string | undefined): OnboardingStep | null {
   return ONBOARDING_STEPS.find((step) => String(step) === value) ?? null;
 }
 
-function PendingStep() {
-  const { t } = useTranslation();
-  // TODO(M3): steps 3–6 (home, travel preferences, verification, publish).
-  return (
-    <EmptyState
-      icon={<Hourglass />}
-      title={t('onboarding.pending.title')}
-      body={t('onboarding.pending.body')}
-    />
-  );
-}
+const STEP_COMPONENTS: Record<OnboardingStep, () => React.JSX.Element> = {
+  1: WelcomeStep,
+  2: PhoneStep,
+  3: HomeStep,
+  4: TravelStep,
+  5: VerificationLaterStep,
+  6: ReviewStep,
+};
 
 /**
  * S-03 — `/app/onboarding/:paso`. Progress is saved by the server; skipping ahead is not allowed.
@@ -37,9 +36,12 @@ export function OnboardingPage() {
   const { paso } = useParams();
   const step = toStep(paso);
   const reached = me.onboarding.step;
+  // Step 5 (verification) can be postponed, so the review step is reachable from it.
+  const maxStep: OnboardingStep = reached >= 5 ? 6 : reached;
 
-  if (step === null || step > reached)
+  if (step === null || step > maxStep)
     return <Navigate to={`/app/onboarding/${String(reached)}`} replace />;
+  const StepComponent = STEP_COMPONENTS[step];
 
   return (
     <div className="min-h-dvh">
@@ -54,10 +56,10 @@ export function OnboardingPage() {
           </Link>
         </div>
       </header>
-      <main id="main" className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-6">
+      <main id="main" className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-6">
         <Seo title={t('seo.onboarding.title', { step })} />
-        <ProgressStepper current={step} reached={reached} />
-        {step === 1 ? <WelcomeStep /> : step === 2 ? <PhoneStep /> : <PendingStep />}
+        <ProgressStepper current={step} reached={maxStep} />
+        <StepComponent />
       </main>
     </div>
   );

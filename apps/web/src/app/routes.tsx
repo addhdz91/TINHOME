@@ -2,6 +2,7 @@ import { Navigate, type RouteObject } from 'react-router';
 import { authRoutes } from '@/features/auth/routes';
 import { devRoutes } from '@/features/dev/routes';
 import { helpRoutes } from '@/features/help/routes';
+import { homeRoutes } from '@/features/home/routes';
 import { howItWorksRoutes } from '@/features/how-it-works/routes';
 import { landingRoutes } from '@/features/landing/routes';
 import { legalRoutes } from '@/features/legal/routes';
@@ -73,6 +74,7 @@ export function buildRoutes(): RouteObject[] {
                   },
                 })),
                 ...profileRoutes,
+                ...homeRoutes,
                 { path: '*', element: <NotFoundPage /> },
               ],
             },

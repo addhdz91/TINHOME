@@ -47,6 +47,10 @@ export const PUBLIC_DOCS: Record<string, Record<string, unknown>> = {
   },
   'legalDocs/privacidad': { title: 'Política de privacidad', currentVersion: '0.1-provisional' },
   'legalDocs/terminos': { title: 'Términos y condiciones', currentVersion: '0.1-provisional' },
+  'legalDocs/declaracion-responsable': {
+    title: 'Declaración responsable',
+    currentVersion: '0.1-provisional',
+  },
   'legalDocs/terminos/versions/0.1-provisional': {
     markdown: '# Términos y condiciones\n\n> **PROVISIONAL**',
     requiresReacceptance: true,

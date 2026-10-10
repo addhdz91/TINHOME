@@ -143,3 +143,8 @@
 @utility animate-navigation-progress {
   animation: navigation-progress 1.2s var(--ease-brand) infinite;
 }
+
+/* C-03 — scrim under the text of home cards (token from tokens.css). */
+@utility bg-card-scrim {
+  background-image: var(--card-scrim);
+}

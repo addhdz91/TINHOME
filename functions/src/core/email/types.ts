@@ -1,6 +1,7 @@
 import type { EmailTemplateId } from '@tinhome/shared/constants';
 import type { WelcomeData } from './templates/n02-welcome.js';
 import type { WaitlistConfirmationData } from './templates/n19-waitlist-confirmation.js';
+import type { HoldData } from './templates/n23-hold.js';
 import type { SecurityData } from './templates/n27-security.js';
 
 export interface RenderedEmail {
@@ -14,6 +15,7 @@ export interface RenderedEmail {
 export interface EmailTemplateData {
   'N-02': WelcomeData;
   'N-19': WaitlistConfirmationData;
+  'N-23': HoldData;
   'N-27': SecurityData;
 }
 

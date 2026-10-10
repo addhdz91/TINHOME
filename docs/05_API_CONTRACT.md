@@ -42,13 +42,14 @@
 
 | Callable | Guardas | Entrada | Salida | Errores | Efectos |
 |---|---|---|---|---|---|
-| `upsertHome` | A, EV, ACT | `HomeInput` (campos editables de `homes`, §2.3 del esquema) | `{ home: HomeOwnerView }` | `E_TEXT_VIOLATION` (`fields`), `E_VALIDATION`, `E_CITY_UNKNOWN` | Crea/actualiza `homes/{uid}`; si estaba `PUBLISHED` y cambia `cityId` → vuelve a revisión de visibilidad |
+| `upsertHome` | A, EV, ACT | `HomeDraftInput` = `HomeInput` parcial con `cityId` obligatorio (borradores, AC-06.1) | `{ home: HomeOwnerView }` | `E_TEXT_VIOLATION` (`fields`), `E_VALIDATION`, `E_CITY_UNKNOWN` | Crea/actualiza `homes/{uid}`; si estaba `PUBLISHED` y cambia `cityId` → retención `CITY_CHANGE` (FR-65) y `locationCheck` a `NONE`; al completarse (BR-03) el onboarding pasa de 3 a 4 |
+| `getMyHome` | A | `{}` | `{ home: HomeOwnerView }` | `E_NOT_FOUND` (aún no creada) | — |
 | `reorderHomePhotos` | A, EV | `{ photoIds: string[] }` | `{ photos }` | `E_VALIDATION` | — |
 | `deleteHomePhoto` | A, EV | `{ photoId }` | `{ photos }` | `E_PHOTOS_MIN` (si publicada y quedaría < 5) | Borra ficheros |
-| `acceptDeclaration` | A, EV | `{ version }` | `{ ok: true }` | `E_LEGAL_VERSION` | `homes.declaration`, `legalAcceptances` |
-| `publishHome` | A, EV, PV, ACT | `{}` | `{ home, visible: boolean, pendingReasons: Blocker[] }` | `E_HOME_INCOMPLETE` (`meta.missing`), `E_DECLARATION_REQUIRED` | `status = PUBLISHED`, `publishedAt` |
+| `acceptDeclaration` | A, EV | `{ version }` | `{ home: HomeOwnerView }` | `E_LEGAL_VERSION` | `homes.declaration`, `legalAcceptances` |
+| `publishHome` | A, EV, PV, ACT | `{}` | `{ home, visible: boolean, pendingReasons: VisibilityProblem[] }` (`NOT_PUBLISHED`, `IDENTITY`, `LOCATION`, `ON_HOLD`, `ACCOUNT`, `CITY`; BR-04) | `E_HOME_INCOMPLETE` (`meta.missing`), `E_DECLARATION_REQUIRED` | `status = PUBLISHED`, `publishedAt`; onboarding → paso 6 completado |
 | `pauseHome` / `unpauseHome` | A, EV | `{}` | `{ home }` | `E_HOME_STATE` | — |
-| `updateTravelPrefs` | A, EV | `{ destinations: { mode, cityIds }, availability: { windowIds, ranges }, travelers: { count, withPet } }` | `{ home }` | `E_VALIDATION`, `E_RANGE_INVALID` | Recalcula `demandStats` (asíncrono) |
+| `updateTravelPrefs` | A, EV | `{ destinations: { mode, cityIds }, availability: { windowIds, ranges }, travelers: { count, withPet } }` | `{ home }` | `E_VALIDATION`, `E_RANGE_INVALID` | Onboarding 4 → 5. El recálculo de `demandStats` lo hace el job J-08 (M9) |
 
 ### 2.3 Verificación (VER)
 

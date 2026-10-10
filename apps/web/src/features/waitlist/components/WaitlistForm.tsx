@@ -3,13 +3,13 @@ import { useMemo, useRef } from 'react';
 import { Controller, useForm, useWatch, type FieldErrors } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { CheckboxGroup } from '@/components/CheckboxGroup';
+import { FieldError } from '@/components/FieldError';
 import { Button } from '@/components/ui/button';
 import type { City, ExchangeWindow } from '@/features/cities';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { useJoinWaitlist } from '../api/use-waitlist';
 import { waitlistFormSchema, type WaitlistFormValues } from '../lib/form-schema';
-import { CheckboxGroup } from './CheckboxGroup';
-import { FieldError } from './FieldError';
 
 const FIELD_ORDER = ['email', 'cityId', 'destinations', 'windowIds', 'acceptPrivacy'] as const;
 type FieldName = (typeof FIELD_ORDER)[number];

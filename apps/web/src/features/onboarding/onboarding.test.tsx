@@ -85,13 +85,4 @@ describe('OnboardingPage (S-03)', () => {
       await screen.findByText('Este número ya está en otra cuenta de TinHome.'),
     ).toBeInTheDocument();
   });
-
-  it('shows steps 3–6 as pending until M3', async () => {
-    renderRoutesWithAuth(
-      routes,
-      '/app/onboarding/3',
-      signedIn({ onboarding: { step: 3, completed: false, percent: 33 } }),
-    );
-    expect(await screen.findByText('Este paso llega muy pronto')).toBeInTheDocument();
-  });
 });

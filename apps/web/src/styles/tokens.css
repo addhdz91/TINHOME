@@ -16,6 +16,8 @@
   --gradient-from: #8257e5;
   --gradient-to: #0a6cf0;
   --gradient-brand: linear-gradient(135deg, var(--gradient-from) 0%, var(--gradient-to) 100%);
+  /* Text over photos with scrim and over the gradient: always white, in every theme. */
+  --on-media: #ffffff;
 
   /* Tema claro */
   color-scheme: light;
@@ -121,6 +123,7 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-focus: var(--focus);
+  --color-on-media: var(--on-media);
   --font-display: 'Nunito Variable', 'Nunito', system-ui, sans-serif;
   --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
   --radius-sm: 8px;

@@ -9,5 +9,17 @@ export {
   signOutEverywhere,
   updateSettings,
 } from './modules/account/callables.js';
+export {
+  acceptDeclaration,
+  deleteHomePhoto,
+  getMyHome,
+  pauseHome,
+  publishHome,
+  reorderHomePhotos,
+  unpauseHome,
+  updateTravelPrefs,
+  upsertHome,
+} from './modules/home/callables.js';
+export { onHomePhotoUploaded } from './modules/home/triggers.js';
 export { onMailQueued } from './modules/mail/triggers.js';
 export { confirmWaitlist, joinWaitlist } from './modules/waitlist/callables.js';

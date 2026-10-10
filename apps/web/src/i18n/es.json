@@ -21,7 +21,9 @@
     "likes": "Me gusta",
     "chats": "Chats",
     "profile": "Perfil",
-    "appLabel": "Secciones de la app"
+    "appLabel": "Secciones de la app",
+    "myHome": "Mi casa",
+    "trip": "Mi viaje"
   },
   "theme": {
     "label": "Tema",
@@ -595,9 +597,11 @@
       "done": "Tu teléfono está verificado.",
       "continue": "Continuar"
     },
-    "pending": {
-      "title": "Este paso llega muy pronto",
-      "body": "Estamos terminando esta parte. Tu progreso está guardado y te avisaremos para continuar."
+    "verificationLater": {
+      "title": "Verificación",
+      "body": "Aquí podrás subir tu documento de identidad y verificar la ubicación de tu casa. Puedes hacerlo después.",
+      "trust": "Lo revisa una persona del equipo, no un algoritmo. Borramos los documentos 30 días después.",
+      "continue": "Hacerlo después y revisar"
     }
   },
   "profile": {
@@ -649,5 +653,184 @@
       "PRIVACY": "Privacidad",
       "REPORTS": "Denuncias"
     }
+  },
+  "home": {
+    "types": {
+      "FLAT": "Piso",
+      "HOUSE": "Casa",
+      "STUDIO": "Estudio",
+      "PENTHOUSE": "Ático",
+      "DUPLEX": "Dúplex",
+      "VILLA": "Chalet",
+      "OTHER": "Otro"
+    },
+    "tenures": {
+      "OWNER": "Soy propietario/a",
+      "TENANT": "Soy inquilino o inquilina (necesitarás autorización de la persona propietaria)"
+    },
+    "uses": {
+      "PRIMARY": "Vivienda habitual",
+      "SECONDARY": "Segunda residencia"
+    },
+    "amenities": {
+      "WIFI": "Wifi",
+      "KITCHEN": "Cocina equipada",
+      "WASHER": "Lavadora",
+      "AIR_CONDITIONING": "Aire acondicionado",
+      "HEATING": "Calefacción",
+      "ELEVATOR": "Ascensor",
+      "TERRACE": "Terraza",
+      "POOL": "Piscina",
+      "PARKING": "Parking",
+      "KIDS_FRIENDLY": "Apto para niños",
+      "WORKSPACE": "Apto teletrabajo",
+      "ACCESSIBLE": "Accesible"
+    },
+    "fields": {
+      "city": "Ciudad",
+      "cityPlaceholder": "Elige la ciudad",
+      "zone": "Barrio o zona",
+      "zoneHint": "Nunca mostramos tu dirección. Solo ciudad y zona.",
+      "type": "Tipo de vivienda",
+      "tenure": "Tu relación con la casa",
+      "use": "Uso",
+      "sizeM2": "Metros cuadrados",
+      "bedrooms": "Dormitorios",
+      "beds": "Camas",
+      "bathrooms": "Baños",
+      "maxGuests": "Personas que caben",
+      "petsAllowed": "Se admiten mascotas",
+      "amenities": "Servicios",
+      "title": "Título",
+      "titleHint": "Entre 10 y 70 caracteres. Ej.: «Piso luminoso junto al Retiro».",
+      "description": "Descripción",
+      "descriptionHint": "Entre 50 y 1.500 caracteres. Cuenta cómo es, la luz, el barrio…",
+      "houseRules": "Normas de la casa",
+      "houseRulesHint": "Opcional. Hasta 500 caracteres.",
+      "counter": "{{count}} / {{max}}"
+    },
+    "validation": {
+      "required": "Este campo es obligatorio.",
+      "range": "Revisa este valor.",
+      "title": "El título debe tener entre 10 y 70 caracteres.",
+      "description": "La descripción debe tener entre 50 y 1.500 caracteres.",
+      "zone": "Escribe el barrio o la zona.",
+      "text": "No incluyas teléfonos, emails, enlaces ni precios. TinHome es intercambio, no alquiler."
+    },
+    "steps": {
+      "basics": "Datos básicos",
+      "photos": "Fotos",
+      "description": "Descripción y normas",
+      "of": "{{current}} de 3"
+    },
+    "save": "Guardar y continuar",
+    "saving": "Guardando…",
+    "saved": "Cambios guardados",
+    "photos": {
+      "title": "Fotos de tu casa",
+      "guide": "Entre 5 y 20 fotos. Con luz natural, en horizontal y de cada estancia. Sin personas ni datos personales a la vista.",
+      "add": "Añadir fotos",
+      "drop": "o arrástralas aquí",
+      "count": "{{count}} de {{max}} fotos",
+      "min": "Faltan {{count}} fotos para poder publicar.",
+      "cover": "Portada",
+      "uploading": "Subiendo {{progress}} %",
+      "processing": "Procesando…",
+      "failed": "No hemos podido subir la foto. Prueba de nuevo o elige otra.",
+      "tooBig": "La foto pesa más de 10 MB.",
+      "badType": "Usa fotos JPG, PNG, WEBP o HEIC.",
+      "full": "Ya tienes el máximo de 20 fotos.",
+      "delete": "Eliminar foto {{n}}",
+      "deleted": "Foto eliminada",
+      "reorderHint": "Arrastra para cambiar el orden o usa el teclado: espacio para coger y flechas para mover. La primera es la portada.",
+      "alt": "Foto {{n}} de {{total}} de {{title}}",
+      "continue": "Continuar"
+    },
+    "preview": {
+      "title": "Así verán tu casa",
+      "guests": "{{count}} personas",
+      "bedrooms": "{{count}} dormitorios",
+      "noPhoto": "Sin fotos todavía",
+      "untitled": "Tu casa"
+    },
+    "status": {
+      "DRAFT": "Borrador",
+      "PUBLISHED": "Publicada",
+      "PAUSED": "Pausada",
+      "HIDDEN_BY_ADMIN": "Oculta por moderación",
+      "visible": "Visible para otras personas",
+      "hidden": "Aún no es visible"
+    },
+    "problems": {
+      "NOT_PUBLISHED": "Aún no está publicada.",
+      "IDENTITY": "Falta verificar tu identidad.",
+      "LOCATION": "Falta verificar la ubicación de la casa.",
+      "ON_HOLD": "Está en revisión por el equipo. Te avisaremos al terminar.",
+      "ACCOUNT": "Tu cuenta tiene restricciones.",
+      "CITY": "Tu ciudad aún no está abierta."
+    },
+    "hold": {
+      "PHOTO_DUPLICATE": "Fotos en revisión",
+      "PHOTO_CHANGES": "Cambios de fotos en revisión",
+      "CITY_CHANGE": "Cambio de ciudad en revisión",
+      "REPORT": "En revisión"
+    },
+    "my": {
+      "title": "Mi casa",
+      "empty": "Todavía no has creado tu casa.",
+      "create": "Crear mi casa",
+      "edit": "Editar",
+      "pause": "Pausar",
+      "unpause": "Reanudar",
+      "paused": "Tu casa está pausada",
+      "unpaused": "Tu casa vuelve a estar publicada",
+      "publish": "Revisar y publicar",
+      "trip": "Mi viaje",
+      "completed": "Perfil completado: {{percent}} %",
+      "editTitle": "Editar mi casa"
+    }
+  },
+  "trip": {
+    "title": "Adónde y cuándo quieres viajar",
+    "why": "Te enseñaremos primero casas cuyos dueños quieren venir a tu ciudad en tus mismas fechas.",
+    "destinations": "Adónde quieres ir",
+    "destinationsHint": "Hasta {{max}} ciudades.",
+    "anyOpen": "Cualquier ciudad abierta",
+    "windows": "Ventanas de intercambio",
+    "windowsHint": "Fechas en las que mucha gente viaja. Elige las que te encajen.",
+    "ranges": "Fechas propias",
+    "rangesHint": "Hasta {{max}} rangos, dentro de los próximos 12 meses.",
+    "addRange": "Añadir fechas",
+    "removeRange": "Quitar fechas {{n}}",
+    "start": "Desde",
+    "end": "Hasta",
+    "rangeInvalid": "La fecha de inicio debe ser anterior a la de fin y dentro de los próximos 12 meses.",
+    "travelers": "Cuántas personas viajáis",
+    "withPet": "Viajo con mascota",
+    "needOne": "Elige al menos un destino.",
+    "needDates": "Añade al menos una ventana o unas fechas para poder dar me gusta.",
+    "save": "Guardar y continuar",
+    "saved": "Preferencias guardadas"
+  },
+  "review": {
+    "title": "Revisa y publica",
+    "checklist": "Lo que necesitas para publicar",
+    "items": {
+      "data": "Datos de la casa completos",
+      "photos": "Al menos {{min}} fotos",
+      "phone": "Teléfono verificado",
+      "declaration": "Declaración responsable aceptada"
+    },
+    "declaration": "Acepto la <1>declaración responsable</1> para esta casa.",
+    "publish": "Publicar mi casa",
+    "publishing": "Publicando…",
+    "later": "Podrás pausarla cuando quieras.",
+    "successTitle": "¡Tu casa está publicada!",
+    "successVisible": "Ya es visible para otras personas.",
+    "successPending": "La verás en Descubrir cuando terminemos estas comprobaciones:",
+    "goHome": "Ver mi casa",
+    "verify": "Verificar ahora",
+    "waitlistInvite": "Invita a alguien de {{city}}",
+    "fix": "Completar"
   }
 }

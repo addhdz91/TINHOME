@@ -1,7 +1,9 @@
 import {
   Heart,
   HelpCircle,
+  Home,
   MessageCircleHeart,
+  Plane,
   Search,
   Sparkles,
   User,
@@ -14,6 +16,12 @@ import { TinHomeLogo } from '@/components/TinHomeLogo';
 import { cn } from '@/lib/utils';
 
 type NavKey = 'discover' | 'explore' | 'likes' | 'chats' | 'profile';
+
+/** Desktop sidebar extras (02_UX §2.1). */
+const EXTRA: { key: 'myHome' | 'trip'; to: string; icon: LucideIcon }[] = [
+  { key: 'myHome', to: '/app/mi-casa', icon: Home },
+  { key: 'trip', to: '/app/viaje', icon: Plane },
+];
 
 const TABS: { key: NavKey; to: string; icon: LucideIcon }[] = [
   { key: 'discover', to: '/app/descubrir', icon: Sparkles },
@@ -65,7 +73,7 @@ export function AppShell() {
           <TinHomeLogo variant="horizontal" height={32} decorative />
         </Link>
         <nav aria-label={t('nav.appLabel')} className="flex flex-col gap-1">
-          {TABS.map(({ key, to, icon: Icon }) => (
+          {[...TABS, ...EXTRA].map(({ key, to, icon: Icon }) => (
             <NavLink
               key={key}
               to={to}
