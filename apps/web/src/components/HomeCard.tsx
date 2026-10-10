@@ -18,13 +18,25 @@ interface HomeCardProps {
   chips?: ReactNode;
   /** The first card of the deck is not lazy (LCP). */
   eager?: boolean;
+  /** Photo shown (gallery by taps on the sides, C-03). */
+  photoIndex?: number;
+  /** Bars at the top that show which photo is visible. */
+  galleryBars?: boolean;
   className?: string;
 }
 
 /** C-03 — full-bleed cover (3:4), bottom scrim with title, city · zone, capacity and chips. */
-export function HomeCard({ home, chips, eager = false, className }: HomeCardProps) {
+export function HomeCard({
+  home,
+  chips,
+  eager = false,
+  photoIndex = 0,
+  galleryBars = false,
+  className,
+}: HomeCardProps) {
   const { t } = useTranslation();
-  const cover = home.photos[0];
+  const index = Math.min(Math.max(0, photoIndex), Math.max(0, home.photos.length - 1));
+  const cover = home.photos[index];
   const title = home.title || t('home.preview.untitled');
   return (
     <article
@@ -36,7 +48,7 @@ export function HomeCard({ home, chips, eager = false, className }: HomeCardProp
       {cover ? (
         <img
           src={cover.cardUrl}
-          alt={t('home.photos.alt', { n: 1, total: home.photos.length, title })}
+          alt={t('home.photos.alt', { n: index + 1, total: home.photos.length, title })}
           width={cover.width}
           height={cover.height}
           loading={eager ? 'eager' : 'lazy'}
@@ -50,6 +62,19 @@ export function HomeCard({ home, chips, eager = false, className }: HomeCardProp
         </div>
       )}
       <div aria-hidden="true" className="absolute inset-0 bg-card-scrim" />
+      {galleryBars && home.photos.length > 1 ? (
+        <div aria-hidden="true" className="absolute inset-x-3 top-3 flex gap-1">
+          {home.photos.map((photo, i) => (
+            <span
+              key={photo.cardUrl}
+              className={cn(
+                'h-1 flex-1 rounded-full bg-on-media',
+                i === index ? 'opacity-100' : 'opacity-40',
+              )}
+            />
+          ))}
+        </div>
+      ) : null}
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-4">
         <h3 className="font-display text-h3 font-extrabold text-on-media">{title}</h3>
         <p className="text-sm text-on-media/90">

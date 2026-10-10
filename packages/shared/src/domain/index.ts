@@ -12,3 +12,5 @@ export * from './text-validation.js';
 export * from './location.js';
 export * from './identity-doc.js';
 export * from './rewards.js';
+export * from './compatibility.js';
+export * from './ranking.js';

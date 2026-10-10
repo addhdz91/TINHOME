@@ -6,6 +6,7 @@
  * M3 → Javier's published home (photos uploaded to the Storage emulator), travel preferences.
  * M4 → identities (Javier approved, Marta pending with sample documents), admin second factor,
  *      location checks (Sofía's home still unchecked).
+ * M5 → 60 catalogue homes (Madrid/Valencia) and likes to Javier.
  *
  * Usage: `pnpm emulators` in one terminal, then `pnpm seed`. Idempotent (overwrites).
  * Needs the Auth, Firestore and Storage emulators.
@@ -23,6 +24,7 @@ import {
   toPublicConfig,
 } from '@tinhome/shared/constants';
 import { demandStatId, dhashBands } from '@tinhome/shared/domain';
+import { buildCatalog } from './seed-data/catalog.js';
 import { CITIES, DEMAND, WINDOWS } from './seed-data/cities.js';
 import { FAQS } from './seed-data/faqs.js';
 import { DEMO_HOMES, type DemoHome } from './seed-data/homes.js';
@@ -196,8 +198,26 @@ async function seedUsers(): Promise<void> {
   }
 }
 
+let photoPool: ReturnType<typeof uploadPhotoPool> | null = null;
+
+/** The illustrations are uploaded once per run and shared by demo and catalogue homes. */
+function getPhotoPool(): ReturnType<typeof uploadPhotoPool> {
+  photoPool ??= uploadPhotoPool(bucketName);
+  return photoPool;
+}
+
 /** Same shape `upsertHome` + `updateTravelPrefs` + `publishHome` leave (04 §homes). */
-function homeDoc(home: DemoHome, photos: SeedPhoto[], ownerPremium: boolean, visible: boolean) {
+interface HomeExtras {
+  ownerPremium: boolean;
+  visible: boolean;
+  rating?: { avg: number; count: number };
+  isTop?: boolean;
+  publishedAt?: Timestamp;
+  ranges?: { start: string; end: string }[];
+}
+
+function homeDoc(home: DemoHome, photos: SeedPhoto[], extras: HomeExtras) {
+  const { ownerPremium, visible } = extras;
   return {
     ownerUid: home.ownerUid,
     title: home.title,
@@ -222,18 +242,24 @@ function homeDoc(home: DemoHome, photos: SeedPhoto[], ownerPremium: boolean, vis
     complete: true,
     photos,
     photoChangeLog: [],
-    destinations: { mode: 'LIST', cityIds: home.destinations },
-    availability: { windowIds: home.windowIds, ranges: [] },
+    destinations: home.anyOpen
+      ? { mode: 'ANY_OPEN', cityIds: [] }
+      : { mode: 'LIST', cityIds: home.destinations },
+    availability: { windowIds: home.windowIds, ranges: extras.ranges ?? [] },
     travelers: home.travelers,
     declaration: { version: LEGAL_VERSION, acceptedAt: now },
-    rating: { avg: 0, count: 0, sub: { cleanliness: 0, accuracy: 0, communication: 0, care: 0 } },
-    isTop: false,
+    rating: {
+      avg: extras.rating?.avg ?? 0,
+      count: extras.rating?.count ?? 0,
+      sub: { cleanliness: 0, accuracy: 0, communication: 0, care: 0 },
+    },
+    isTop: extras.isTop ?? false,
     locationCheck: { status: home.locationCheck },
     moderationHold: null,
     ownerPremium,
     ownerFounding: false,
     countedCityId: visible ? home.cityId : null,
-    publishedAt: now,
+    publishedAt: extras.publishedAt ?? now,
     createdAt: now,
     updatedAt: now,
   };
@@ -246,7 +272,7 @@ async function seedHomes(): Promise<void> {
       await db.recursiveDelete(db.doc(`homes/${demo.uid}`));
     }
   }
-  const pool = await uploadPhotoPool(bucketName);
+  const pool = await getPhotoPool();
   const batch = db.batch();
   DEMO_HOMES.forEach((home, index) => {
     const owner = DEMO_USERS.find((user) => user.uid === home.ownerUid);
@@ -256,12 +282,10 @@ async function seedHomes(): Promise<void> {
       CITIES[home.cityId]?.status === 'OPEN';
     batch.set(
       db.doc(`homes/${home.ownerUid}`),
-      homeDoc(
-        home,
-        photosFor(pool, index, home.photoCount),
-        (owner?.premiumMonths ?? 0) > 0,
+      homeDoc(home, photosFor(pool, index, home.photoCount), {
+        ownerPremium: (owner?.premiumMonths ?? 0) > 0,
         visible,
-      ),
+      }),
     );
     batch.set(db.doc(`legalAcceptances/seed-${home.ownerUid}-${DECLARATION_SLUG}`), {
       uid: home.ownerUid,
@@ -288,6 +312,67 @@ async function seedHomes(): Promise<void> {
   for (const [band, entries] of bands)
     indexBatch.set(db.doc(`photoHashIndex/${band}`), { entries });
   await indexBatch.commit();
+}
+
+/** M5 — 60 visible homes with owners that only exist in Firestore, plus some likes to Javier. */
+async function seedCatalog(): Promise<number> {
+  const pool = await getPhotoPool();
+  const catalog = buildCatalog();
+  const batch = db.batch();
+  catalog.forEach((home, index) => {
+    const uid = home.ownerUid;
+    batch.set(db.doc(`users/${uid}`), {
+      email: `${uid}@ejemplo.invalid`,
+      firstName: home.firstName,
+      lastName: `${home.lastInitial}.`,
+      cityId: home.cityId,
+      status: 'ACTIVE',
+      verification: { emailVerified: true, phoneVerified: true, identity: 'APPROVED' },
+      onboarding: { step: 6, completedAt: now },
+      premiumUntil: home.ownerPremium ? Timestamp.fromMillis(Date.now() + 90 * 86_400_000) : null,
+      premiumSource: home.ownerPremium ? 'ADMIN' : null,
+      foundingMember: home.foundingMember,
+      settings: { theme: 'system', notifications: {} },
+      createdAt: now,
+      updatedAt: now,
+    });
+    batch.set(db.doc(`publicProfiles/${uid}`), {
+      displayName: `${home.firstName} ${home.lastInitial}.`,
+      photoUrl: null,
+      about: 'Me encanta conocer otras ciudades como si viviera en ellas.',
+      languages: index % 3 === 0 ? ['es', 'en'] : ['es'],
+      memberSince: now,
+      identityVerified: true,
+      foundingMember: home.foundingMember,
+      isTopHost: home.isTop,
+      reviewsCount: home.rating.count,
+      ...(home.rating.count > 0 ? { ratingAvg: home.rating.avg } : {}),
+      active: true,
+    });
+    batch.set(
+      db.doc(`homes/${uid}`),
+      homeDoc(home, photosFor(pool, index + 7, home.photoCount), {
+        ownerPremium: home.ownerPremium,
+        visible: true,
+        rating: home.rating,
+        isTop: home.isTop,
+        publishedAt: Timestamp.fromMillis(Date.now() - home.daysSincePublished * 86_400_000),
+        ranges: home.ranges,
+      }),
+    );
+    // A few Madrid owners already liked Javier's home («le gusto», FR-20 / FR-26).
+    if (home.cityId === 'madrid' && index % 4 === 1) {
+      batch.set(db.doc(`likes/${uid}_demo-javier`), {
+        fromUid: uid,
+        toUid: 'demo-javier',
+        toHomeId: 'demo-javier',
+        fromHomeId: uid,
+        createdAt: now,
+      });
+    }
+  });
+  await batch.commit();
+  return catalog.length;
 }
 
 /** Placeholder «document» images; never real documents or people. */
@@ -349,6 +434,7 @@ async function main(): Promise<void> {
   await seedHomes();
   console.log(`✔ ${DEMO_HOMES.length} demo homes (photos in the Storage emulator)`);
   console.log(`✔ ${await seedVerifications()} pending verifications with sample documents`);
+  console.log(`✔ ${await seedCatalog()} catalogue homes for Discover and Explore`);
   console.log('Done.');
 }
 

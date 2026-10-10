@@ -10,6 +10,13 @@ export {
   updateSettings,
 } from './modules/account/callables.js';
 export {
+  getDiscoverDeck,
+  getHomeDetail,
+  passHome,
+  searchHomes,
+  undoPass,
+} from './modules/discover/callables.js';
+export {
   acceptDeclaration,
   deleteHomePhoto,
   getMyHome,

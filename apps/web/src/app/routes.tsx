@@ -2,8 +2,11 @@ import { Navigate, type RouteObject } from 'react-router';
 import { adminRoutes } from '@/features/admin/routes';
 import { authRoutes } from '@/features/auth/routes';
 import { devRoutes } from '@/features/dev/routes';
+import { discoverRoutes } from '@/features/discover/routes';
+import { exploreRoutes } from '@/features/explore/routes';
 import { helpRoutes } from '@/features/help/routes';
 import { homeRoutes } from '@/features/home/routes';
+import { homeDetailRoutes } from '@/features/home-detail/routes';
 import { howItWorksRoutes } from '@/features/how-it-works/routes';
 import { landingRoutes } from '@/features/landing/routes';
 import { legalRoutes } from '@/features/legal/routes';
@@ -18,8 +21,6 @@ import { RouteErrorPage } from './RouteErrorPage';
 import { RouteFallback } from './RouteFallback';
 
 const SECTIONS = [
-  ['descubrir', 'discover'],
-  ['explorar', 'explore'],
   ['me-gusta', 'likes'],
   ['chats', 'chats'],
 ] as const;
@@ -82,6 +83,9 @@ export function buildRoutes(): RouteObject[] {
                   },
                 })),
                 ...profileRoutes,
+                ...discoverRoutes,
+                ...exploreRoutes,
+                ...homeDetailRoutes,
                 ...homeRoutes,
                 ...verificationRoutes,
                 { path: '*', element: <NotFoundPage /> },

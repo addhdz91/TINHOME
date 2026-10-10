@@ -1087,8 +1087,8 @@ paths:
       operationId: getDiscoverDeck
       tags:
       - Descubrir
-      summary: Lote de tarjetas para Descubrir
-      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      summary: Lote de 20 tarjetas ordenadas (Encaje perfecto primero, luego BR-14)
+      description: 'Callable de Firebase. Guardas: A,EV. sponsored es null hasta M9. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -1099,18 +1099,26 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     destinationCityIds:
+                      maxItems: 10
                       type: array
-                      items: *id001
-                    windowId: *id001
+                      items:
+                        type: string
+                        minLength: 1
+                        maxLength: 60
+                    windowId:
+                      type: string
+                      minLength: 1
+                      maxLength: 60
                     excludeIds:
-                      type: array
-                      items: *id001
+                      default: []
                       maxItems: 200
-                  required:
-                  - excludeIds
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
               required:
               - data
       responses:
@@ -1124,24 +1132,208 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       cards:
                         type: array
                         items:
-                          $ref: '#/components/schemas/HomeCard'
-                      canLike: *id004
+                          type: object
+                          properties:
+                            homeId:
+                              type: string
+                            ownerUid:
+                              type: string
+                            title:
+                              type: string
+                            cityId:
+                              type: string
+                            cityName:
+                              type: string
+                            zone:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - FLAT
+                              - HOUSE
+                              - STUDIO
+                              - PENTHOUSE
+                              - DUPLEX
+                              - VILLA
+                              - OTHER
+                            maxGuests:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            bedrooms:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            petsAllowed:
+                              type: boolean
+                            photos:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  thumbUrl:
+                                    type: string
+                                  cardUrl:
+                                    type: string
+                                  fullUrl:
+                                    type: string
+                                  width:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                  height:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                required:
+                                - thumbUrl
+                                - cardUrl
+                                - fullUrl
+                                - width
+                                - height
+                                additionalProperties: false
+                            host:
+                              type: object
+                              properties:
+                                displayName:
+                                  type: string
+                                photoUrl:
+                                  type:
+                                  - string
+                                  - 'null'
+                                identityVerified:
+                                  type: boolean
+                                foundingMember:
+                                  type: boolean
+                              required:
+                              - displayName
+                              - photoUrl
+                              - identityVerified
+                              - foundingMember
+                              additionalProperties: false
+                            rating:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  avg:
+                                    type: number
+                                  count:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                required:
+                                - avg
+                                - count
+                                additionalProperties: false
+                              - type: 'null'
+                            isTop:
+                              type: boolean
+                            compatibility:
+                              type: object
+                              properties:
+                                perfectFit:
+                                  type: boolean
+                                mutualDestination:
+                                  type: boolean
+                                wantsYourCity:
+                                  type: boolean
+                                sharedWindowIds:
+                                  type: array
+                                  items:
+                                    type: string
+                                overlapDays:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                petsOk:
+                                  type: boolean
+                                capacityOk:
+                                  type: boolean
+                              required:
+                              - perfectFit
+                              - mutualDestination
+                              - wantsYourCity
+                              - sharedWindowIds
+                              - overlapDays
+                              - petsOk
+                              - capacityOk
+                              additionalProperties: false
+                            likedYou:
+                              type:
+                              - boolean
+                              - 'null'
+                          required:
+                          - homeId
+                          - ownerUid
+                          - title
+                          - cityId
+                          - cityName
+                          - zone
+                          - type
+                          - maxGuests
+                          - bedrooms
+                          - petsAllowed
+                          - photos
+                          - host
+                          - rating
+                          - isTop
+                          - compatibility
+                          - likedYou
+                          additionalProperties: false
+                      canLike:
+                        type: boolean
                       blockers:
                         type: array
                         items:
-                          $ref: '#/components/schemas/Blocker'
+                          type: string
+                          enum:
+                          - ACCOUNT_RESTRICTED
+                          - EMAIL
+                          - PHONE
+                          - HOME_INCOMPLETE
+                          - NO_AVAILABILITY
+                          - IDENTITY_MISSING
+                          - IDENTITY_PENDING
+                          - IDENTITY_REJECTED
+                          - DECLARATION
+                          - HOME_NOT_PUBLISHED
+                          - CITY_WAITLIST
+                          - LEGAL_OUTDATED
                       likesRemaining:
-                        oneOf:
-                        - *id005
+                        anyOf:
+                        - type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
                         - type: 'null'
                       sponsored:
-                        oneOf:
-                        - $ref: '#/components/schemas/SponsoredCard'
+                        anyOf:
+                        - type: object
+                          properties:
+                            partnerId:
+                              type: string
+                            title:
+                              type: string
+                            text:
+                              type: string
+                            logoUrl:
+                              type: string
+                            clickUrl:
+                              type: string
+                            label:
+                              type: string
+                              const: Patrocinado
+                          required:
+                          - partnerId
+                          - title
+                          - text
+                          - logoUrl
+                          - clickUrl
+                          - label
+                          additionalProperties: false
                         - type: 'null'
                     required:
                     - cards
@@ -1149,6 +1341,7 @@ paths:
                     - blockers
                     - likesRemaining
                     - sponsored
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -1165,8 +1358,8 @@ paths:
       operationId: searchHomes
       tags:
       - Descubrir
-      summary: Explorar con filtros
-      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      summary: Explorar con filtros y orden
+      description: 'Callable de Firebase. Guardas: A,EV. topOnly, likedMeOnly y minReviews exigen Premium (E_PREMIUM_REQUIRED). cursor = desplazamiento. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -1177,49 +1370,94 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
                     filters:
+                      default: {}
                       type: object
-                      additionalProperties: false
                       properties:
                         cityIds:
-                          type: array
-                          items: *id001
-                        windowId: *id001
-                        dateRange:
-                          type: object
-                          additionalProperties: false
-                          properties:
-                            start: *id006
-                            end: *id006
-                        minGuests: *id005
-                        pets: *id004
-                        types:
+                          maxItems: 10
                           type: array
                           items:
-                            $ref: '#/components/schemas/HomeType'
-                        amenities:
+                            type: string
+                            minLength: 1
+                            maxLength: 60
+                        windowId:
+                          type: string
+                          minLength: 1
+                          maxLength: 60
+                        dateRange:
+                          type: object
+                          properties:
+                            start:
+                              type: string
+                            end:
+                              type: string
+                          required:
+                          - start
+                          - end
+                        minGuests:
+                          type: integer
+                          minimum: 1
+                          maximum: 12
+                        pets:
+                          type: boolean
+                        types:
+                          maxItems: 7
                           type: array
-                          items: *id001
-                        perfectFitOnly: *id004
-                        topOnly: *id004
-                        likedMeOnly: *id004
-                        minReviews: *id005
+                          items:
+                            type: string
+                            enum:
+                            - FLAT
+                            - HOUSE
+                            - STUDIO
+                            - PENTHOUSE
+                            - DUPLEX
+                            - VILLA
+                            - OTHER
+                        amenities:
+                          maxItems: 12
+                          type: array
+                          items:
+                            type: string
+                            enum:
+                            - WIFI
+                            - KITCHEN
+                            - WASHER
+                            - AIR_CONDITIONING
+                            - HEATING
+                            - ELEVATOR
+                            - TERRACE
+                            - POOL
+                            - PARKING
+                            - KIDS_FRIENDLY
+                            - WORKSPACE
+                            - ACCESSIBLE
+                        perfectFitOnly:
+                          type: boolean
+                        topOnly:
+                          type: boolean
+                        likedMeOnly:
+                          type: boolean
+                        minReviews:
+                          type: integer
+                          minimum: 1
+                          maximum: 100
                     sort:
+                      default: RELEVANCE
                       type: string
                       enum:
                       - RELEVANCE
                       - NEWEST
                       - RATING
-                    cursor: *id001
-                    limit: &id007
-                      type: integer
-                      minimum: 1
-                      maximum: 50
-                      default: 20
-                  required:
-                  - filters
               required:
               - data
       responses:
@@ -1233,19 +1471,166 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
-                          $ref: '#/components/schemas/HomeCard'
+                          type: object
+                          properties:
+                            homeId:
+                              type: string
+                            ownerUid:
+                              type: string
+                            title:
+                              type: string
+                            cityId:
+                              type: string
+                            cityName:
+                              type: string
+                            zone:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - FLAT
+                              - HOUSE
+                              - STUDIO
+                              - PENTHOUSE
+                              - DUPLEX
+                              - VILLA
+                              - OTHER
+                            maxGuests:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            bedrooms:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            petsAllowed:
+                              type: boolean
+                            photos:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  thumbUrl:
+                                    type: string
+                                  cardUrl:
+                                    type: string
+                                  fullUrl:
+                                    type: string
+                                  width:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                  height:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                required:
+                                - thumbUrl
+                                - cardUrl
+                                - fullUrl
+                                - width
+                                - height
+                                additionalProperties: false
+                            host:
+                              type: object
+                              properties:
+                                displayName:
+                                  type: string
+                                photoUrl:
+                                  type:
+                                  - string
+                                  - 'null'
+                                identityVerified:
+                                  type: boolean
+                                foundingMember:
+                                  type: boolean
+                              required:
+                              - displayName
+                              - photoUrl
+                              - identityVerified
+                              - foundingMember
+                              additionalProperties: false
+                            rating:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  avg:
+                                    type: number
+                                  count:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                required:
+                                - avg
+                                - count
+                                additionalProperties: false
+                              - type: 'null'
+                            isTop:
+                              type: boolean
+                            compatibility:
+                              type: object
+                              properties:
+                                perfectFit:
+                                  type: boolean
+                                mutualDestination:
+                                  type: boolean
+                                wantsYourCity:
+                                  type: boolean
+                                sharedWindowIds:
+                                  type: array
+                                  items:
+                                    type: string
+                                overlapDays:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                petsOk:
+                                  type: boolean
+                                capacityOk:
+                                  type: boolean
+                              required:
+                              - perfectFit
+                              - mutualDestination
+                              - wantsYourCity
+                              - sharedWindowIds
+                              - overlapDays
+                              - petsOk
+                              - capacityOk
+                              additionalProperties: false
+                            likedYou:
+                              type:
+                              - boolean
+                              - 'null'
+                          required:
+                          - homeId
+                          - ownerUid
+                          - title
+                          - cityId
+                          - cityName
+                          - zone
+                          - type
+                          - maxGuests
+                          - bedrooms
+                          - petsAllowed
+                          - photos
+                          - host
+                          - rating
+                          - isTop
+                          - compatibility
+                          - likedYou
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - items
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -1262,7 +1647,7 @@ paths:
       operationId: getHomeDetail
       tags:
       - Descubrir
-      summary: Ficha de una casa
+      summary: Ficha pública de una casa visible
       description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -1274,9 +1659,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    homeId: *id001
+                    homeId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                   required:
                   - homeId
               required:
@@ -1292,34 +1679,354 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       home:
                         type: object
+                        properties:
+                          homeId:
+                            type: string
+                          ownerUid:
+                            type: string
+                          title:
+                            type: string
+                          description:
+                            type: string
+                          cityId:
+                            type: string
+                          cityName:
+                            type: string
+                          zone:
+                            type: string
+                          type:
+                            type: string
+                            enum:
+                            - FLAT
+                            - HOUSE
+                            - STUDIO
+                            - PENTHOUSE
+                            - DUPLEX
+                            - VILLA
+                            - OTHER
+                          sizeM2:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          bedrooms:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          beds:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          bathrooms:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          maxGuests:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          petsAllowed:
+                            type: boolean
+                          amenities:
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                              - WIFI
+                              - KITCHEN
+                              - WASHER
+                              - AIR_CONDITIONING
+                              - HEATING
+                              - ELEVATOR
+                              - TERRACE
+                              - POOL
+                              - PARKING
+                              - KIDS_FRIENDLY
+                              - WORKSPACE
+                              - ACCESSIBLE
+                          houseRules:
+                            type: string
+                          photos:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                thumbUrl:
+                                  type: string
+                                cardUrl:
+                                  type: string
+                                fullUrl:
+                                  type: string
+                                width:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                height:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                              required:
+                              - thumbUrl
+                              - cardUrl
+                              - fullUrl
+                              - width
+                              - height
+                              additionalProperties: false
+                          destinations:
+                            anyOf:
+                            - type: object
+                              properties:
+                                mode:
+                                  type: string
+                                  enum:
+                                  - LIST
+                                  - ANY_OPEN
+                                cityIds:
+                                  maxItems: 5
+                                  type: array
+                                  items:
+                                    type: string
+                                    minLength: 1
+                                    maxLength: 60
+                                    pattern: ^[a-z0-9-]+$
+                              required:
+                              - mode
+                              - cityIds
+                              additionalProperties: false
+                            - type: 'null'
+                          availability:
+                            anyOf:
+                            - type: object
+                              properties:
+                                windowIds:
+                                  type: array
+                                  items:
+                                    type: string
+                                ranges:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      start:
+                                        type: string
+                                      end:
+                                        type: string
+                                    required:
+                                    - start
+                                    - end
+                                    additionalProperties: false
+                              required:
+                              - windowIds
+                              - ranges
+                              additionalProperties: false
+                            - type: 'null'
+                          rating:
+                            anyOf:
+                            - type: object
+                              properties:
+                                avg:
+                                  type: number
+                                count:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                              required:
+                              - avg
+                              - count
+                              additionalProperties: false
+                            - type: 'null'
+                          isTop:
+                            type: boolean
+                        required:
+                        - homeId
+                        - ownerUid
+                        - title
+                        - description
+                        - cityId
+                        - cityName
+                        - zone
+                        - type
+                        - sizeM2
+                        - bedrooms
+                        - beds
+                        - bathrooms
+                        - maxGuests
+                        - petsAllowed
+                        - amenities
+                        - houseRules
+                        - photos
+                        - destinations
+                        - availability
+                        - rating
+                        - isTop
+                        additionalProperties: false
                       host:
-                        $ref: '#/components/schemas/PublicProfile'
+                        type: object
+                        properties:
+                          uid:
+                            type: string
+                          displayName:
+                            type: string
+                          photoUrl:
+                            type:
+                            - string
+                            - 'null'
+                          about:
+                            type:
+                            - string
+                            - 'null'
+                          languages:
+                            type: array
+                            items:
+                              type: string
+                          travelsWith:
+                            anyOf:
+                            - type: string
+                              enum:
+                              - SOLO
+                              - COUPLE
+                              - FAMILY
+                              - FRIENDS
+                            - type: 'null'
+                          memberSince:
+                            type:
+                            - string
+                            - 'null'
+                          identityVerified:
+                            type: boolean
+                          foundingMember:
+                            type: boolean
+                          isTopHost:
+                            type: boolean
+                          ratingAvg:
+                            type:
+                            - number
+                            - 'null'
+                          reviewsCount:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                        required:
+                        - uid
+                        - displayName
+                        - photoUrl
+                        - about
+                        - languages
+                        - travelsWith
+                        - memberSince
+                        - identityVerified
+                        - foundingMember
+                        - isTopHost
+                        - ratingAvg
+                        - reviewsCount
+                        additionalProperties: false
                       reviews:
                         type: array
                         items:
-                          $ref: '#/components/schemas/Review'
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            authorDisplayName:
+                              type: string
+                            overall:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            sub:
+                              type: object
+                              properties:
+                                cleanliness:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                accuracy:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                communication:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                care:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                              required:
+                              - cleanliness
+                              - accuracy
+                              - communication
+                              - care
+                              additionalProperties: false
+                            comment:
+                              type:
+                              - string
+                              - 'null'
+                            publishedAt:
+                              type: string
+                          required:
+                          - id
+                          - authorDisplayName
+                          - overall
+                          - sub
+                          - comment
+                          - publishedAt
+                          additionalProperties: false
                       relation:
                         type: object
-                        additionalProperties: false
                         properties:
-                          liked: *id004
-                          passed: *id004
+                          liked:
+                            type: boolean
+                          passed:
+                            type: boolean
                           matchId:
-                            oneOf:
-                            - *id001
-                            - type: 'null'
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - liked
+                        - passed
+                        - matchId
+                        additionalProperties: false
                       compatibility:
-                        $ref: '#/components/schemas/Compatibility'
+                        type: object
+                        properties:
+                          perfectFit:
+                            type: boolean
+                          mutualDestination:
+                            type: boolean
+                          wantsYourCity:
+                            type: boolean
+                          sharedWindowIds:
+                            type: array
+                            items:
+                              type: string
+                          overlapDays:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          petsOk:
+                            type: boolean
+                          capacityOk:
+                            type: boolean
+                        required:
+                        - perfectFit
+                        - mutualDestination
+                        - wantsYourCity
+                        - sharedWindowIds
+                        - overlapDays
+                        - petsOk
+                        - capacityOk
+                        additionalProperties: false
                     required:
                     - home
                     - host
                     - reviews
                     - relation
                     - compatibility
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -1402,8 +2109,8 @@ paths:
     post:
       operationId: passHome
       tags:
-      - Match
-      summary: Paso
+      - Descubrir
+      summary: 'Paso: oculta la casa P-03 días'
       description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -1415,9 +2122,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    homeId: *id001
+                    homeId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                   required:
                   - homeId
               required:
@@ -1431,7 +2140,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -1447,9 +2164,9 @@ paths:
     post:
       operationId: undoPass
       tags:
-      - Match
-      summary: Deshacer el último paso
-      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      - Descubrir
+      summary: Deshace el último paso
+      description: 'Callable de Firebase. Guardas: A,EV. Gratis: 1 por sesión de la app (sessionId); Premium sin límite. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -1460,10 +2177,15 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    homeId: *id001
-                    sessionId: *id001
+                    homeId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                    sessionId:
+                      type: string
+                      minLength: 8
+                      maxLength: 64
                   required:
                   - homeId
                   - sessionId
@@ -1478,7 +2200,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -1510,7 +2240,7 @@ paths:
                   additionalProperties: false
                   properties: &id009
                     cursor: *id001
-                    limit: *id007
+                    limit: &id007 {default: 20, maximum: 50, minimum: 1, type: integer}
               required:
               - data
       responses:

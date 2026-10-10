@@ -18,6 +18,8 @@ export interface DemoHome {
   houseRules: string;
   photoCount: number;
   destinations: string[];
+  /** «Cualquier ciudad abierta» instead of a list. */
+  anyOpen?: boolean;
   windowIds: string[];
   travelers: { count: number; withPet: boolean };
   /** FR-63 — `PASS` once the owner checked it at home. */
