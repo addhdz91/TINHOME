@@ -48,6 +48,17 @@ describe('N-03, N-04 and N-13 (M4)', () => {
       data: { days: 30, role: 'INVITER', url: 'https://x.test/app' },
     });
     expect(referral.subject).toBe('Tienes 30 días de Premium');
+    const matched = renderEmail({
+      to: 'a@b.es',
+      templateId: 'N-07',
+      data: {
+        otherName: 'Javier S.',
+        otherCity: 'Valencia',
+        chatUrl: 'https://x.test/app/chats/1',
+      },
+    });
+    expect(matched.subject).toBe('¡Tienes un match con Javier S.!');
+    expect(matched.text).toContain('Nunca envíes dinero');
     expect(referral.text).toContain('La persona que invitaste');
   });
 });

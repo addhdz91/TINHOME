@@ -1,8 +1,12 @@
 import { Timestamp, type Firestore } from 'firebase-admin/firestore';
+import type { CallableRequest } from 'firebase-functions/v2/https';
 import type { ViewerSide } from '@tinhome/shared/domain';
 import { toIsoDate } from '@tinhome/shared/domain';
 import type { Me } from '@tinhome/shared/schemas';
 import type { Params } from '@tinhome/shared/types';
+import { db } from '../../core/firebase.js';
+import { requireAuth, requireEmailVerified } from '../../core/guards.js';
+import { getParams } from '../../core/params.js';
 import { buildMe, type SessionInfo } from '../account/me.js';
 
 export interface Viewer {
@@ -20,6 +24,8 @@ export interface Viewer {
   passedHomeIds: Set<string>;
   /** Owners who liked the viewer's home (ranking factor `leGusto`). */
   likedYouUids: Set<string>;
+  /** FR-61 — message that came with those likes, by owner. */
+  likeMessages: Map<string, string>;
 }
 
 /** Everything Discover, Explore and the detail need to know about who is looking. */
@@ -35,7 +41,7 @@ export async function loadViewer(
     db.doc(`homes/${uid}`).get(),
     db.doc(`users/${uid}`).get(),
     db.collection('likes').where('fromUid', '==', uid).select('toUid').get(),
-    db.collection('likes').where('toUid', '==', uid).select('fromUid').get(),
+    db.collection('likes').where('toUid', '==', uid).select('fromUid', 'message').get(),
     db.collection('blocks').where('blockerUid', '==', uid).select('blockedUid').get(),
     db.collection('blocks').where('blockedUid', '==', uid).select('blockerUid').get(),
     db
@@ -64,5 +70,28 @@ export async function loadViewer(
     likedUids: new Set(sent.docs.map((d) => String(d.get('toUid')))),
     passedHomeIds: new Set(passes.docs.map((d) => String(d.get('homeId')))),
     likedYouUids: new Set(received.docs.map((d) => String(d.get('fromUid')))),
+    likeMessages: new Map(
+      received.docs.flatMap((d) => {
+        const message = d.get('message') as string | null | undefined;
+        return message ? [[String(d.get('fromUid')), message] as const] : [];
+      }),
+    ),
   };
+}
+
+/** Guards `A, EV` and the session of a callable request. */
+export function sessionOf(request: CallableRequest): SessionInfo {
+  const auth = requireAuth(request);
+  requireEmailVerified(auth);
+  return {
+    uid: auth.uid,
+    email: typeof request.auth?.token.email === 'string' ? request.auth.token.email : '',
+    emailVerified: auth.emailVerified,
+    role: auth.role,
+  };
+}
+
+/** Guards `A, EV` and the viewer context of a callable request. */
+export async function viewerOf(request: CallableRequest, now: Date): Promise<Viewer> {
+  return loadViewer(db(), sessionOf(request), await getParams(), now);
 }

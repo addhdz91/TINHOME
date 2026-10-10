@@ -1,5 +1,5 @@
 import type { SecretParam } from 'firebase-functions/params';
-import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
+import { onCall, type CallableOptions, type CallableRequest } from 'firebase-functions/v2/https';
 import type { z } from 'zod';
 import { toAppError } from './app-error.js';
 import { clock } from './clock.js';
@@ -21,7 +21,7 @@ export interface CallableContext<I> {
  */
 export function defineCallable<I extends z.ZodType, O extends z.ZodType>(
   name: string,
-  schemas: { input: I; output: O; secrets?: SecretParam[] },
+  schemas: { input: I; output: O; secrets?: SecretParam[]; options?: Partial<CallableOptions> },
   handler: (ctx: CallableContext<z.output<I>>) => Promise<z.input<O>>,
 ) {
   const options = schemas.secrets

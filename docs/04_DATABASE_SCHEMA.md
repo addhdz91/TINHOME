@@ -140,6 +140,8 @@
 | Campo | Tipo | Notas |
 |---|---|---|
 | `participants` | `[uidA, uidB]` | Para reglas y consultas `array-contains` |
+| `pairKey` | `{uidA}_{uidB}` | M6: el id es `pairKey` la primera vez y `pairKey_n` en cada nuevo match tras deshacerlo (`rematchCount`, y `currentMatchId` en el documento base) |
+| `people` | `{ [uid]: { displayName, homeTitle, cityId, cityName, photoUrl } }` | M6: copia para la lista de chats (no requiere leer otros perfiles) |
 | `homeIds` | `{ [uid]: homeId }` | |
 | `status` | `ACTIVE`\|`UNMATCHED`\|`BLOCKED` | |
 | `compatibility` | `{ perfectFit: bool, mutualDestination: bool, sharedWindowIds: string[], overlapDays: int }` | Calculado al crear |
@@ -231,7 +233,7 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 
 ### 2.25 Otros
 - `gdprRequests/{id}`: `uid`, `type: ACCESS|RECTIFICATION|ERASURE|OBJECTION|RESTRICTION|PORTABILITY`, `details`, `status: OPEN|DONE|REJECTED`, `dueAt`, `exportPath?`, `createdAt`, `closedAt?`.
-- `likeCounters/{uid}_{date}`: `count`, `hourBuckets: { [HH]: int }`. TTL a 3 días.
+- `likeCounters/{uid}_{date}`: `count`, `hourBuckets: { [HH]: int }` (hora de Madrid), `messageCount` (me gusta con mensaje, P-27), `expiresAt`. TTL a 3 días.
 - `chatCounters/{uid}_{YYYYMMDDHHmm}`: `count`. Límite de mensajes por minuto (BR-36). TTL a 1 día.
 - `events/{id}`: `name`, `uidHash`, `cityId?`, `props` (sin PII), `createdAt`. TTL 400 días.
 - `auditLog/{id}`: `actorUid`, `actorRole`, `action`, `targetType`, `targetId`, `before?`, `after?`, `reason?`, `createdAt`. Solo inserción.
@@ -301,8 +303,10 @@ service cloud.firestore {
     match /matches/{matchId} {
       allow read: if signedIn() && (uid() in resource.data.participants || isAdmin());
       // Mensajes: solo lectura para participantes; se escriben con la callable sendMessage
+      // M6: solo participantes y solo con el match ACTIVE; el equipo no lee chats (las denuncias llevan instantánea)
       match /messages/{messageId} {
-        allow read: if signedIn() && (uid() in get(/databases/$(db)/documents/matches/$(matchId)).data.participants || isAdmin());
+        allow read: if signedIn() && uid() in get(/databases/$(db)/documents/matches/$(matchId)).data.participants
+          && get(/databases/$(db)/documents/matches/$(matchId)).data.status == 'ACTIVE';
       }
     }
     match /locationChecks/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }

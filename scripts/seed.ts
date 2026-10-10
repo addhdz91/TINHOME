@@ -7,6 +7,7 @@
  * M4 → identities (Javier approved, Marta pending with sample documents), admin second factor,
  *      location checks (Sofía's home still unchecked).
  * M5 → 60 catalogue homes (Madrid/Valencia) and likes to Javier.
+ * M6 → active match Javier ⇄ Sofía with a short conversation.
  *
  * Usage: `pnpm emulators` in one terminal, then `pnpm seed`. Idempotent (overwrites).
  * Needs the Auth, Firestore and Storage emulators.
@@ -375,6 +376,97 @@ async function seedCatalog(): Promise<number> {
   return catalog.length;
 }
 
+/** M6 — an active match Javier ⇄ Sofía with a short conversation (two-browser chat tests). */
+async function seedMatches(): Promise<number> {
+  const [a, b] = ['demo-javier', 'demo-sofia'];
+  const matchRef = db.doc(`matches/${a}_${b}`);
+  await db.recursiveDelete(matchRef);
+  const people = Object.fromEntries(
+    await Promise.all(
+      [a, b].map(async (uid) => {
+        const [profile, home] = await Promise.all([
+          db.doc(`publicProfiles/${uid}`).get(),
+          db.doc(`homes/${uid}`).get(),
+        ]);
+        const cityId = String(home.get('cityId'));
+        const photos = (home.get('photos') as { thumbUrl?: string }[] | undefined) ?? [];
+        return [
+          uid,
+          {
+            displayName: String(profile.get('displayName')),
+            homeTitle: String(home.get('title')),
+            cityId,
+            cityName: CITIES[cityId]?.name ?? '',
+            photoUrl: photos[0]?.thumbUrl ?? null,
+          },
+        ] as const;
+      }),
+    ),
+  );
+  const at = (minutesAgo: number) => Timestamp.fromMillis(Date.now() - minutesAgo * 60_000);
+  await matchRef.set({
+    participants: [a, b],
+    pairKey: `${a}_${b}`,
+    homeIds: { [a]: a, [b]: b },
+    people,
+    status: 'ACTIVE',
+    compatibility: {
+      perfectFit: true,
+      mutualDestination: true,
+      sharedWindowIds: [],
+      overlapDays: 0,
+    },
+    unseenBy: [],
+    lastMessage: {
+      text: '¡Hola! ¿Qué fechas os vienen bien?',
+      senderUid: b,
+      at: at(30),
+      type: 'TEXT',
+    },
+    unread: { [a]: 1, [b]: 0 },
+    lastReadAt: { [b]: at(30) },
+    phoneSharedBy: [],
+    activeExchangeId: null,
+    rematchCount: 0,
+    createdAt: at(120),
+    lastActivityAt: at(30),
+  });
+  const messages = matchRef.collection('messages');
+  await messages.doc('seed-system').set({
+    senderUid: null,
+    type: 'SYSTEM',
+    text: '',
+    systemCode: 'MATCH_CREATED',
+    paymentWarning: false,
+    hiddenByModeration: false,
+    deletedFor: [],
+    createdAt: at(120),
+  });
+  await messages.doc('seed-1').set({
+    senderUid: b,
+    type: 'TEXT',
+    text: '¡Hola! ¿Qué fechas os vienen bien?',
+    paymentWarning: false,
+    hiddenByModeration: false,
+    deletedFor: [],
+    createdAt: at(30),
+  });
+  for (const [from, to] of [
+    [a, b],
+    [b, a],
+  ]) {
+    await db.doc(`likes/${String(from)}_${String(to)}`).set({
+      fromUid: from,
+      toUid: to,
+      toHomeId: to,
+      fromHomeId: from,
+      message: null,
+      createdAt: at(120),
+    });
+  }
+  return 1;
+}
+
 /** Placeholder «document» images; never real documents or people. */
 async function sampleDocument(label: string): Promise<Buffer> {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560">
@@ -435,6 +527,7 @@ async function main(): Promise<void> {
   console.log(`✔ ${DEMO_HOMES.length} demo homes (photos in the Storage emulator)`);
   console.log(`✔ ${await seedVerifications()} pending verifications with sample documents`);
   console.log(`✔ ${await seedCatalog()} catalogue homes for Discover and Explore`);
+  console.log(`✔ ${await seedMatches()} active match (Javier ⇄ Sofía) with messages`);
   console.log('Done.');
 }
 

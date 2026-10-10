@@ -16,7 +16,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { useMe } from '@/app/auth/auth-context';
-import { BlockerSheet } from '@/components/BlockerSheet';
 import { CompatibilityChips } from '@/components/CompatibilityChips';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -26,12 +25,13 @@ import { TrustBadges } from '@/components/TrustBadges';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useActiveWindows, useCities } from '@/features/cities';
+import { useLikeFlow } from '@/features/match';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { getHomeDetail, passHome } from '@/lib/callables';
 import { formatIsoDate } from '@/lib/format';
 
 /** S-06 — `/app/casa/:homeId`: gallery, features, availability, host, reviews and actions. */
-export function HomeDetailPage({ onLike }: { onLike?: (homeId: string) => Promise<boolean> }) {
+export function HomeDetailPage() {
   const { t } = useTranslation();
   const { homeId = '' } = useParams();
   const me = useMe();
@@ -40,7 +40,7 @@ export function HomeDetailPage({ onLike }: { onLike?: (homeId: string) => Promis
   const cities = useCities();
   const windows = useActiveWindows();
   const [photo, setPhoto] = useState<number | null>(null);
-  const [blockerOpen, setBlockerOpen] = useState(false);
+  const likeFlow = useLikeFlow();
   const detail = useQuery({
     queryKey: ['home-detail', homeId],
     queryFn: () => getHomeDetail({ homeId }),
@@ -90,15 +90,13 @@ export function HomeDetailPage({ onLike }: { onLike?: (homeId: string) => Promis
     }
   };
   const like = async () => {
-    if (!me.canLike) {
-      setBlockerOpen(true);
-      return;
-    }
-    if (!onLike) {
-      toast.info(t('discover.likeSoon'));
-      return;
-    }
-    if (await onLike(home.homeId)) await detail.refetch();
+    const liked = await likeFlow.like({
+      homeId: home.homeId,
+      ownerName: host.displayName,
+      photoUrl: home.photos[0]?.thumbUrl ?? null,
+      perfectFit: compatibility.perfectFit,
+    });
+    if (liked) await detail.refetch();
   };
 
   return (
@@ -364,7 +362,7 @@ export function HomeDetailPage({ onLike }: { onLike?: (homeId: string) => Promis
           </div>
         </DialogContent>
       </Dialog>
-      <BlockerSheet open={blockerOpen} onOpenChange={setBlockerOpen} blockers={me.blockers} />
+      {likeFlow.element}
     </article>
   );
 }

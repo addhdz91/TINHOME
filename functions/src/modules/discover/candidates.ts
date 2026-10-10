@@ -176,6 +176,7 @@ export async function toCards(
       isTop: data.isTop === true,
       compatibility: candidate.compatibility,
       likedYou: viewer.isPremium ? candidate.likedYou : null,
+      likeMessage: viewer.likeMessages.get(candidate.ownerUid) ?? null,
     };
   });
 }

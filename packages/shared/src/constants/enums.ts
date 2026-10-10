@@ -68,7 +68,16 @@ export const MAIL_STATUS = ['QUEUED', 'SENT', 'FAILED'] as const;
 export type MailStatus = (typeof MAIL_STATUS)[number];
 
 /** Email templates (02_UX_UI_SPEC.md §8). Grows milestone by milestone. */
-export const EMAIL_TEMPLATES = ['N-02', 'N-03', 'N-04', 'N-13', 'N-19', 'N-23', 'N-27'] as const;
+export const EMAIL_TEMPLATES = [
+  'N-02',
+  'N-03',
+  'N-04',
+  'N-07',
+  'N-13',
+  'N-19',
+  'N-23',
+  'N-27',
+] as const;
 export type EmailTemplateId = (typeof EMAIL_TEMPLATES)[number];
 
 /** 05_API_CONTRACT.md §4 — reasons why a user cannot like yet (BR-05), in resolution order. */
@@ -226,3 +235,22 @@ export const ADMIN_ALERT_TYPES = [
   'VERIFICATION_DUPLICATE',
 ] as const;
 export type AdminAlertType = (typeof ADMIN_ALERT_TYPES)[number];
+
+/** 04 §2.6 — match states. */
+export const MATCH_STATUS = ['ACTIVE', 'UNMATCHED', 'BLOCKED'] as const;
+export type MatchStatus = (typeof MATCH_STATUS)[number];
+
+/** 04 §2.7b — chat message kinds. */
+export const MESSAGE_TYPES = ['TEXT', 'SYSTEM', 'PHONE_SHARED', 'PREMIUM_LIKE_MESSAGE'] as const;
+export type MessageType = (typeof MESSAGE_TYPES)[number];
+
+/** System messages shown in the chat (FR-60). */
+export const SYSTEM_CODES = [
+  'MATCH_CREATED',
+  'PHONE_SHARED',
+  'EXCHANGE_PROPOSED',
+  'EXCHANGE_CONFIRMED',
+  'EXCHANGE_DECLINED',
+  'EXCHANGE_CANCELLED',
+] as const;
+export type SystemCode = (typeof SYSTEM_CODES)[number];

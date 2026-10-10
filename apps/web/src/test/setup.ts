@@ -29,3 +29,6 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 });
+
+// jsdom has no scrollIntoView (the chat scrolls to the last message).
+Element.prototype.scrollIntoView = vi.fn();

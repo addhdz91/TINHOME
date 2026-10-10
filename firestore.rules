@@ -21,9 +21,12 @@ service cloud.firestore {
     match /likes/{likeId} { allow read: if signedIn() && resource.data.fromUid == uid(); }
     match /matches/{matchId} {
       allow read: if signedIn() && (uid() in resource.data.participants || isAdmin());
-      // Messages: read-only for participants; written by the sendMessage callable
+      // Messages: only the two participants and only while the match is ACTIVE (BR-45: closed
+      // chats stay locked for moderation). The team never reads chats (reports carry a snapshot).
       match /messages/{messageId} {
-        allow read: if signedIn() && (uid() in get(/databases/$(db)/documents/matches/$(matchId)).data.participants || isAdmin());
+        allow read: if signedIn()
+          && uid() in get(/databases/$(db)/documents/matches/$(matchId)).data.participants
+          && get(/databases/$(db)/documents/matches/$(matchId)).data.status == 'ACTIVE';
       }
     }
     match /locationChecks/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }

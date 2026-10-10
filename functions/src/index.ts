@@ -43,5 +43,19 @@ export {
   submitIdentityVerification,
   verifyHomeLocation,
 } from './modules/verification/callables.js';
+export {
+  blockUser,
+  deleteMessageForMe,
+  getMatchContact,
+  likeHome,
+  listBlocked,
+  listLikesReceived,
+  markConversationRead,
+  markMatchSeen,
+  sendMessage,
+  sharePhoneInChat,
+  unblockUser,
+  unmatch,
+} from './modules/match/callables.js';
 export { onMailQueued } from './modules/mail/triggers.js';
 export { confirmWaitlist, joinWaitlist } from './modules/waitlist/callables.js';

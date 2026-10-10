@@ -1,4 +1,3 @@
-import type { CallableRequest } from 'firebase-functions/v2/https';
 import {
   GetDiscoverDeckInput,
   GetDiscoverDeckOutput,
@@ -12,23 +11,9 @@ import {
 } from '@tinhome/shared/schemas';
 import { defineCallable } from '../../core/callable.js';
 import { db } from '../../core/firebase.js';
-import { requireAuth, requireEmailVerified } from '../../core/guards.js';
 import { getParams } from '../../core/params.js';
 import * as discover from './service.js';
-import { loadViewer, type Viewer } from './viewer.js';
-
-/** Guards `A, EV` and the viewer context. */
-async function viewerOf(request: CallableRequest, now: Date): Promise<Viewer> {
-  const auth = requireAuth(request);
-  requireEmailVerified(auth);
-  const session = {
-    uid: auth.uid,
-    email: typeof request.auth?.token.email === 'string' ? request.auth.token.email : '',
-    emailVerified: auth.emailVerified,
-    role: auth.role,
-  };
-  return loadViewer(db(), session, await getParams(), now);
-}
+import { viewerOf } from './viewer.js';
 
 /** FR-20 — A, EV. */
 export const getDiscoverDeck = defineCallable(

@@ -14,6 +14,7 @@ import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
 import { useActiveWindows, useCities, useInvite } from '@/features/cities';
+import { useLikeFlow } from '@/features/match';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { passHome, undoPass } from '@/lib/callables';
 import { useDeck } from '../api/use-deck';
@@ -25,15 +26,13 @@ function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 }
 
-/**
- * S-04 — `/app/descubrir`. The like itself (FR-23) arrives in M6; until then an eligible user
- * gets a notice and an ineligible one the BlockerSheet (AC-20.1).
- */
-export function DiscoverPage({ onLike }: { onLike?: (card: HomeCard) => Promise<boolean> }) {
+/** S-04 — `/app/descubrir`: deck, actions, likes left; like → match / limit / requirements. */
+export function DiscoverPage() {
   const { t } = useTranslation();
   const me = useMe();
   const navigate = useNavigate();
   const invite = useInvite();
+  const likeFlow = useLikeFlow();
   const cities = useCities();
   const windows = useActiveWindows();
   const [destination, setDestination] = useState<string>('');
@@ -89,15 +88,13 @@ export function DiscoverPage({ onLike }: { onLike?: (card: HomeCard) => Promise<
       return;
     }
     void (async () => {
-      if (!first?.canLike) {
-        setBlockerOpen(true);
-        return;
-      }
-      if (!onLike) {
-        toast.info(t('discover.likeSoon'));
-        return;
-      }
-      if (await onLike(card)) {
+      const liked = await likeFlow.like({
+        homeId: card.homeId,
+        ownerName: card.host.displayName,
+        photoUrl: card.photos[0]?.thumbUrl ?? null,
+        perfectFit: card.compatibility.perfectFit,
+      });
+      if (liked) {
         setConsumed((list) => [...list, card.homeId]);
         setAnnouncement(t('discover.liked', { title: card.title }));
       }
@@ -225,6 +222,7 @@ export function DiscoverPage({ onLike }: { onLike?: (card: HomeCard) => Promise<
           .filter(Boolean)
           .join('. ')}
       </p>
+      {likeFlow.element}
       <BlockerSheet
         open={blockerOpen}
         onOpenChange={setBlockerOpen}

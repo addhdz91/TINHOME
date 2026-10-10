@@ -1,6 +1,7 @@
 import { Navigate, type RouteObject } from 'react-router';
 import { adminRoutes } from '@/features/admin/routes';
 import { authRoutes } from '@/features/auth/routes';
+import { chatRoutes } from '@/features/chat/routes';
 import { devRoutes } from '@/features/dev/routes';
 import { discoverRoutes } from '@/features/discover/routes';
 import { exploreRoutes } from '@/features/explore/routes';
@@ -10,6 +11,8 @@ import { homeDetailRoutes } from '@/features/home-detail/routes';
 import { howItWorksRoutes } from '@/features/how-it-works/routes';
 import { landingRoutes } from '@/features/landing/routes';
 import { legalRoutes } from '@/features/legal/routes';
+import { likesRoutes } from '@/features/likes/routes';
+import { matchRoutes } from '@/features/match/routes';
 import { onboardingRoutes } from '@/features/onboarding/routes';
 import { pricingRoutes } from '@/features/pricing/routes';
 import { profileRoutes } from '@/features/profile/routes';
@@ -19,11 +22,6 @@ import { PublicLayout } from './layouts/PublicLayout';
 import { NotFoundPage } from './NotFoundPage';
 import { RouteErrorPage } from './RouteErrorPage';
 import { RouteFallback } from './RouteFallback';
-
-const SECTIONS = [
-  ['me-gusta', 'likes'],
-  ['chats', 'chats'],
-] as const;
 
 /**
  * 02_UX_UI_SPEC.md §2.2 — routes are added per feature, milestone by milestone. Each feature
@@ -75,18 +73,14 @@ export function buildRoutes(): RouteObject[] {
               lazy: async () => ({ Component: (await import('./layouts/AppShell')).AppShell }),
               children: [
                 { index: true, element: <Navigate to="/app/descubrir" replace /> },
-                ...SECTIONS.map(([path, section]) => ({
-                  path,
-                  lazy: async () => {
-                    const { ComingSoonPage } = await import('./ComingSoonPage');
-                    return { element: <ComingSoonPage section={section} /> };
-                  },
-                })),
                 ...profileRoutes,
                 ...discoverRoutes,
                 ...exploreRoutes,
                 ...homeDetailRoutes,
                 ...homeRoutes,
+                ...likesRoutes,
+                ...chatRoutes,
+                ...matchRoutes,
                 ...verificationRoutes,
                 { path: '*', element: <NotFoundPage /> },
               ],

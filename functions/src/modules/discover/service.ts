@@ -9,6 +9,7 @@ import type {
 } from '@tinhome/shared/schemas';
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
+import { activeMatchBetween } from '../match/matches.js';
 import { iso } from '../verification/view.js';
 import {
   compatibilityWith,
@@ -143,10 +144,6 @@ export async function searchHomes(
   };
 }
 
-function matchId(a: string, b: string): string {
-  return a < b ? `${a}_${b}` : `${b}_${a}`;
-}
-
 /** FR-22 — public view of a visible home; hidden, blocked or unknown homes are E_NOT_FOUND. */
 export async function homeDetail(
   db: Firestore,
@@ -176,7 +173,7 @@ export async function homeDetail(
       .get(),
     db.doc(`likes/${viewer.uid}_${ownerUid}`).get(),
     db.doc(`passes/${viewer.uid}_${homeId}`).get(),
-    db.doc(`matches/${matchId(viewer.uid, ownerUid)}`).get(),
+    activeMatchBetween(db, viewer.uid, ownerUid),
   ]);
   const profile = profileSnap.data() ?? {};
   const passExpires = pass.get('expiresAt') as Timestamp | undefined;
@@ -236,7 +233,7 @@ export async function homeDetail(
     relation: {
       liked: like.exists,
       passed: pass.exists && passExpires !== undefined && passExpires.toMillis() > now.getTime(),
-      matchId: match.exists && match.get('status') === 'ACTIVE' ? match.id : null,
+      matchId: match?.id ?? null,
     },
     compatibility: compatibilityWith(viewer, data, catalog),
   };

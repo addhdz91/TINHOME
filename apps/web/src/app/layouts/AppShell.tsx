@@ -16,12 +16,26 @@ import { Link, NavLink, Outlet } from 'react-router';
 import { useMe } from '@/app/auth/auth-context';
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { TinHomeLogo } from '@/components/TinHomeLogo';
+import { useUnreadTotal } from '@/features/chat';
 import { cn } from '@/lib/utils';
 
 // Only founding members ever load it (FR-40), so it stays out of the shell chunk.
 const FounderWelcome = lazy(async () => ({
   default: (await import('@/features/verification/components/FounderWelcome')).FounderWelcome,
 }));
+
+/** FR-25 — unread messages and new matches on the Chats tab. */
+function UnreadBadge({ uid }: { uid: string }) {
+  const { t } = useTranslation();
+  const total = useUnreadTotal(uid);
+  if (total === 0) return null;
+  return (
+    <span className="absolute -top-1 -right-2 min-w-5 rounded-full bg-primary px-1 text-center text-xs leading-5 font-bold text-primary-foreground">
+      <span aria-hidden="true">{total > 9 ? '9+' : total}</span>
+      <span className="sr-only">{t('chat.unread', { count: total })}</span>
+    </span>
+  );
+}
 
 type NavKey = 'discover' | 'explore' | 'likes' | 'chats' | 'profile';
 
@@ -94,7 +108,10 @@ export function AppShell() {
                 )
               }
             >
-              <Icon aria-hidden="true" className="size-5" />
+              <span className="relative">
+                <Icon aria-hidden="true" className="size-5" />
+                {key === 'chats' ? <UnreadBadge uid={me.uid} /> : null}
+              </span>
               {t(`nav.${key}`)}
             </NavLink>
           ))}
@@ -135,7 +152,10 @@ export function AppShell() {
               )
             }
           >
-            <Icon aria-hidden="true" className="size-6" />
+            <span className="relative">
+              <Icon aria-hidden="true" className="size-6" />
+              {key === 'chats' ? <UnreadBadge uid={me.uid} /> : null}
+            </span>
             {t(`nav.${key}`)}
           </NavLink>
         ))}

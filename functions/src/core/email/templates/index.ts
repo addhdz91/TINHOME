@@ -2,6 +2,7 @@ import type { MailQueueItem, RenderedEmail } from '../types.js';
 import { welcome } from './n02-welcome.js';
 import { identity } from './n03-identity.js';
 import { founder } from './n04-founder.js';
+import { match } from './n07-match.js';
 import { referral } from './n13-referral.js';
 import { waitlistConfirmation } from './n19-waitlist-confirmation.js';
 import { hold } from './n23-hold.js';
@@ -16,6 +17,8 @@ export function renderEmail(item: MailQueueItem): RenderedEmail {
       return identity(item.data);
     case 'N-04':
       return founder(item.data);
+    case 'N-07':
+      return match(item.data);
     case 'N-13':
       return referral(item.data);
     case 'N-19':

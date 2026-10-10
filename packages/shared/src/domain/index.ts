@@ -14,3 +14,4 @@ export * from './identity-doc.js';
 export * from './rewards.js';
 export * from './compatibility.js';
 export * from './ranking.js';
+export * from './chat.js';

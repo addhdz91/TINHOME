@@ -10,7 +10,7 @@
 | M4 — Verificación de identidad y panel de administración base | ✅ Hecho | 10/10/2026 | Paso 5 real (documentos + ubicación), `/app/verificacion` (+ `/ubicacion` con QR), revisión en `/admin` (rol + 2FA, visor seguro con marca de agua y auditoría), fundadores y referidos, J-04/J-10, N-03/N-04/N-13, KPIs. Rama `feat/m4-verification`. |
 | M5 — Descubrir, Explorar y ficha de casa | ⏳ Siguiente | — | |
 | M6 — Me gusta, match y chat | Pendiente | — | |
-| M7 — Premium y crecimiento | Pendiente | — | |
+| M7 — Premium y crecimiento | ⏳ Siguiente | — | |
 | M8 — Intercambios, valoraciones y notificaciones | Pendiente | — | |
 | M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | Pendiente | — | |
 | M10 — Endurecimiento y lanzamiento | Pendiente | — | |

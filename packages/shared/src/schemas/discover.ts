@@ -48,6 +48,8 @@ export const HomeCard = z.object({
   compatibility: CompatibilitySchema,
   /** null unless the viewer is Premium (FR-20). */
   likedYou: z.boolean().nullable(),
+  /** FR-61 — message that came with a like to the viewer (visible to free and Premium). */
+  likeMessage: z.string().nullable().default(null),
 });
 export type HomeCard = z.infer<typeof HomeCard>;
 

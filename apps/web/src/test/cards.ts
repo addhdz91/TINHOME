@@ -27,6 +27,7 @@ export function card(id: string, overrides: Partial<HomeCard> = {}): HomeCard {
       capacityOk: true,
     },
     likedYou: null,
+    likeMessage: null,
     ...overrides,
   };
 }

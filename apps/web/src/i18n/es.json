@@ -262,7 +262,6 @@
   },
   "appShell": {
     "title": "Tu espacio en TinHome",
-    "comingSoonBody": "Estamos preparando esta sección.",
     "verification": "Verificación"
   },
   "dev": {
@@ -1120,7 +1119,9 @@
     "later": "Ahora no",
     "undoTitle": "Deshaz todas las veces que quieras",
     "likesTitle": "Sigue descubriendo sin límite",
-    "filtersTitle": "Encuentra antes tu intercambio"
+    "filtersTitle": "Encuentra antes tu intercambio",
+    "likesBody": "Has usado tus {{count}} me gusta de hoy. Se renuevan a las 00:00.",
+    "whoLikedTitle": "Mira quién quiere intercambiar contigo"
   },
   "discover": {
     "to": "A:",
@@ -1213,5 +1214,113 @@
     "passed": "Pasada",
     "prevPhoto": "Anterior",
     "nextPhoto": "Siguiente"
+  },
+  "match": {
+    "title": "¡Es un match con {{name}}!",
+    "body": "A los dos os gusta la casa del otro. Escribidle para hablar de fechas.",
+    "sendMessage": "Enviar mensaje",
+    "keepDiscovering": "Seguir descubriendo",
+    "agreement": "Descargar acuerdo de intercambio"
+  },
+  "likes": {
+    "headline_one": "{{count}} persona quiere intercambiar contigo",
+    "headline_other": "{{count}} personas quieren intercambiar contigo",
+    "wroteYou": "{{name}} te ha escrito",
+    "seeWho": "Ver quién te ha dado me gusta",
+    "freeHint": "Con Premium verás la lista completa.",
+    "emptyTitle": "Aún nadie te ha dado me gusta",
+    "emptyBody": "Mejora tu casa: añade fotos con luz natural y una buena descripción.",
+    "improve": "Editar mi casa"
+  },
+  "chat": {
+    "emptyTitle": "Aún no tienes matches",
+    "emptyBody": "Sigue descubriendo: cuando a los dos os guste la casa del otro, podréis hablar aquí.",
+    "newMatches": "Nuevos matches",
+    "sayHi": "¡Nuevo match! Di hola 👋",
+    "unread_one": "{{count}} mensaje sin leer",
+    "unread_other": "{{count}} mensajes sin leer",
+    "pick": "Elige una conversación.",
+    "closed": "Esta conversación ya no está disponible",
+    "backToList": "Volver a los chats",
+    "menu": "Opciones de la conversación",
+    "viewHome": "Ver su casa",
+    "sharePhone": "Compartir mi teléfono",
+    "sharePhoneBody": "{{name}} verá tu número {{phone}} y podrá llamarte o escribirte por WhatsApp. No podrás retirarlo.",
+    "sharePhoneConfirm": "Compartir",
+    "phoneMasked": "verificado",
+    "agreement": "Descargar acuerdo",
+    "unmatch": "Deshacer match",
+    "unmatchBody": "La conversación desaparecerá para los dos y {{name}} dejará de ver tu contacto.",
+    "block": "Bloquear",
+    "blockBody": "{{name}} y tú dejaréis de veros en TinHome. Solo tú puedes desbloquear desde Perfil › Bloqueados.",
+    "unmatched": "Match deshecho",
+    "blocked": "Has bloqueado a esta persona",
+    "nextStep": "1. Hablad · 2. Descargad el acuerdo · 3. Declarad el intercambio para poder valoraros.",
+    "paymentWarning": "Nunca envíes dinero ni datos bancarios. TinHome no participa en el acuerdo.",
+    "understood": "Entendido",
+    "contact": "Teléfono de {{name}}: {{phone}}",
+    "call": "Llamar",
+    "whatsapp": "WhatsApp",
+    "offline": "Sin conexión: enviaremos tus mensajes al volver.",
+    "messagesLabel": "Conversación con {{name}}",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "read": "Leído",
+    "sent": "Enviado",
+    "sending": "Enviando…",
+    "failed": "No enviado · Reintentar",
+    "hidden": "Mensaje oculto por moderación",
+    "tooFast": "Vas muy rápido. Espera un momento.",
+    "composerLabel": "Escribe un mensaje",
+    "placeholder": "Escribe un mensaje…",
+    "send": "Enviar",
+    "counter": "{{count}} / {{max}}",
+    "suggestionsLabel": "Sugerencias para empezar",
+    "suggestions": {
+      "dates": "¿Qué fechas os vienen bien?",
+      "neighbourhood": "¿Cómo es tu barrio?",
+      "family": "¿Cuántos sois y viajáis con mascota?"
+    },
+    "system": {
+      "MATCH_CREATED": "¡Match con {{name}}! Ya podéis hablar.",
+      "PHONE_SHARED": "Teléfono compartido",
+      "EXCHANGE_PROPOSED": "Intercambio propuesto",
+      "EXCHANGE_CONFIRMED": "Intercambio confirmado",
+      "EXCHANGE_DECLINED": "Intercambio rechazado",
+      "EXCHANGE_CANCELLED": "Intercambio cancelado",
+      "phoneShared": "{{name}} ha compartido su teléfono",
+      "phoneSharedMine": "Has compartido tu teléfono"
+    }
+  },
+  "agreement": {
+    "title": "Acuerdo de intercambio de casas (modelo PROVISIONAL)",
+    "notParty": "TinHome conecta a las personas, pero no es parte de este acuerdo ni interviene en pagos. Texto provisional pendiente de revisión legal.",
+    "parties": "Partes",
+    "details": "Detalles del intercambio",
+    "fields": {
+      "dates": "Fechas (entrada y salida)",
+      "people": "Personas en cada casa",
+      "pets": "Mascotas",
+      "rules": "Normas de cada casa",
+      "handover": "Estado de entrega",
+      "emergency": "Contacto de emergencia"
+    },
+    "checklistTitle": "Checklist de entrega",
+    "checklist": {
+      "keys": "Entrega y devolución de llaves acordada",
+      "photos": "Fotos de cada estancia al llegar y al salir",
+      "inventory": "Inventario básico revisado",
+      "meters": "Lectura de contadores (luz, agua, gas)",
+      "contacts": "Teléfonos de emergencia y del edificio"
+    },
+    "footer": "Generado en tu dispositivo con TinHome"
+  },
+  "blocked": {
+    "title": "Bloqueados",
+    "body": "Las personas bloqueadas no pueden ver tu casa ni tu perfil, y tú no ves los suyos.",
+    "empty": "No has bloqueado a nadie.",
+    "since": "Desde el {{date}}",
+    "unblock": "Desbloquear",
+    "unblocked": "Desbloqueada"
   }
 }

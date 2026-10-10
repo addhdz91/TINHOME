@@ -1266,6 +1266,11 @@ paths:
                               type:
                               - boolean
                               - 'null'
+                            likeMessage:
+                              default: null
+                              type:
+                              - string
+                              - 'null'
                           required:
                           - homeId
                           - ownerUid
@@ -1283,6 +1288,7 @@ paths:
                           - isTop
                           - compatibility
                           - likedYou
+                          - likeMessage
                           additionalProperties: false
                       canLike:
                         type: boolean
@@ -1605,6 +1611,11 @@ paths:
                               type:
                               - boolean
                               - 'null'
+                            likeMessage:
+                              default: null
+                              type:
+                              - string
+                              - 'null'
                           required:
                           - homeId
                           - ownerUid
@@ -1622,6 +1633,7 @@ paths:
                           - isTop
                           - compatibility
                           - likedYou
+                          - likeMessage
                           additionalProperties: false
                       nextCursor:
                         type:
@@ -2043,8 +2055,8 @@ paths:
       operationId: likeHome
       tags:
       - Match
-      summary: Me gusta (puede crear match)
-      description: 'Callable de Firebase. Guardas: A,EV,ID,ACT,LEG,CO. Ver 05_API_CONTRACT.md.'
+      summary: Me gusta (y match si es recíproco)
+      description: 'Callable de Firebase. Guardas: A,EV,ID,ACT,LEG,CO. El mensaje (FR-61) exige Premium. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -2055,15 +2067,19 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    homeId: *id001
+                    homeId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     message:
                       type: string
+                      minLength: 1
                       maxLength: 280
                     clientRequestId:
                       type: string
                       format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
                   required:
                   - homeId
               required:
@@ -2079,21 +2095,24 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      matched: *id004
+                      matched:
+                        type: boolean
                       matchId:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                       likesRemaining:
-                        oneOf:
-                        - *id005
+                        anyOf:
+                        - type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
                         - type: 'null'
                     required:
                     - matched
                     - matchId
                     - likesRemaining
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2225,8 +2244,8 @@ paths:
       operationId: listLikesReceived
       tags:
       - Match
-      summary: Me gusta recibidos (lista solo Premium)
-      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      summary: Me gusta recibidos
+      description: 'Callable de Firebase. Guardas: A,EV. items = null para gratis; withMessage siempre. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -2237,10 +2256,15 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
-                  properties: &id009
-                    cursor: *id001
-                    limit: &id007 {default: 20, maximum: 50, minimum: 1, type: integer}
+                  properties:
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
               required:
               - data
       responses:
@@ -2254,23 +2278,337 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      count: *id005
+                      count:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
                       items:
-                        oneOf:
+                        anyOf:
                         - type: array
                           items:
-                            $ref: '#/components/schemas/HomeCard'
+                            type: object
+                            properties:
+                              homeId:
+                                type: string
+                              ownerUid:
+                                type: string
+                              title:
+                                type: string
+                              cityId:
+                                type: string
+                              cityName:
+                                type: string
+                              zone:
+                                type: string
+                              type:
+                                type: string
+                                enum:
+                                - FLAT
+                                - HOUSE
+                                - STUDIO
+                                - PENTHOUSE
+                                - DUPLEX
+                                - VILLA
+                                - OTHER
+                              maxGuests:
+                                type: integer
+                                minimum: -9007199254740991
+                                maximum: 9007199254740991
+                              bedrooms:
+                                type: integer
+                                minimum: -9007199254740991
+                                maximum: 9007199254740991
+                              petsAllowed:
+                                type: boolean
+                              photos:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    thumbUrl:
+                                      type: string
+                                    cardUrl:
+                                      type: string
+                                    fullUrl:
+                                      type: string
+                                    width:
+                                      type: integer
+                                      minimum: -9007199254740991
+                                      maximum: 9007199254740991
+                                    height:
+                                      type: integer
+                                      minimum: -9007199254740991
+                                      maximum: 9007199254740991
+                                  required:
+                                  - thumbUrl
+                                  - cardUrl
+                                  - fullUrl
+                                  - width
+                                  - height
+                                  additionalProperties: false
+                              host:
+                                type: object
+                                properties:
+                                  displayName:
+                                    type: string
+                                  photoUrl:
+                                    type:
+                                    - string
+                                    - 'null'
+                                  identityVerified:
+                                    type: boolean
+                                  foundingMember:
+                                    type: boolean
+                                required:
+                                - displayName
+                                - photoUrl
+                                - identityVerified
+                                - foundingMember
+                                additionalProperties: false
+                              rating:
+                                anyOf:
+                                - type: object
+                                  properties:
+                                    avg:
+                                      type: number
+                                    count:
+                                      type: integer
+                                      minimum: -9007199254740991
+                                      maximum: 9007199254740991
+                                  required:
+                                  - avg
+                                  - count
+                                  additionalProperties: false
+                                - type: 'null'
+                              isTop:
+                                type: boolean
+                              compatibility:
+                                type: object
+                                properties:
+                                  perfectFit:
+                                    type: boolean
+                                  mutualDestination:
+                                    type: boolean
+                                  wantsYourCity:
+                                    type: boolean
+                                  sharedWindowIds:
+                                    type: array
+                                    items:
+                                      type: string
+                                  overlapDays:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                  petsOk:
+                                    type: boolean
+                                  capacityOk:
+                                    type: boolean
+                                required:
+                                - perfectFit
+                                - mutualDestination
+                                - wantsYourCity
+                                - sharedWindowIds
+                                - overlapDays
+                                - petsOk
+                                - capacityOk
+                                additionalProperties: false
+                              likedYou:
+                                type:
+                                - boolean
+                                - 'null'
+                              likeMessage:
+                                default: null
+                                type:
+                                - string
+                                - 'null'
+                            required:
+                            - homeId
+                            - ownerUid
+                            - title
+                            - cityId
+                            - cityName
+                            - zone
+                            - type
+                            - maxGuests
+                            - bedrooms
+                            - petsAllowed
+                            - photos
+                            - host
+                            - rating
+                            - isTop
+                            - compatibility
+                            - likedYou
+                            - likeMessage
+                            additionalProperties: false
                         - type: 'null'
+                      withMessage:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            homeId:
+                              type: string
+                            ownerUid:
+                              type: string
+                            title:
+                              type: string
+                            cityId:
+                              type: string
+                            cityName:
+                              type: string
+                            zone:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - FLAT
+                              - HOUSE
+                              - STUDIO
+                              - PENTHOUSE
+                              - DUPLEX
+                              - VILLA
+                              - OTHER
+                            maxGuests:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            bedrooms:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            petsAllowed:
+                              type: boolean
+                            photos:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  thumbUrl:
+                                    type: string
+                                  cardUrl:
+                                    type: string
+                                  fullUrl:
+                                    type: string
+                                  width:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                  height:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                required:
+                                - thumbUrl
+                                - cardUrl
+                                - fullUrl
+                                - width
+                                - height
+                                additionalProperties: false
+                            host:
+                              type: object
+                              properties:
+                                displayName:
+                                  type: string
+                                photoUrl:
+                                  type:
+                                  - string
+                                  - 'null'
+                                identityVerified:
+                                  type: boolean
+                                foundingMember:
+                                  type: boolean
+                              required:
+                              - displayName
+                              - photoUrl
+                              - identityVerified
+                              - foundingMember
+                              additionalProperties: false
+                            rating:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  avg:
+                                    type: number
+                                  count:
+                                    type: integer
+                                    minimum: -9007199254740991
+                                    maximum: 9007199254740991
+                                required:
+                                - avg
+                                - count
+                                additionalProperties: false
+                              - type: 'null'
+                            isTop:
+                              type: boolean
+                            compatibility:
+                              type: object
+                              properties:
+                                perfectFit:
+                                  type: boolean
+                                mutualDestination:
+                                  type: boolean
+                                wantsYourCity:
+                                  type: boolean
+                                sharedWindowIds:
+                                  type: array
+                                  items:
+                                    type: string
+                                overlapDays:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                petsOk:
+                                  type: boolean
+                                capacityOk:
+                                  type: boolean
+                              required:
+                              - perfectFit
+                              - mutualDestination
+                              - wantsYourCity
+                              - sharedWindowIds
+                              - overlapDays
+                              - petsOk
+                              - capacityOk
+                              additionalProperties: false
+                            likedYou:
+                              type:
+                              - boolean
+                              - 'null'
+                            likeMessage:
+                              default: null
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - homeId
+                          - ownerUid
+                          - title
+                          - cityId
+                          - cityName
+                          - zone
+                          - type
+                          - maxGuests
+                          - bedrooms
+                          - petsAllowed
+                          - photos
+                          - host
+                          - rating
+                          - isTop
+                          - compatibility
+                          - likedYou
+                          - likeMessage
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - count
                     - items
+                    - withMessage
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2287,7 +2625,7 @@ paths:
       operationId: markMatchSeen
       tags:
       - Match
-      summary: Marca un match como visto
+      summary: Marca el match como visto
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2299,9 +2637,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
                   required:
                   - matchId
               required:
@@ -2315,7 +2655,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2332,7 +2680,7 @@ paths:
       operationId: unmatch
       tags:
       - Match
-      summary: Deshacer match
+      summary: Deshace el match (BR-09)
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2344,9 +2692,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
                   required:
                   - matchId
               required:
@@ -2360,7 +2710,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2377,7 +2735,7 @@ paths:
       operationId: getMatchContact
       tags:
       - Contacto
-      summary: Contacto del otro participante
+      summary: Teléfono del otro si lo compartió
       description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2389,9 +2747,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
                   required:
                   - matchId
               required:
@@ -2407,15 +2767,18 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      displayName: *id001
-                      phoneE164: *id001
-                      whatsappUrl: *id001
+                      displayName:
+                        type: string
+                      phoneE164:
+                        type: string
+                      whatsappUrl:
+                        type: string
                     required:
                     - displayName
                     - phoneE164
                     - whatsappUrl
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2919,7 +3282,7 @@ paths:
       operationId: blockUser
       tags:
       - Seguridad
-      summary: Bloquear usuario
+      summary: Bloquea a un usuario (BR-10)
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2931,9 +3294,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    targetUid: *id001
+                    targetUid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                   required:
                   - targetUid
               required:
@@ -2947,7 +3312,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2964,7 +3337,7 @@ paths:
       operationId: unblockUser
       tags:
       - Seguridad
-      summary: Desbloquear usuario
+      summary: Desbloquea (solo quien bloqueó)
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -2976,9 +3349,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    targetUid: *id001
+                    targetUid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                   required:
                   - targetUid
               required:
@@ -2992,7 +3367,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3009,7 +3392,7 @@ paths:
       operationId: listBlocked
       tags:
       - Seguridad
-      summary: Usuarios bloqueados
+      summary: Personas bloqueadas
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -3019,7 +3402,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
               required:
               - data
       responses:
@@ -3033,19 +3419,26 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
-                          additionalProperties: false
                           properties:
-                            uid: *id001
-                            displayName: *id001
-                            blockedAt: *id008
+                            uid:
+                              type: string
+                            displayName:
+                              type: string
+                            blockedAt:
+                              type: string
+                          required:
+                          - uid
+                          - displayName
+                          - blockedAt
+                          additionalProperties: false
                     required:
                     - items
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -4259,7 +4652,7 @@ paths:
                       - HIGH
                       - NORMAL
                     cursor: *id001
-                    limit: *id007
+                    limit: &id007 {default: 20, maximum: 50, minimum: 1, type: integer}
               required:
               - data
       responses:
@@ -5254,7 +5647,7 @@ paths:
                 data:
                   type: object
                   additionalProperties: false
-                  properties: *id009
+                  properties: &id009 {cursor: {type: string}, limit: {default: 20, maximum: 50, minimum: 1, type: integer}}
               required:
               - data
       responses:
@@ -5477,7 +5870,7 @@ paths:
     post:
       operationId: sharePhoneInChat
       tags:
-      - Chat
+      - Contacto
       summary: Comparte mi teléfono en este match
       description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
       requestBody:
@@ -5490,9 +5883,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
                   required:
                   - matchId
               required:
@@ -5506,7 +5901,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5524,7 +5927,7 @@ paths:
       tags:
       - Chat
       summary: Envía un mensaje de texto
-      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: A,ACT. clientRequestId es el id del mensaje (idempotente). minInstances: 1. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -5535,16 +5938,19 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
                     text:
                       type: string
                       minLength: 1
-                      maxLength: 1000
+                      maxLength: 5000
                     clientRequestId:
                       type: string
                       format: uuid
+                      pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
                   required:
                   - matchId
                   - text
@@ -5562,21 +5968,24 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       message:
                         type: object
-                        additionalProperties: false
                         properties:
-                          id: *id001
-                          createdAt: *id008
-                          paymentWarning: *id004
+                          id:
+                            type: string
+                          createdAt:
+                            type: string
+                          paymentWarning:
+                            type: boolean
                         required:
                         - id
                         - createdAt
                         - paymentWarning
+                        additionalProperties: false
                     required:
                     - message
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5605,9 +6014,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
                   required:
                   - matchId
               required:
@@ -5621,7 +6032,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5638,7 +6057,7 @@ paths:
       operationId: deleteMessageForMe
       tags:
       - Chat
-      summary: Oculta un mensaje solo para mí
+      summary: Oculta un mensaje para mí
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -5650,10 +6069,15 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
-                    messageId: *id001
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    messageId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                   required:
                   - matchId
                   - messageId
@@ -5668,7 +6092,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:

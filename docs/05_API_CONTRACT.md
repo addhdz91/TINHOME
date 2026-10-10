@@ -88,7 +88,7 @@ Ciudades, ventanas y `demandStats` se leen directamente de Firestore (lectura p�
 | `likeHome` | A, EV, ID, ACT, LEG, CO | `{ homeId, message?: string (≤ P-40, solo Premium), clientRequestId? }` | `{ matched: boolean, matchId: string \| null, likesRemaining: int \| null }` | `E_LIKE_LIMIT` (`meta.resetsAt`), `E_RATE_LIMIT`, `E_NO_AVAILABILITY`, `E_HOME_NOT_PUBLISHED`, `E_NOT_FOUND`, `E_SELF_LIKE`, `E_PREMIUM_REQUIRED` (si hay `message`), `E_MESSAGE_LIMIT`, `E_TEXT_VIOLATION`, `E_ON_HOLD` | Transacción: contador, `likes`, si recíproco → `matches` (ID determinista) + N-07 a ambos + evento |
 | `passHome` | A, EV | `{ homeId }` | `{ ok: true }` | — | `passes` con `expiresAt` |
 | `undoPass` | A, EV | `{ homeId }` | `{ ok: true }` | `E_UNDO_LIMIT` (gratis: 1 por sesión, el cliente envía `sessionId`) | Borra `passes` |
-| `listLikesReceived` | A, EV | `{ cursor?, limit? }` | `{ count: int, items: HomeCard[] \| null, nextCursor }` (`items = null` si no es Premium) | — | — |
+| `listLikesReceived` | A, EV | `{ cursor?, limit? }` | `{ count: int, items: HomeCard[] \| null, withMessage: HomeCard[], nextCursor }` (`items = null` si no es Premium; `withMessage` = me gusta con mensaje, visibles también para gratis, FR-61). Solo me gusta aún sin match, de casas visibles y sin bloqueo | — | — |
 | `markMatchSeen` | A | `{ matchId }` | `{ ok: true }` | `E_NOT_PARTICIPANT` | — |
 | `unmatch` | A | `{ matchId }` | `{ ok: true }` | `E_NOT_PARTICIPANT`, `E_MATCH_INACTIVE` | BR-09 |
 
@@ -107,7 +107,7 @@ Ciudades, ventanas y `demandStats` se leen directamente de Firestore (lectura p�
 | `markConversationRead` | A | `{ matchId }` | `{ ok: true }` | `E_NOT_PARTICIPANT` | `unread[uid] = 0`, `lastReadAt[uid]` |
 | `deleteMessageForMe` | A | `{ matchId, messageId }` | `{ ok: true }` | `E_NOT_PARTICIPANT` | Añade a `deletedFor` |
 
-Los mensajes se leen en tiempo real desde Firestore (`matches/{id}/messages`, orden `createdAt desc`, `limit 50`). `sendMessage` se despliega con `minInstances: 1` para evitar arranques en frío.
+Los mensajes se leen en tiempo real desde Firestore (`matches/{id}/messages`, orden `createdAt desc`, `limit 50`), solo por los participantes y solo mientras el match está `ACTIVE` (M6). El id del mensaje es el `clientRequestId`. Si dos personas vuelven a hacer match tras deshacerlo, el nuevo match tiene id `{uidA}_{uidB}_{n}` para que la conversación anterior no reaparezca (BR-45). `sendMessage` se despliega con `minInstances: 1` para evitar arranques en frío.
 
 ### 2.8 Intercambios (EXCH)
 
@@ -299,6 +299,7 @@ interface HomeCard {
   rating: { avg: number; count: number } | null; isTop: boolean;
   compatibility: Compatibility;
   likedYou: boolean | null; // null si el visor no es Premium
+  likeMessage: string | null; // FR-61: mensaje de un me gusta recibido de este titular (M6)
 }
 
 interface Compatibility {

@@ -66,6 +66,12 @@ export function ProfilePage() {
 
       <nav aria-label={t('profile.account')} className="flex flex-col gap-2">
         <Link
+          to="/app/bloqueados"
+          className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
+        >
+          {t('blocked.title')}
+        </Link>
+        <Link
           to="/ayuda"
           className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
         >
