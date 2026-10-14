@@ -124,6 +124,8 @@ async function seedUsers(): Promise<void> {
     'moderationActions',
     'strikes',
     'appeals',
+    'gdprRequests',
+    'events',
   ]) {
     await db.recursiveDelete(db.collection(collection));
   }

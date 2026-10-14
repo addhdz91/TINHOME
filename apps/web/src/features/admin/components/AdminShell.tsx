@@ -4,6 +4,7 @@ import {
   BellRing,
   FileText,
   Map,
+  Lock,
   Megaphone,
   ScrollText,
   SlidersHorizontal,
@@ -46,6 +47,7 @@ type NavKey =
   | 'legal'
   | 'metrics'
   | 'partners'
+  | 'gdpr'
   | 'audit';
 
 const NAV: { key: NavKey; to: string; icon: LucideIcon; end?: boolean; superOnly?: boolean }[] = [
@@ -61,6 +63,7 @@ const NAV: { key: NavKey; to: string; icon: LucideIcon; end?: boolean; superOnly
   { key: 'faqs', to: '/admin/ayuda', icon: BookOpen },
   { key: 'catalog', to: '/admin/ciudades', icon: Map },
   { key: 'metrics', to: '/admin/metricas', icon: BarChart3 },
+  { key: 'gdpr', to: '/admin/rgpd', icon: Lock },
   { key: 'params', to: '/admin/parametros', icon: SlidersHorizontal, superOnly: true },
   { key: 'legal', to: '/admin/textos', icon: FileText, superOnly: true },
   { key: 'partners', to: '/admin/patrocinados', icon: Megaphone, superOnly: true },

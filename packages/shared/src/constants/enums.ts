@@ -85,6 +85,7 @@ export const EMAIL_TEMPLATES = [
   'N-15',
   'N-16',
   'N-17',
+  'N-18',
   'N-19',
   'N-20',
   'N-21',
@@ -93,6 +94,7 @@ export const EMAIL_TEMPLATES = [
   'N-25',
   'N-26',
   'N-27',
+  'N-30',
 ] as const;
 export type EmailTemplateId = (typeof EMAIL_TEMPLATES)[number];
 
@@ -353,6 +355,8 @@ export const NOTIFICATION_TYPES = [
   'N-05',
   'N-17',
   'N-28',
+  'N-18',
+  'N-30',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -460,3 +464,34 @@ export const PARTNER_CATEGORIES = [
 export type PartnerCategory = (typeof PARTNER_CATEGORIES)[number];
 export const SPONSORED_PLACEMENTS = ['MATCH', 'EXCHANGE', 'DECK'] as const;
 export type SponsoredPlacement = (typeof SPONSORED_PLACEMENTS)[number];
+
+/** FR-59 / 04 §2.27 — GDPR rights requests. */
+export const GDPR_REQUEST_TYPES = [
+  'ACCESS',
+  'RECTIFICATION',
+  'ERASURE',
+  'OBJECTION',
+  'RESTRICTION',
+  'PORTABILITY',
+] as const;
+export type GdprRequestType = (typeof GDPR_REQUEST_TYPES)[number];
+export const GDPR_REQUEST_STATUS = ['OPEN', 'DONE', 'REJECTED'] as const;
+export type GdprRequestStatus = (typeof GDPR_REQUEST_STATUS)[number];
+
+/** 03 §6 — closed list of analytics events (no personal data in their properties). */
+export const ANALYTICS_EVENTS = [
+  'signup_completed',
+  'phone_verified',
+  'home_published',
+  'identity_submitted',
+  'like_sent',
+  'match_created',
+  'exchange_confirmed',
+  'review_submitted',
+  'paywall_viewed',
+  'checkout_started',
+  'premium_activated',
+  'invite_shared',
+  'sponsored_clicked',
+] as const;
+export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];

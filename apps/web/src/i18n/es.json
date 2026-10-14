@@ -171,7 +171,8 @@
       "legal": "Textos legales",
       "metrics": "Métricas",
       "audit": "Auditoría",
-      "partners": "Patrocinados"
+      "partners": "Patrocinados",
+      "gdpr": "Solicitudes RGPD"
     },
     "denied": {
       "title": "No tienes acceso",
@@ -678,6 +679,34 @@
         "MATCH": "Pantalla de match",
         "EXCHANGE": "Ficha de intercambio",
         "DECK": "Intersticial del mazo (solo gratis)"
+      }
+    },
+    "gdpr": {
+      "title": "Solicitudes RGPD",
+      "intro": "Derechos de protección de datos. Plazo de respuesta: P-16R días desde la recepción.",
+      "empty": "No hay solicitudes",
+      "filter": "Estado",
+      "all": "Todas",
+      "overdue": "Fuera de plazo",
+      "due": "Vence el {{date}}",
+      "from": "De {{name}}",
+      "close": "Responder y cerrar",
+      "note": "Respuesta para la persona (se envía por email)",
+      "done": "Atendida",
+      "rejected": "Rechazada",
+      "closed": "Solicitud cerrada",
+      "types": {
+        "ACCESS": "Acceso",
+        "RECTIFICATION": "Rectificación",
+        "ERASURE": "Supresión",
+        "OBJECTION": "Oposición",
+        "RESTRICTION": "Limitación",
+        "PORTABILITY": "Portabilidad"
+      },
+      "status": {
+        "OPEN": "En curso",
+        "DONE": "Atendida",
+        "REJECTED": "Rechazada"
       }
     }
   },
@@ -2144,5 +2173,76 @@
     "visitAria": "Ver oferta de {{title}} (se abre en una pestaña nueva)",
     "continue": "Seguir descubriendo",
     "why": "TinHome no participa en el servicio del partner."
+  },
+  "privacy": {
+    "title": "Privacidad y mis datos",
+    "intro": "Puedes descargar tus datos y ejercer tus derechos de protección de datos. Respondemos en un plazo de {{days}} días.",
+    "download": {
+      "title": "Descargar mis datos",
+      "body": "Un archivo JSON con tu cuenta, tu casa, tus mensajes, intercambios, valoraciones y avisos. Por seguridad te pediremos que vuelvas a identificarte.",
+      "button": "Descargar mis datos",
+      "confirm": "Generar descarga",
+      "ready": "Tu archivo está listo. El enlace caduca en 15 minutos.",
+      "fileName": "tinhome-mis-datos.json",
+      "again": "Descargar archivo"
+    },
+    "requests": {
+      "title": "Mis solicitudes de protección de datos",
+      "empty": "No has enviado ninguna solicitud",
+      "new": "Nueva solicitud",
+      "type": "Derecho que quieres ejercer",
+      "details": "Cuéntanos qué necesitas",
+      "detailsHint": "Mínimo 10 caracteres. No incluyas datos de otras personas.",
+      "send": "Enviar solicitud",
+      "sent": "Solicitud registrada. Te responderemos antes del {{date}}.",
+      "due": "Respuesta antes del {{date}}",
+      "answer": "Respuesta: {{note}}"
+    },
+    "types": {
+      "ACCESS": "Acceso",
+      "RECTIFICATION": "Rectificación",
+      "ERASURE": "Supresión",
+      "OBJECTION": "Oposición",
+      "RESTRICTION": "Limitación",
+      "PORTABILITY": "Portabilidad"
+    },
+    "status": {
+      "OPEN": "En curso",
+      "DONE": "Atendida",
+      "REJECTED": "Rechazada"
+    },
+    "accepted": {
+      "title": "Textos aceptados",
+      "body": "Consulta los textos legales vigentes.",
+      "terms": "Términos y condiciones",
+      "policy": "Política de privacidad"
+    },
+    "deletion": {
+      "title": "Dar de baja mi cuenta",
+      "body": "Ver qué pasa con tus datos y solicitar la baja.",
+      "link": "Dar de baja mi cuenta"
+    },
+    "aepd": "Si no estás de acuerdo con nuestra respuesta, puedes reclamar ante la Agencia Española de Protección de Datos."
+  },
+  "deletion": {
+    "title": "Dar de baja mi cuenta",
+    "intro": "Antes de continuar, esto es lo que pasará:",
+    "consequences": [
+      "Tu casa y tu perfil dejarán de verse en ese mismo momento y se cerrará la sesión en todos tus dispositivos.",
+      "Se cancelarán los intercambios propuestos o confirmados que aún no hayan empezado, y avisaremos a la otra persona.",
+      "Tu suscripción Premium, si la tienes, no se renovará.",
+      "Tus datos personales y fotos se borrarán a los {{days}} días.",
+      "Conservaremos bloqueados, durante el tiempo que exige la ley, los registros de moderación, denuncias, quejas y facturación.",
+      "Tus valoraciones escritas se mostrarán como «Usuario dado de baja»."
+    ],
+    "before": "Si quieres una copia de tus datos, descárgala antes desde Privacidad.",
+    "confirmLabel": "Escribe ELIMINAR para confirmar",
+    "confirmWord": "ELIMINAR",
+    "continue": "Continuar",
+    "reauthTitle": "Confirma que eres tú",
+    "reauthBody": "Para dar de baja la cuenta necesitamos que vuelvas a identificarte.",
+    "confirm": "Dar de baja mi cuenta",
+    "done": "Hemos recibido tu solicitud. Tus datos se borrarán el {{date}}.",
+    "provisional": "Texto PROVISIONAL pendiente de revisión legal."
   }
 }

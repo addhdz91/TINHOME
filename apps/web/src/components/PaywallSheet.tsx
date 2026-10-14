@@ -1,9 +1,11 @@
 import { Check } from 'lucide-react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 import { usePublicConfig } from '@/hooks/use-public-config';
+import { track } from '@/lib/analytics';
 import { formatPrice } from '@/lib/format';
 
 const PERKS = ['likes', 'whoLiked', 'filters'] as const;
@@ -22,6 +24,9 @@ export function PaywallSheet({
 }) {
   const { t } = useTranslation();
   const config = usePublicConfig();
+  useEffect(() => {
+    if (open) track('paywall_viewed');
+  }, [open]);
   const monthly = config.data ? formatPrice(config.data.premiumMonthlyPriceCents) : null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

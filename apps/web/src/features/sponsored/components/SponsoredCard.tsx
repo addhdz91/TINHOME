@@ -2,6 +2,7 @@ import { ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { z } from 'zod';
 import type { SponsoredCard as SponsoredCardSchema } from '@tinhome/shared/schemas';
+import { track } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
 export type SponsoredCardData = z.infer<typeof SponsoredCardSchema>;
@@ -45,6 +46,7 @@ export function SponsoredCard({
         href={card.clickUrl}
         target="_blank"
         rel="sponsored noopener noreferrer"
+        onClick={() => track('sponsored_clicked')}
         aria-label={t('sponsored.visitAria', { title: card.title })}
         className="inline-flex min-h-11 items-center gap-2 self-start font-semibold text-link underline"
       >

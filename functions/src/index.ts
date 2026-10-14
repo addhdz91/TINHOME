@@ -137,3 +137,14 @@ export {
   getSponsored,
   partnerRedirect,
 } from './modules/sponsored/callables.js';
+export {
+  adminCloseGdprRequest,
+  adminListGdprRequests,
+  exportMyData,
+  jobPurgeAccounts,
+  jobPurgeClosedChats,
+  listMyGdprRequests,
+  requestAccountDeletion,
+  submitGdprRequest,
+  trackEvent,
+} from './modules/privacy/callables.js';

@@ -9,6 +9,7 @@ import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
 import { useCities } from '@/features/cities';
+import { track } from '@/lib/analytics';
 import { getReferralSummary } from '@/lib/callables';
 
 /** S-13 — `/app/invita`: code, link, share (native, WhatsApp, copy) and invited people (FR-39). */
@@ -27,6 +28,7 @@ export function InvitePage() {
     const { code, link, invited, rewardsThisYear, maxRewards, rewardDays } = summary.data;
     const message = t('invite.message', { link });
     const share = async () => {
+      track('invite_shared');
       try {
         if (typeof navigator.share === 'function')
           await navigator.share({ title: 'TinHome', text: message, url: link });

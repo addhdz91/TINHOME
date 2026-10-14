@@ -65,4 +65,6 @@ export const PublicConfigSchema = ParamsSchema.pick({
   exchangeMaxNights: true,
   withdrawalDays: true,
   sponsoredEveryNCards: true,
+  accountPurgeDays: true,
+  gdprResponseDays: true,
 });

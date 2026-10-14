@@ -64,6 +64,8 @@ export const PUBLIC_PARAM_KEYS = [
   'exchangeMaxNights',
   'withdrawalDays',
   'sponsoredEveryNCards',
+  'accountPurgeDays',
+  'gdprResponseDays',
 ] as const satisfies readonly (keyof Params)[];
 
 /** Builds the `config/public` projection from the full parameter set. */
@@ -79,5 +81,7 @@ export function toPublicConfig(params: Params): PublicConfig {
     exchangeMaxNights: params.exchangeMaxNights,
     withdrawalDays: params.withdrawalDays,
     sponsoredEveryNCards: params.sponsoredEveryNCards,
+    accountPurgeDays: params.accountPurgeDays,
+    gdprResponseDays: params.gdprResponseDays,
   };
 }

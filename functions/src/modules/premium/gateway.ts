@@ -23,6 +23,8 @@ export interface PaymentsGateway {
   /** Cancels immediately (withdrawal) and refunds `refundCents` of the latest payment. */
   cancelAndRefund(input: { subscriptionId: string; refundCents: number }): Promise<void>;
   retrieveSubscription(subscriptionId: string): Promise<SubscriptionSnapshot | null>;
+  /** BR-29 — account deletion: no renewal, Premium ends with the paid period. */
+  cancelAtPeriodEnd(subscriptionId: string): Promise<void>;
   /** Verifies the `Stripe-Signature` and normalises the event (throws if invalid). */
   parseWebhook(rawBody: Buffer, signature: string): PaymentEvent;
 }
@@ -122,6 +124,10 @@ export class StripeGateway implements PaymentsGateway {
     await this.stripe.subscriptions.cancel(subscriptionId, { prorate: false });
   }
 
+  async cancelAtPeriodEnd(subscriptionId: string): Promise<void> {
+    await this.stripe.subscriptions.update(subscriptionId, { cancel_at_period_end: true });
+  }
+
   async retrieveSubscription(subscriptionId: string): Promise<SubscriptionSnapshot | null> {
     try {
       return snapshotOf(await this.stripe.subscriptions.retrieve(subscriptionId));
@@ -209,6 +215,10 @@ export class SimulatedGateway implements PaymentsGateway {
 
   retrieveSubscription(): Promise<SubscriptionSnapshot | null> {
     return Promise.resolve(null);
+  }
+
+  cancelAtPeriodEnd(): Promise<void> {
+    return Promise.resolve();
   }
 
   parseWebhook(): PaymentEvent {

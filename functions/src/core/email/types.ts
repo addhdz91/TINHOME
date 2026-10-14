@@ -15,6 +15,7 @@ import type { ReportAckData } from './templates/n14-report-ack.js';
 import type { StatementData } from './templates/n15-statement.js';
 import type { ResultData } from './templates/n16-result.js';
 import type { LegalUpdateData } from './templates/n17-legal.js';
+import type { DeletionData } from './templates/n18-deletion.js';
 import type { WaitlistConfirmationData } from './templates/n19-waitlist-confirmation.js';
 import type { UnreadDigestData } from './templates/n20-unread.js';
 import type { MessageLikeData } from './templates/n21-message-like.js';
@@ -22,6 +23,7 @@ import type { HoldData } from './templates/n23-hold.js';
 import type { ComplaintData } from './templates/n25-complaint.js';
 import type { AdminAlertData } from './templates/n26-admin-alert.js';
 import type { SecurityData } from './templates/n27-security.js';
+import type { GdprReplyData } from './templates/n30-gdpr.js';
 
 export interface RenderedEmail {
   subject: string;
@@ -45,6 +47,8 @@ export interface EmailTemplateData {
   'N-25': ComplaintData;
   'N-26': AdminAlertData;
   'N-17': LegalUpdateData;
+  'N-18': DeletionData;
+  'N-30': GdprReplyData;
   'N-19': WaitlistConfirmationData;
   'N-05': CityOpenData;
   'N-06': LikesDigestData;

@@ -18,6 +18,7 @@ import { notificationRoutes } from '@/features/notifications/routes';
 import { onboardingRoutes } from '@/features/onboarding/routes';
 import { premiumRoutes } from '@/features/premium/routes';
 import { pricingRoutes } from '@/features/pricing/routes';
+import { privacyRoutes } from '@/features/privacy/routes';
 import { profileRoutes } from '@/features/profile/routes';
 import { safetyRoutes } from '@/features/safety/routes';
 import { publicSupportRoutes, supportRoutes } from '@/features/support/routes';
@@ -85,6 +86,7 @@ export function buildRoutes(): RouteObject[] {
                 ...notificationRoutes,
                 ...safetyRoutes,
                 ...supportRoutes,
+                ...privacyRoutes,
                 ...discoverRoutes,
                 ...exploreRoutes,
                 ...homeDetailRoutes,

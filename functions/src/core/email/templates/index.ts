@@ -15,6 +15,7 @@ import { reportAck } from './n14-report-ack.js';
 import { statement } from './n15-statement.js';
 import { result } from './n16-result.js';
 import { legalUpdate } from './n17-legal.js';
+import { deletion } from './n18-deletion.js';
 import { waitlistConfirmation } from './n19-waitlist-confirmation.js';
 import { unreadDigest } from './n20-unread.js';
 import { messageLike } from './n21-message-like.js';
@@ -22,6 +23,7 @@ import { hold } from './n23-hold.js';
 import { complaint } from './n25-complaint.js';
 import { adminAlert } from './n26-admin-alert.js';
 import { security } from './n27-security.js';
+import { gdprReply } from './n30-gdpr.js';
 
 /** Renders a queued e-mail. Adding a template id makes this switch non-exhaustive (type error). */
 export function renderEmail(item: MailQueueItem): RenderedEmail {
@@ -52,6 +54,10 @@ export function renderEmail(item: MailQueueItem): RenderedEmail {
       return adminAlert(item.data);
     case 'N-17':
       return legalUpdate(item.data);
+    case 'N-18':
+      return deletion(item.data);
+    case 'N-30':
+      return gdprReply(item.data);
     case 'N-19':
       return waitlistConfirmation(item.data);
     case 'N-05':

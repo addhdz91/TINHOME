@@ -21,3 +21,4 @@ export * from './notifications.js';
 export * from './moderation.js';
 export * from './support.js';
 export * from './sponsored.js';
+export * from './privacy.js';

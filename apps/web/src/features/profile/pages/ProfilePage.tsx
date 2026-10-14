@@ -5,6 +5,7 @@ import {
   Gift,
   HelpCircle,
   LifeBuoy,
+  Lock,
   LogOut,
   ShieldCheck,
 } from 'lucide-react';
@@ -117,6 +118,16 @@ export function ProfilePage() {
           <span className="flex items-center gap-3">
             <Gift aria-hidden="true" className="size-5" />
             {t('invite.title')}
+          </span>
+          <ChevronRight aria-hidden="true" className="size-5 text-muted" />
+        </Link>
+        <Link
+          to="/app/privacidad"
+          className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
+        >
+          <span className="flex items-center gap-3">
+            <Lock aria-hidden="true" className="size-5" />
+            {t('privacy.title')}
           </span>
           <ChevronRight aria-hidden="true" className="size-5 text-muted" />
         </Link>

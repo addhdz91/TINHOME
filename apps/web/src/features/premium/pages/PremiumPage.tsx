@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { ReauthForm } from '@/features/auth';
 import { FeatureTable, yearlySavingPercent } from '@/features/pricing';
 import { usePublicConfig } from '@/hooks/use-public-config';
+import { track } from '@/lib/analytics';
 import { toUserMessage } from '@/lib/app-error';
 import { createCheckoutSession, createPortalSession, withdrawSubscription } from '@/lib/callables';
 import { formatInstant, formatPrice } from '@/lib/format';
@@ -41,7 +42,10 @@ export function PremiumPage() {
   }, [payment, refreshMe, setParams, t]);
 
   const checkout = useMutation({
-    mutationFn: () => createCheckoutSession({ plan, acceptImmediateStart: true }),
+    mutationFn: () => {
+      track('checkout_started', { plan });
+      return createCheckoutSession({ plan, acceptImmediateStart: true });
+    },
     onSuccess: ({ url }) => window.location.assign(url),
     onError: (error) => toast.error(toUserMessage(t, error)),
   });

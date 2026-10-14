@@ -29,6 +29,8 @@ export const NOTIFICATION_CATEGORY_OF: Record<NotificationType, NotificationCate
   'N-05': 'SERVICE',
   'N-17': 'LEGAL',
   'N-28': 'MATCHES',
+  'N-18': 'SERVICE',
+  'N-30': 'SERVICE',
 };
 
 export type NotificationPreferences = Partial<

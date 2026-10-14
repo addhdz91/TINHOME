@@ -414,8 +414,8 @@ paths:
       operationId: requestAccountDeletion
       tags:
       - Cuenta
-      summary: Solicita la baja (requiere reautenticación reciente)
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Solicita la baja (BR-29)
+      description: 'Callable de Firebase. Guardas: A (reautenticado < 5 min). DELETION_PENDING, casa en pausa, intercambios abiertos cancelados, Stripe sin renovación, sesiones revocadas, N-18. Idempotente. J-05 purga a los P-16 días. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -426,9 +426,9 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     confirm:
+                      type: string
                       const: ELIMINAR
                   required:
                   - confirm
@@ -445,13 +445,12 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      purgeAt: &id008
+                      purgeAt:
                         type: string
-                        format: date-time
                     required:
                     - purgeAt
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -4220,8 +4219,8 @@ paths:
       operationId: trackEvent
       tags:
       - Analítica
-      summary: Evento de analítica de primera parte
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Evento de analítica propia
+      description: 'Callable de Firebase. Guardas: A. Lista cerrada; propiedades sin datos personales (se descartan); uidHash; TTL 400 días. 300/h. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -4232,7 +4231,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     name:
                       type: string
@@ -4252,12 +4250,16 @@ paths:
                       - sponsored_clicked
                     props:
                       type: object
+                      propertyNames:
+                        type: string
+                        minLength: 1
+                        maxLength: 40
                       additionalProperties:
-                        oneOf:
-                        - *id001
-                        - &id010
-                          type: number
-                        - *id004
+                        anyOf:
+                        - type: string
+                          maxLength: 200
+                        - type: number
+                        - type: boolean
                   required:
                   - name
               required:
@@ -4271,7 +4273,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -4288,8 +4298,8 @@ paths:
       operationId: submitGdprRequest
       tags:
       - Privacidad
-      summary: Solicitud de derechos RGPD
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Registra una solicitud RGPD (FR-59)
+      description: 'Callable de Firebase. Guardas: A. dueAt = ahora + P-16R días (BR-30). Límite 5 al día. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -4300,7 +4310,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     type:
                       type: string
@@ -4313,9 +4322,11 @@ paths:
                       - PORTABILITY
                     details:
                       type: string
+                      minLength: 10
                       maxLength: 2000
                   required:
                   - type
+                  - details
               required:
               - data
       responses:
@@ -4329,13 +4340,15 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      requestId: *id001
-                      dueAt: *id008
+                      requestId:
+                        type: string
+                      dueAt:
+                        type: string
                     required:
                     - requestId
                     - dueAt
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -4352,8 +4365,8 @@ paths:
       operationId: exportMyData
       tags:
       - Privacidad
-      summary: Exporta mis datos (JSON)
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Descarga JSON de mis datos
+      description: 'Callable de Firebase. Guardas: A (reautenticado < 5 min). URL firmada 15 min (emulador: data:). Solo mensajes propios. Se registra como ACCESS atendida. E_REAUTH_REQUIRED. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -4362,7 +4375,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
               required:
               - data
       responses:
@@ -4376,13 +4392,15 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      url: *id001
-                      expiresAt: *id008
+                      url:
+                        type: string
+                      expiresAt:
+                        type: string
                     required:
                     - url
                     - expiresAt
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7807,7 +7825,7 @@ paths:
       operationId: adminListGdprRequests
       tags:
       - Admin
-      summary: Solicitudes RGPD
+      summary: Cola de solicitudes RGPD por vencimiento
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -7819,8 +7837,21 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
-                  properties: &id009 {cursor: {type: string}, limit: {default: 20, maximum: 50, minimum: 1, type: integer}}
+                  properties:
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                    status:
+                      type: string
+                      enum:
+                      - OPEN
+                      - DONE
+                      - REJECTED
               required:
               - data
       responses:
@@ -7834,19 +7865,70 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
+                          properties:
+                            id:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - ACCESS
+                              - RECTIFICATION
+                              - ERASURE
+                              - OBJECTION
+                              - RESTRICTION
+                              - PORTABILITY
+                            details:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - OPEN
+                              - DONE
+                              - REJECTED
+                            dueAt:
+                              type: string
+                            createdAt:
+                              type: string
+                            closedAt:
+                              type:
+                              - string
+                              - 'null'
+                            note:
+                              type:
+                              - string
+                              - 'null'
+                            uid:
+                              type: string
+                            displayName:
+                              type: string
+                            overdue:
+                              type: boolean
+                          required:
+                          - id
+                          - type
+                          - details
+                          - status
+                          - dueAt
+                          - createdAt
+                          - closedAt
+                          - note
+                          - uid
+                          - displayName
+                          - overdue
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - items
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7863,8 +7945,8 @@ paths:
       operationId: adminCloseGdprRequest
       tags:
       - Admin
-      summary: Cerrar solicitud RGPD
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Responde y cierra una solicitud RGPD
+      description: 'Callable de Firebase. Guardas: ADM. Envía N-30 (app + email). Auditado. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -7875,18 +7957,24 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     status:
                       type: string
                       enum:
                       - DONE
                       - REJECTED
-                    note: *id001
+                    note:
+                      type: string
+                      minLength: 5
+                      maxLength: 2000
                   required:
                   - id
                   - status
+                  - note
               required:
               - data
       responses:
@@ -7898,7 +7986,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -11179,6 +11275,99 @@ paths:
       security:
       - FirebaseIdToken: []
         AppCheck: []
+  /listMyGdprRequests:
+    post:
+      operationId: listMyGdprRequests
+      tags:
+      - Privacidad
+      summary: Mis solicitudes RGPD
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - ACCESS
+                              - RECTIFICATION
+                              - ERASURE
+                              - OBJECTION
+                              - RESTRICTION
+                              - PORTABILITY
+                            details:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - OPEN
+                              - DONE
+                              - REJECTED
+                            dueAt:
+                              type: string
+                            createdAt:
+                              type: string
+                            closedAt:
+                              type:
+                              - string
+                              - 'null'
+                            note:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - id
+                          - type
+                          - details
+                          - status
+                          - dueAt
+                          - createdAt
+                          - closedAt
+                          - note
+                          additionalProperties: false
+                    required:
+                    - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
 components:
   securitySchemes:
     FirebaseIdToken:
@@ -11316,7 +11505,7 @@ components:
           - type: object
             additionalProperties: false
             properties:
-              avg: *id010
+              avg: &id010 {type: number}
               count: *id005
             required:
             - avg
@@ -11551,7 +11740,7 @@ components:
           - COUPLE
           - FAMILY
           - FRIENDS
-        memberSince: *id008
+        memberSince: &id008 {format: date-time, type: string}
         identityVerified: *id004
         foundingMember: *id004
         isTopHost: *id004

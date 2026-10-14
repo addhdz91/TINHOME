@@ -239,7 +239,8 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 - `adminAlerts/{id}`: `type: REPORT_HIGH|PHOTO_DUPLICATE|HOLD_DUE|COMPLAINT_DUE|LOCATION_MANUAL|VERIFICATION_DUPLICATE` (M4), `refType`, `refId`, `priority`, `createdAt`, `handledBy?`, `handledAt?`.
 
 ### 2.25 Otros
-- `gdprRequests/{id}`: `uid`, `type: ACCESS|RECTIFICATION|ERASURE|OBJECTION|RESTRICTION|PORTABILITY`, `details`, `status: OPEN|DONE|REJECTED`, `dueAt`, `exportPath?`, `createdAt`, `closedAt?`.
+- `gdprRequests/{id}`: `uid`, `type: ACCESS|RECTIFICATION|ERASURE|OBJECTION|RESTRICTION|PORTABILITY`, `details`, `status: OPEN|DONE|REJECTED`, `dueAt`, `exportPath?`, `createdAt`, `closedAt?`, `note?` (respuesta enviada con N-30), `closedBy?`.
+- `users` en baja: `status: DELETION_PENDING`, `deletion { requestedAt, purgeAt }`, `statusBeforeDeletion`. Tras J-05 queda una lápida `{ status: DELETED, deletedAt, deletionRequestedAt }` sin datos personales.
 - `likeCounters/{uid}_{date}`: `count`, `hourBuckets: { [HH]: int }` (hora de Madrid), `messageCount` (me gusta con mensaje, P-27), `expiresAt`. TTL a 3 días.
 - `chatCounters/{uid}_{YYYYMMDDHHmm}`: `count`. Límite de mensajes por minuto (BR-36). TTL a 1 día.
 - `events/{id}`: `name`, `uidHash`, `cityId?`, `props` (sin PII), `createdAt`. TTL 400 días.

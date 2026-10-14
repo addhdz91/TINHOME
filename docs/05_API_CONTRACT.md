@@ -34,7 +34,7 @@
 | `updateSettings` | A | `{ theme?: 'system'\|'light'\|'dark'\|'black', notifications?: { [MATCHES\|MESSAGES\|LIKES\|EXCHANGES\|REVIEWS]: { email?: bool, push?: bool } }, pushPreview?: bool }` | `{ ok: true }` | `E_VALIDATION` (incluye `SERVICE`/`LEGAL`, que no se pueden desactivar) | `users.settings` (una clave por categoría y canal, M8) |
 | `confirmPhoneLinked` | A, EV | `{}` | `{ phoneVerified: true }` | `E_PHONE_NOT_LINKED`, `E_PHONE_NOT_ES` (solo móviles `+34 6/7…`) | Lee el teléfono de Auth, marca `phoneVerified`, guarda `phoneE164` y pasa el onboarding al paso 3 |
 | `acceptLegalDocs` | A | `{ items: { slug, version }[] }` (slugs aceptables: `terminos`, `privacidad`, `normas-comunidad`) | `{ ok: true }` | `E_LEGAL_VERSION`, `E_VALIDATION` | `legalAcceptances`, `users.legal` |
-| `requestAccountDeletion` | A (reautenticado < 5 min) | `{ confirm: 'ELIMINAR' }` | `{ purgeAt }` | `E_REAUTH_REQUIRED` | BR-29, cancela Stripe al fin de periodo, N-18 |
+| `requestAccountDeletion` | A (reautenticado < 5 min) | `{ confirm: 'ELIMINAR' }` | `{ purgeAt }` | `E_REAUTH_REQUIRED`, `E_NOT_FOUND` | BR-29: `users.status = DELETION_PENDING` + `deletion {requestedAt, purgeAt}`, casa `PAUSED` (deja de contar y de verse), cancela intercambios `PROPOSED`/`CONFIRMED` que aún se puedan cancelar (aviso a la otra persona), Stripe `cancel_at_period_end`, revoca sesiones, N-18 (app + email). Idempotente. J-05 purga a los P-16 días |
 | `signOutEverywhere` | A (reautenticado: `auth_time` < 5 min) | `{}` | `{ ok: true }` | `E_REAUTH_REQUIRED` | Revoca los *refresh tokens*; N-27 |
 | `registerPushToken` / `unregisterPushToken` | A | `{ token }` (20–4096) | `{ ok: true }` | `E_VALIDATION` | `users/{uid}/pushTokens/{sha256(token)}` (`token`, `platform`, `userAgent` ≤ 200, `createdAt`, `lastSeenAt`) |
 
@@ -189,9 +189,10 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 |---|---|---|---|
 | `markAllNotificationsRead` | A | `{}` | `{ updated: int }` (máx. 500 por llamada; leer uno: el cliente fija `readAt`, la regla solo permite ese campo) |
 | `getSponsored` | A, EV | `{ placement: 'MATCH'\|'EXCHANGE'\|'DECK', cityId? }` | `{ card: SponsoredCard \| null }` (BR-28: uno por pantalla; `DECK` nunca a Premium; ciudad por defecto la de la casa; rotación estable por persona y día; `getDiscoverDeck.sponsored` usa la misma lógica con `DECK`) |
-| `trackEvent` | A | `{ name: AnalyticsEvent, props?: Record<string, string\|number\|boolean> }` | `{ ok: true }` |
-| `submitGdprRequest` | A | `{ type, details }` | `{ requestId, dueAt }` |
-| `exportMyData` | A (reautenticado) | `{}` | `{ url, expiresAt }` (JSON, URL firmada 15 min) |
+| `trackEvent` | A (300/h) | `{ name: AnalyticsEvent, props?: Record<string, string\|number\|boolean> }` | `{ ok: true }` (`events` con `uidHash`, `cityId`, `props` saneadas: se descartan claves y valores con aspecto de dato personal; TTL 400 días) |
+| `submitGdprRequest` | A (5 al día) | `{ type: ACCESS\|RECTIFICATION\|ERASURE\|OBJECTION\|RESTRICTION\|PORTABILITY, details (10–2000) }` | `{ requestId, dueAt }` (`dueAt` = ahora + P-16R) |
+| `listMyGdprRequests` | A | `{}` | `{ items: GdprRequestView[] }` (con la respuesta `note` al cerrarse) |
+| `exportMyData` | A (reautenticado < 5 min; 5 al día) | `{}` | `{ url, expiresAt }` (JSON, URL firmada 15 min en `private/exports/gdpr/{uid}/`; emulador: `data:`). Incluye solo los mensajes que escribió la persona; se registra como solicitud `ACCESS` atendida. `E_REAUTH_REQUIRED` |
 
 ### 2.14 Administración (ADMIN)
 
@@ -212,7 +213,7 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `adminGetMetrics` | ADM | `{ from, to, cityId? }` | `{ funnel, premium, demand, sponsored }` |
 | `adminExportCsv` | ADM | `{ report: 'FUNNEL'\|'DEMAND'\|'USERS', from, to }` | `{ url }` |
 | `adminListAudit` | SADM | `{ targetType?, targetId?, actorUid?, cursor? }` | `{ items, nextCursor }` |
-| `adminListGdprRequests` / `adminCloseGdprRequest` | ADM | — / `{ id, status, note }` | — |
+| `adminListGdprRequests` / `adminCloseGdprRequest` | ADM | `{ status?, cursor?, limit? }` / `{ id, status: 'DONE'\|'REJECTED', note (5–2000) }` | `{ items (por `dueAt`, con `overdue`), nextCursor }` / `{ ok: true }` (N-30 a la persona; auditado) |
 
 Todas las `admin*` que cambian algo escriben en `auditLog`.
 
