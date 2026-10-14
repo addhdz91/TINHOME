@@ -10,11 +10,12 @@ import {
 import type { LikeHomeOutput } from '@tinhome/shared/schemas';
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
-import { enqueueMailNow } from '../../core/email/queue.js';
 import { publicUrl } from '../../core/public-url.js';
 import { buildMe, type SessionInfo } from '../account/me.js';
 import { compatibilityWith, loadCatalog } from '../discover/candidates.js';
 import { loadViewer } from '../discover/viewer.js';
+import { resolvePushSender, type PushSender } from '../notifications/push.js';
+import { notify } from '../notifications/service.js';
 import { personOf } from './people.js';
 
 const DAY_MS = 86_400_000;
@@ -45,6 +46,7 @@ export async function likeHome(
   input: { homeId: string; message?: string | undefined },
   params: Params,
   now: Date,
+  push: PushSender = resolvePushSender(publicUrl()),
 ): Promise<LikeHomeOutput> {
   const uid = session.uid;
   const me = await buildMe(db, session, params, now);
@@ -203,26 +205,52 @@ export async function likeHome(
   });
 
   if (result.mail) {
-    // N-07 to both people.
-    const users = await db.getAll(db.doc(`users/${uid}`), db.doc(`users/${ownerUid}`));
-    for (const [index, user] of users.entries()) {
-      const email = user.get('email') as string | undefined;
+    // N-07 to both people (centre, e-mail and push: N-28 is the push of the same event).
+    const matchId = result.mail;
+    for (const [index, person] of [uid, ownerUid].entries()) {
       const other = people[index === 0 ? 1 : 0];
-      if (!email) continue;
-      await enqueueMailNow(
+      const link = `/app/chats/${matchId}`;
+      await notify(
         db,
+        push,
         {
-          to: email,
-          templateId: 'N-07',
-          data: {
-            otherName: other.displayName,
-            otherCity: other.cityName,
-            chatUrl: `${publicUrl()}/app/chats/${result.mail}`,
+          uid: person,
+          type: 'N-07',
+          title: `¡Tienes un match con ${other.displayName}!`,
+          body: 'Escribidle para hablar de fechas.',
+          link,
+          push: true,
+          mail: {
+            templateId: 'N-07',
+            data: {
+              otherName: other.displayName,
+              otherCity: other.cityName,
+              chatUrl: `${publicUrl()}${link}`,
+            },
           },
         },
         now,
       );
     }
+  } else if (!result.matched && input.message !== undefined) {
+    // N-21 — like with a message (FR-61).
+    const sender = await db.doc(`publicProfiles/${uid}`).get();
+    const otherName = String(sender.get('displayName') ?? 'Alguien');
+    const link = '/app/me-gusta';
+    await notify(
+      db,
+      push,
+      {
+        uid: ownerUid,
+        type: 'N-21',
+        title: `${otherName} te ha escrito con su me gusta`,
+        body: 'Mira su casa y decide si te encaja.',
+        link,
+        push: true,
+        mail: { templateId: 'N-21', data: { otherName, url: `${publicUrl()}${link}` } },
+      },
+      now,
+    );
   }
   return {
     matched: result.matched,

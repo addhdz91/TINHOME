@@ -8,6 +8,7 @@
  *      location checks (Sofía's home still unchecked).
  * M5 → 60 catalogue homes (Madrid/Valencia) and likes to Javier.
  * M6 → active match Javier ⇄ Sofía with a short conversation.
+ * M8 → a completed exchange Javier ⇄ Sofía waiting for both reviews and a few notices.
  *
  * Usage: `pnpm emulators` in one terminal, then `pnpm seed`. Idempotent (overwrites).
  * Needs the Auth, Firestore and Storage emulators.
@@ -114,12 +115,17 @@ async function seedFaqs(): Promise<void> {
 }
 
 async function seedUsers(): Promise<void> {
+  // Rate-limit windows of earlier runs (e.g. 5 location readings a day, E2E-04) start clean.
+  await db.recursiveDelete(db.collection('rateLimits'));
   for (const demo of DEMO_USERS) {
     await auth.deleteUser(demo.uid).catch(() => undefined);
     // Premium state from earlier runs (M7: subscriptions and their entitlements) starts clean.
     await db.doc(`subscriptions/${demo.uid}`).delete();
     const oldEntitlements = await db.collection('entitlements').where('uid', '==', demo.uid).get();
     await Promise.all(oldEntitlements.docs.map((entitlement) => entitlement.ref.delete()));
+    // Homes passed in earlier runs (BR-11) would change the deck between runs (E2E-05).
+    const oldPasses = await db.collection('passes').where('uid', '==', demo.uid).get();
+    await Promise.all(oldPasses.docs.map((pass) => pass.ref.delete()));
     await auth.createUser({
       uid: demo.uid,
       email: demo.email,
@@ -471,6 +477,66 @@ async function seedMatches(): Promise<number> {
   return 1;
 }
 
+const isoDay = (offsetDays: number): string =>
+  new Date(Date.now() + offsetDays * 86_400_000).toISOString().slice(0, 10);
+
+/**
+ * M8 — a finished exchange Javier ⇄ Sofía waiting for both reviews (double blind, E2E-08) and a
+ * few notices in the centre. Earlier runs' exchanges, reviews and notices are removed first.
+ */
+async function seedExchanges(): Promise<number> {
+  const [a, b] = ['demo-javier', 'demo-sofia'];
+  for (const collection of ['exchanges', 'reviews']) {
+    const old = await db.collection(collection).where('seed', '==', true).get();
+    await Promise.all(old.docs.map((doc) => doc.ref.delete()));
+  }
+  for (const uid of DEMO_USERS.map((user) => user.uid)) {
+    await db.recursiveDelete(db.collection(`notifications/${uid}/items`));
+    const reviews = await db.collection('reviews').where('authorUid', '==', uid).get();
+    await Promise.all(reviews.docs.map((doc) => doc.ref.delete()));
+  }
+  const endDate = isoDay(-3);
+  const deadline = isoDay(11);
+  await db.doc('exchanges/seed-completed').set({
+    seed: true,
+    matchId: `${a}_${b}`,
+    participants: [a, b],
+    proposedBy: a,
+    startDate: isoDay(-10),
+    endDate,
+    nights: 7,
+    guests: { [a]: 2, [b]: 2 },
+    pets: { [a]: 0, [b]: 0 },
+    note: null,
+    status: 'COMPLETED',
+    expiresAt: Timestamp.fromMillis(Date.now() - 20 * 86_400_000),
+    confirmedAt: Timestamp.fromMillis(Date.now() - 20 * 86_400_000),
+    completedAt: Timestamp.fromMillis(Date.now() - 2 * 86_400_000),
+    reviewDeadlineDate: deadline,
+    reviewDeadline: Timestamp.fromDate(new Date(`${isoDay(12)}T00:00:00+01:00`)),
+    reviewsClosed: false,
+    createdAt: Timestamp.fromMillis(Date.now() - 25 * 86_400_000),
+    updatedAt: Timestamp.now(),
+  });
+  const notices: [string, string, string, string][] = [
+    [a, 'N-10', '¿Qué tal el intercambio con Sofía N.?', '/app/valorar/seed-completed'],
+    [b, 'N-10', '¿Qué tal el intercambio con Javier S.?', '/app/valorar/seed-completed'],
+    [a, 'N-07', '¡Tienes un match con Sofía N.!', `/app/chats/${a}_${b}`],
+  ];
+  for (const [uid, type, title, link] of notices) {
+    await db.collection(`notifications/${uid}/items`).add({
+      type,
+      title,
+      body:
+        type === 'N-10' ? `Valóralo antes del ${deadline}.` : 'Escribidle para hablar de fechas.',
+      link,
+      createdAt: Timestamp.now(),
+      readAt: null,
+    });
+  }
+  return 1;
+}
+
 /** Placeholder «document» images; never real documents or people. */
 async function sampleDocument(label: string): Promise<Buffer> {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560">
@@ -532,6 +598,9 @@ async function main(): Promise<void> {
   console.log(`✔ ${await seedVerifications()} pending verifications with sample documents`);
   console.log(`✔ ${await seedCatalog()} catalogue homes for Discover and Explore`);
   console.log(`✔ ${await seedMatches()} active match (Javier ⇄ Sofía) with messages`);
+  console.log(
+    `✔ ${await seedExchanges()} completed exchange to review (Javier ⇄ Sofía) and notices`,
+  );
   console.log('Done.');
 }
 

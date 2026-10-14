@@ -177,7 +177,7 @@ export async function completeSignup(
   });
 }
 
-/** updateSettings — persists the theme (C-26). */
+/** updateSettings — theme (C-26), notification preferences and push preview (FR-46, FR-70). */
 export async function updateSettings(
   db: Firestore,
   uid: string,
@@ -186,8 +186,17 @@ export async function updateSettings(
   const ref = db.doc(`users/${uid}`);
   const snap = await ref.get();
   if (!snap.exists) throw appError('E_NOT_FOUND');
-  if (input.theme)
-    await ref.update({ 'settings.theme': input.theme, updatedAt: FieldValue.serverTimestamp() });
+  const changes: Record<string, unknown> = {};
+  if (input.theme) changes['settings.theme'] = input.theme;
+  if (input.pushPreview !== undefined) changes['settings.pushPreview'] = input.pushPreview;
+  // FR-46 — one field per category and channel, so concurrent toggles do not overwrite each other.
+  for (const [category, channels] of Object.entries(input.notifications ?? {})) {
+    for (const [channel, enabled] of Object.entries(channels ?? {})) {
+      if (enabled !== undefined) changes[`settings.notifications.${category}.${channel}`] = enabled;
+    }
+  }
+  if (Object.keys(changes).length === 0) return;
+  await ref.update({ ...changes, updatedAt: FieldValue.serverTimestamp() });
 }
 
 /**

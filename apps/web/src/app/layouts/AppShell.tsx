@@ -1,4 +1,5 @@
 import {
+  CalendarDays,
   Heart,
   HelpCircle,
   Home,
@@ -10,13 +11,14 @@ import {
   User,
   type LucideIcon,
 } from 'lucide-react';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router';
 import { useMe } from '@/app/auth/auth-context';
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { TinHomeLogo } from '@/components/TinHomeLogo';
 import { useUnreadTotal } from '@/features/chat';
+import { NotificationBell, refreshPushToken } from '@/features/notifications';
 import { cn } from '@/lib/utils';
 
 // Only founding members ever load it (FR-40), so it stays out of the shell chunk.
@@ -40,9 +42,14 @@ function UnreadBadge({ uid }: { uid: string }) {
 type NavKey = 'discover' | 'explore' | 'likes' | 'chats' | 'profile';
 
 /** Desktop sidebar extras (02_UX §2.1). */
-const EXTRA: { key: 'myHome' | 'trip' | 'verification'; to: string; icon: LucideIcon }[] = [
+const EXTRA: {
+  key: 'myHome' | 'trip' | 'exchanges' | 'verification';
+  to: string;
+  icon: LucideIcon;
+}[] = [
   { key: 'myHome', to: '/app/mi-casa', icon: Home },
   { key: 'trip', to: '/app/viaje', icon: Plane },
+  { key: 'exchanges', to: '/app/intercambios', icon: CalendarDays },
   { key: 'verification', to: '/app/verificacion', icon: ShieldCheck },
 ];
 
@@ -56,11 +63,15 @@ const TABS: { key: NavKey; to: string; icon: LucideIcon }[] = [
 
 /**
  * C-01 — mobile: header + fixed bottom bar with 5 tabs (safe areas); desktop (≥ 1024 px):
- * left sidebar and centred content (max 1200 px). Badges arrive with their features.
+ * left sidebar and centred content (max 1200 px). The bell opens the notification centre (FR-46).
  */
 export function AppShell() {
   const { t } = useTranslation();
   const me = useMe();
+  // 03 §17 — renew this device's push token on every session (only if already granted).
+  useEffect(() => {
+    void refreshPushToken().catch(() => undefined);
+  }, [me.uid]);
   return (
     <div className="min-h-dvh lg:flex">
       <NavigationProgress />
@@ -79,23 +90,29 @@ export function AppShell() {
         >
           <TinHomeLogo variant="symbol" height={32} decorative />
         </Link>
-        <Link
-          to="/ayuda"
-          aria-label={t('nav.help')}
-          className="inline-flex size-11 items-center justify-center rounded-md hover:bg-surface-muted"
-        >
-          <HelpCircle aria-hidden="true" className="size-6" />
-        </Link>
+        <span className="flex items-center">
+          <NotificationBell />
+          <Link
+            to="/ayuda"
+            aria-label={t('nav.help')}
+            className="inline-flex size-11 items-center justify-center rounded-md hover:bg-surface-muted"
+          >
+            <HelpCircle aria-hidden="true" className="size-6" />
+          </Link>
+        </span>
       </header>
 
       <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-64 lg:flex-col lg:gap-6 lg:border-r lg:border-border lg:bg-surface lg:p-5">
-        <Link
-          to="/app/descubrir"
-          aria-label={t('nav.discover')}
-          className="inline-flex min-h-11 items-center"
-        >
-          <TinHomeLogo variant="horizontal" height={32} decorative />
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            to="/app/descubrir"
+            aria-label={t('nav.discover')}
+            className="inline-flex min-h-11 items-center"
+          >
+            <TinHomeLogo variant="horizontal" height={32} decorative />
+          </Link>
+          <NotificationBell />
+        </div>
         <nav aria-label={t('nav.appLabel')} className="flex flex-col gap-1">
           {[...TABS, ...EXTRA].map(({ key, to, icon: Icon }) => (
             <NavLink

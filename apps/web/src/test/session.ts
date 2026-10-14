@@ -29,7 +29,7 @@ export function makeMe(overrides: Partial<Me> = {}): Me {
     foundingMember: false,
     referralCode: 'ABCDEFGH',
     roles: [],
-    settings: { theme: 'system' },
+    settings: { theme: 'system', notifications: {}, pushPreview: false },
     ...overrides,
   };
 }

@@ -15,3 +15,6 @@ export * from './rewards.js';
 export * from './compatibility.js';
 export * from './ranking.js';
 export * from './chat.js';
+export * from './exchange.js';
+export * from './reviews.js';
+export * from './notifications.js';

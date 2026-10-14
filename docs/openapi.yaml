@@ -210,8 +210,8 @@ paths:
       operationId: updateSettings
       tags:
       - Cuenta
-      summary: Tema y notificaciones
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Tema, preferencias de avisos y vista previa de push
+      description: 'Callable de Firebase. Guardas: A. SERVICE y LEGAL no se aceptan (no se pueden desactivar). Una clave por categoría y canal. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -222,7 +222,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     theme:
                       type: string
@@ -233,8 +232,51 @@ paths:
                       - black
                     notifications:
                       type: object
-                      additionalProperties: &id004
-                        type: boolean
+                      properties:
+                        MATCHES:
+                          type: object
+                          properties:
+                            email:
+                              type: boolean
+                            push:
+                              type: boolean
+                          additionalProperties: false
+                        MESSAGES:
+                          type: object
+                          properties:
+                            email:
+                              type: boolean
+                            push:
+                              type: boolean
+                          additionalProperties: false
+                        LIKES:
+                          type: object
+                          properties:
+                            email:
+                              type: boolean
+                            push:
+                              type: boolean
+                          additionalProperties: false
+                        EXCHANGES:
+                          type: object
+                          properties:
+                            email:
+                              type: boolean
+                            push:
+                              type: boolean
+                          additionalProperties: false
+                        REVIEWS:
+                          type: object
+                          properties:
+                            email:
+                              type: boolean
+                            push:
+                              type: boolean
+                          additionalProperties: false
+                      additionalProperties: false
+                    pushPreview:
+                      type: boolean
+                  additionalProperties: false
               required:
               - data
       responses:
@@ -246,14 +288,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: &id003
+                  result:
                     type: object
-                    additionalProperties: false
                     properties:
                       ok:
+                        type: boolean
                         const: true
                     required:
                     - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -354,7 +397,7 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result: &id003 {additionalProperties: false, properties: {ok: {const: true}}, required: [ok], type: object}
                 required:
                 - result
         default:
@@ -662,7 +705,7 @@ paths:
                     properties:
                       home:
                         $ref: '#/components/schemas/HomeOwnerView'
-                      visible: *id004
+                      visible: &id004 {type: boolean}
                       pendingReasons:
                         type: array
                         description: Motivos BR-04 por los que aún no es visible.
@@ -2795,8 +2838,8 @@ paths:
       operationId: proposeExchange
       tags:
       - Intercambios
-      summary: Declara un intercambio
-      description: 'Callable de Firebase. Guardas: A,ACT,LEG. Ver 05_API_CONTRACT.md.'
+      summary: Declara un intercambio en un match activo (FR-30, BR-15)
+      description: 'Callable de Firebase. Guardas: A,EV,ACT,LEG. Un intercambio abierto (PROPOSED o CONFIRMED) por match. Mensaje de sistema y N-08 a la otra parte. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -2807,20 +2850,40 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    matchId: *id001
-                    startDate: *id006
-                    endDate: *id006
+                    matchId:
+                      type: string
+                      minLength: 1
+                      maxLength: 200
+                    startDate:
+                      type: string
+                    endDate:
+                      type: string
                     guests:
                       type: object
-                      additionalProperties: *id005
+                      propertyNames:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      additionalProperties:
+                        type: integer
+                        minimum: 1
+                        maximum: 12
                     pets:
                       type: object
-                      additionalProperties: *id005
+                      propertyNames:
+                        type: string
+                        minLength: 1
+                        maxLength: 128
+                      additionalProperties:
+                        type: integer
+                        minimum: 0
+                        maximum: 5
                     note:
-                      type: string
-                      maxLength: 300
+                      anyOf:
+                      - type: string
+                        maxLength: 300
+                      - type: 'null'
                   required:
                   - matchId
                   - startDate
@@ -2840,12 +2903,101 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       exchange:
-                        $ref: '#/components/schemas/Exchange'
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          matchId:
+                            type: string
+                          participants:
+                            type: array
+                            items:
+                              type: string
+                          proposedBy:
+                            type: string
+                          startDate:
+                            type: string
+                          endDate:
+                            type: string
+                          nights:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          guests:
+                            type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          pets:
+                            type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          note:
+                            type:
+                            - string
+                            - 'null'
+                          status:
+                            type: string
+                            enum:
+                            - PROPOSED
+                            - CONFIRMED
+                            - DECLINED
+                            - EXPIRED
+                            - CANCELLED
+                            - COMPLETED
+                          expiresAt:
+                            type: string
+                          confirmedAt:
+                            type:
+                            - string
+                            - 'null'
+                          cancelledBy:
+                            type:
+                            - string
+                            - 'null'
+                          cancelReason:
+                            type:
+                            - string
+                            - 'null'
+                          completedAt:
+                            type:
+                            - string
+                            - 'null'
+                          reviewDeadline:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - matchId
+                        - participants
+                        - proposedBy
+                        - startDate
+                        - endDate
+                        - nights
+                        - guests
+                        - pets
+                        - note
+                        - status
+                        - expiresAt
+                        - confirmedAt
+                        - cancelledBy
+                        - cancelReason
+                        - completedAt
+                        - reviewDeadline
+                        additionalProperties: false
                     required:
                     - exchange
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2862,8 +3014,8 @@ paths:
       operationId: respondExchange
       tags:
       - Intercambios
-      summary: Confirma o rechaza
-      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      summary: Confirma o rechaza una propuesta (FR-30)
+      description: 'Callable de Firebase. Guardas: A,EV,ACT. No la puede responder quien la propuso (E_SELF_RESPONSE). N-08 a quien la propuso. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -2874,10 +3026,13 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    exchangeId: *id001
-                    accept: *id004
+                    exchangeId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                    accept:
+                      type: boolean
                   required:
                   - exchangeId
                   - accept
@@ -2894,12 +3049,101 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       exchange:
-                        $ref: '#/components/schemas/Exchange'
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          matchId:
+                            type: string
+                          participants:
+                            type: array
+                            items:
+                              type: string
+                          proposedBy:
+                            type: string
+                          startDate:
+                            type: string
+                          endDate:
+                            type: string
+                          nights:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          guests:
+                            type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          pets:
+                            type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          note:
+                            type:
+                            - string
+                            - 'null'
+                          status:
+                            type: string
+                            enum:
+                            - PROPOSED
+                            - CONFIRMED
+                            - DECLINED
+                            - EXPIRED
+                            - CANCELLED
+                            - COMPLETED
+                          expiresAt:
+                            type: string
+                          confirmedAt:
+                            type:
+                            - string
+                            - 'null'
+                          cancelledBy:
+                            type:
+                            - string
+                            - 'null'
+                          cancelReason:
+                            type:
+                            - string
+                            - 'null'
+                          completedAt:
+                            type:
+                            - string
+                            - 'null'
+                          reviewDeadline:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - matchId
+                        - participants
+                        - proposedBy
+                        - startDate
+                        - endDate
+                        - nights
+                        - guests
+                        - pets
+                        - note
+                        - status
+                        - expiresAt
+                        - confirmedAt
+                        - cancelledBy
+                        - cancelReason
+                        - completedAt
+                        - reviewDeadline
+                        additionalProperties: false
                     required:
                     - exchange
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2916,8 +3160,8 @@ paths:
       operationId: cancelExchange
       tags:
       - Intercambios
-      summary: Cancela un intercambio
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Retira una propuesta o cancela antes del inicio (FR-31)
+      description: 'Callable de Firebase. Guardas: A,EV. PROPOSED: solo quien la propuso. CONFIRMED: cualquiera antes de startDate. N-08. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -2928,12 +3172,16 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    exchangeId: *id001
-                    reason:
+                    exchangeId:
                       type: string
-                      maxLength: 300
+                      minLength: 1
+                      maxLength: 128
+                    reason:
+                      anyOf:
+                      - type: string
+                        maxLength: 300
+                      - type: 'null'
                   required:
                   - exchangeId
               required:
@@ -2949,12 +3197,101 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       exchange:
-                        $ref: '#/components/schemas/Exchange'
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          matchId:
+                            type: string
+                          participants:
+                            type: array
+                            items:
+                              type: string
+                          proposedBy:
+                            type: string
+                          startDate:
+                            type: string
+                          endDate:
+                            type: string
+                          nights:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          guests:
+                            type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          pets:
+                            type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          note:
+                            type:
+                            - string
+                            - 'null'
+                          status:
+                            type: string
+                            enum:
+                            - PROPOSED
+                            - CONFIRMED
+                            - DECLINED
+                            - EXPIRED
+                            - CANCELLED
+                            - COMPLETED
+                          expiresAt:
+                            type: string
+                          confirmedAt:
+                            type:
+                            - string
+                            - 'null'
+                          cancelledBy:
+                            type:
+                            - string
+                            - 'null'
+                          cancelReason:
+                            type:
+                            - string
+                            - 'null'
+                          completedAt:
+                            type:
+                            - string
+                            - 'null'
+                          reviewDeadline:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - matchId
+                        - participants
+                        - proposedBy
+                        - startDate
+                        - endDate
+                        - nights
+                        - guests
+                        - pets
+                        - note
+                        - status
+                        - expiresAt
+                        - confirmedAt
+                        - cancelledBy
+                        - cancelReason
+                        - completedAt
+                        - reviewDeadline
+                        additionalProperties: false
                     required:
                     - exchange
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -2971,8 +3308,8 @@ paths:
       operationId: submitReview
       tags:
       - Valoraciones
-      summary: Valora un intercambio completado
-      description: 'Callable de Firebase. Guardas: A,ACT. Ver 05_API_CONTRACT.md.'
+      summary: Valoración de doble ciego (FR-32, BR-16)
+      description: 'Callable de Firebase. Guardas: A,EV,ACT. Se publica cuando valoran los dos o al vencer P-20 (J-03). Recalcula rating e isTop (BR-13). N-11. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -2983,16 +3320,17 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    exchangeId: *id001
+                    exchangeId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     overall:
                       type: integer
                       minimum: 1
                       maximum: 5
                     sub:
                       type: object
-                      additionalProperties: false
                       properties:
                         cleanliness:
                           type: integer
@@ -3035,14 +3373,32 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       review:
-                        $ref: '#/components/schemas/Review'
-                      published: *id004
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          status:
+                            type: string
+                            enum:
+                            - PENDING
+                            - PUBLISHED
+                          publishedAt:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - status
+                        - publishedAt
+                        additionalProperties: false
+                      published:
+                        type: boolean
                     required:
                     - review
                     - published
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3697,8 +4053,8 @@ paths:
     post:
       operationId: markAllNotificationsRead
       tags:
-      - Notificaciones
-      summary: Marca todos los avisos como leídos
+      - Avisos
+      summary: Marca todos los avisos como leídos (FR-46)
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -3708,7 +4064,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
               required:
               - data
       responses:
@@ -3722,11 +4081,14 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      updated: *id005
+                      updated:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
                     required:
                     - updated
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5813,9 +6175,9 @@ paths:
     post:
       operationId: registerPushToken
       tags:
-      - Notificaciones
-      summary: Registra token de web push (FCM)
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      - Avisos
+      summary: Registra el token FCM de este navegador (FR-70)
+      description: 'Callable de Firebase. Guardas: A. Documento users/{uid}/pushTokens/{sha256(token)}. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -5826,9 +6188,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    token: *id001
+                    token:
+                      type: string
+                      minLength: 20
+                      maxLength: 4096
                   required:
                   - token
               required:
@@ -5842,7 +6206,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5858,8 +6230,8 @@ paths:
     post:
       operationId: unregisterPushToken
       tags:
-      - Notificaciones
-      summary: Elimina token de web push
+      - Avisos
+      summary: Quita el token FCM de este navegador
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -5871,9 +6243,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    token: *id001
+                    token:
+                      type: string
+                      minLength: 20
+                      maxLength: 4096
                   required:
                   - token
               required:
@@ -5887,7 +6261,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:

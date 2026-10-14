@@ -10,9 +10,18 @@
 | M5 — Descubrir, Explorar y ficha de casa | ✅ Hecho | 10/10/2026 | Mazo con Encaje perfecto primero y BR-14, deslizar con teclado/gestos, pasar/deshacer, Explorar con filtros (Premium), ficha de casa, 60 casas de catálogo en el seed, E2E-05. Rama `feat/m5-discover`. |
 | M6 — Me gusta, match y chat | ✅ Hecho | 10/10/2026 | Me gusta con límites, match recíproco con celebración, me gusta recibidos, chat de texto en tiempo real (BR-22/36), bloquear, deshacer match, kit de acuerdo en PDF, N-07, E2E-06 (< 1 s). Rama `feat/m6-match`. |
 | M7 — Premium y crecimiento | ✅ Hecho | 14/10/2026 | Checkout/Portal de Stripe (simulados en el emulador), webhook idempotente con firma, J-09, derechos encadenados, desistimiento con reautenticación y reembolso P-07, N-12, `/app/premium`, `/app/invita`, me gusta con mensaje, E2E-07. Rama `feat/m7-premium`. |
-| M8 — Intercambios, valoraciones y notificaciones | ⏳ Siguiente | — | |
-| M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | Pendiente | — | |
+| M8 — Intercambios, valoraciones y notificaciones | ✅ Hecho (push real pendiente de staging) | 14/10/2026 | Declarar/confirmar/cancelar intercambio desde el chat, ficha con línea de tiempo y cuenta atrás, J-01/J-02/J-03/J-06/J-13, valoraciones de doble ciego con Casa Top, centro de avisos en tiempo real, preferencias por categoría y canal, `HttpEmailProvider`, 7 plantillas nuevas, web push FCM (`PushPrompt`, service worker, guía iOS), E2E-08. Rama `feat/m8-exchanges`. |
+| M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | ⏳ Siguiente | — | |
 | M10 — Endurecimiento y lanzamiento | Pendiente | — | |
+
+## M8 — Detalle de la DoD
+
+- ✅ Ciclo completo con reloj inyectado: propuesto → confirmado → (N-09) → completado (J-02, N-10) → valoraciones de doble ciego publicadas (N-11) — integración `exchange lifecycle with an injected clock`.
+- ✅ Casa Top se activa al cumplir BR-13 (media ≥ P-04 con ≥ P-05 publicadas), también cuando J-03 publica una pendiente — misma prueba.
+- ✅ Todos los emails tienen versión texto — prueba de plantillas (N-06, N-08 ×5, N-09, N-10, N-11, N-20, N-21) y `simpleEmail`.
+- ⚠️ «Un mensaje nuevo genera push en un navegador con permiso concedido»: el envío está implementado y probado con un emisor falso (tokens, preferencias, vista previa, tokens caducados) y el service worker muestra y abre la notificación; el push real necesita FCM y la clave VAPID del proyecto, que no existen en el emulador. Queda para la prueba en staging.
+- ✅ E2E-08: Sofía declara desde el chat, Javier recibe el aviso y confirma desde el mensaje de sistema, la ficha de Sofía se actualiza en tiempo real; doble ciego en un intercambio completado y la valoración aparece en la casa.
+- Pruebas: shared 125, functions 31 unitarias + 101 de integración, web 128, reglas 43, E2E 16/16 (dos pasadas seguidas con seed).
 
 ## M7 — Detalle de la DoD
 

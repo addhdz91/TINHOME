@@ -4,6 +4,7 @@ import { authRoutes } from '@/features/auth/routes';
 import { chatRoutes } from '@/features/chat/routes';
 import { devRoutes } from '@/features/dev/routes';
 import { discoverRoutes } from '@/features/discover/routes';
+import { exchangeRoutes } from '@/features/exchange/routes';
 import { exploreRoutes } from '@/features/explore/routes';
 import { helpRoutes } from '@/features/help/routes';
 import { homeRoutes } from '@/features/home/routes';
@@ -13,6 +14,7 @@ import { landingRoutes } from '@/features/landing/routes';
 import { legalRoutes } from '@/features/legal/routes';
 import { likesRoutes } from '@/features/likes/routes';
 import { matchRoutes } from '@/features/match/routes';
+import { notificationRoutes } from '@/features/notifications/routes';
 import { onboardingRoutes } from '@/features/onboarding/routes';
 import { premiumRoutes } from '@/features/premium/routes';
 import { pricingRoutes } from '@/features/pricing/routes';
@@ -76,6 +78,8 @@ export function buildRoutes(): RouteObject[] {
                 { index: true, element: <Navigate to="/app/descubrir" replace /> },
                 ...profileRoutes,
                 ...premiumRoutes,
+                ...exchangeRoutes,
+                ...notificationRoutes,
                 ...discoverRoutes,
                 ...exploreRoutes,
                 ...homeDetailRoutes,

@@ -68,3 +68,18 @@ export {
 } from './modules/premium/callables.js';
 export { onMailQueued } from './modules/mail/triggers.js';
 export { confirmWaitlist, joinWaitlist } from './modules/waitlist/callables.js';
+export {
+  cancelExchange,
+  jobCompleteExchanges,
+  jobDailyReminders,
+  jobExpireExchangeProposals,
+  proposeExchange,
+  respondExchange,
+} from './modules/exchange/callables.js';
+export { jobPublishReviews, submitReview } from './modules/reviews/callables.js';
+export {
+  jobUnreadDigest,
+  markAllNotificationsRead,
+  registerPushToken,
+  unregisterPushToken,
+} from './modules/notifications/callables.js';

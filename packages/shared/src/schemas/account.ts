@@ -28,6 +28,21 @@ export const CompleteSignupInput = z.object({
 export type CompleteSignupInput = z.infer<typeof CompleteSignupInput>;
 
 /** 05 §4 — `Me`: the signed-in user as the app needs it (computed by the server). */
+const ChannelPreferences = z
+  .object({ email: z.boolean().optional(), push: z.boolean().optional() })
+  .strict();
+/** SERVICE and LEGAL cannot be turned off, so they are not accepted here (FR-46). */
+export const NotificationPreferencesSchema = z
+  .object({
+    MATCHES: ChannelPreferences.optional(),
+    MESSAGES: ChannelPreferences.optional(),
+    LIKES: ChannelPreferences.optional(),
+    EXCHANGES: ChannelPreferences.optional(),
+    REVIEWS: ChannelPreferences.optional(),
+  })
+  .strict();
+export type NotificationPreferencesInput = z.infer<typeof NotificationPreferencesSchema>;
+
 export const MeSchema = z.object({
   uid: z.string(),
   email: z.string(),
@@ -76,7 +91,13 @@ export const MeSchema = z.object({
   foundingMember: z.boolean(),
   referralCode: z.string(),
   roles: z.array(z.enum(ADMIN_ROLES)),
-  settings: z.object({ theme: z.enum(THEME_PREFERENCES) }),
+  settings: z.object({
+    theme: z.enum(THEME_PREFERENCES),
+    /** FR-46 / FR-70 — opt-outs by category and channel (missing = on). */
+    notifications: NotificationPreferencesSchema,
+    /** 03 §17 — show the message text in push notifications (off by default). */
+    pushPreview: z.boolean(),
+  }),
 });
 export type Me = z.infer<typeof MeSchema>;
 
@@ -86,9 +107,13 @@ export type CompleteSignupOutput = z.infer<typeof CompleteSignupOutput>;
 export const GetMeInput = z.object({}).strict();
 export const GetMeOutput = MeSchema;
 
-/** updateSettings — theme (C-26) now; notification preferences arrive in M8. */
+/** updateSettings — theme (C-26), notification preferences and push preview (M8). */
 export const UpdateSettingsInput = z
-  .object({ theme: z.enum(THEME_PREFERENCES).optional() })
+  .object({
+    theme: z.enum(THEME_PREFERENCES).optional(),
+    notifications: NotificationPreferencesSchema.optional(),
+    pushPreview: z.boolean().optional(),
+  })
   .strict();
 export type UpdateSettingsInput = z.infer<typeof UpdateSettingsInput>;
 export const OkOutput = z.object({ ok: z.literal(true) });

@@ -1,6 +1,7 @@
 import { AlertTriangle, Check, CheckCheck, Clock, RotateCcw } from 'lucide-react';
 import { Fragment, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { formatTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { MessageView } from '../lib/types';
@@ -67,6 +68,17 @@ export function ChatThread({
                 : t(`chat.system.${message.systemCode ?? 'MATCH_CREATED'}` as const, {
                     name: otherName,
                   })}
+              {message.exchangeId ? (
+                <>
+                  {' · '}
+                  <Link
+                    to={`/app/intercambios/${message.exchangeId}`}
+                    className="font-semibold text-link underline"
+                  >
+                    {t('chat.viewExchange')}
+                  </Link>
+                </>
+              ) : null}
             </p>
           );
         } else {

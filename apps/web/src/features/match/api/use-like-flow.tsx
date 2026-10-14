@@ -7,6 +7,7 @@ import { useAuth, useMe } from '@/app/auth/auth-context';
 import { BlockerSheet } from '@/components/BlockerSheet';
 import { PaywallSheet } from '@/components/PaywallSheet';
 import { useMyHome } from '@/features/home';
+import { usePushPrompt } from '@/features/notifications';
 import { usePublicConfig } from '@/hooks/use-public-config';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { likeHome } from '@/lib/callables';
@@ -57,6 +58,7 @@ export function useLikeFlow(): {
     onDone?: () => void;
   } | null>(null);
   const [messagePaywall, setMessagePaywall] = useState(false);
+  const pushPrompt = usePushPrompt();
 
   const like = async (target: LikeTarget, message?: string): Promise<boolean> => {
     if (!me.canLike) {
@@ -121,7 +123,15 @@ export function useLikeFlow(): {
         onOpenChange={setMessagePaywall}
         title={t('paywall.messageTitle')}
       />
-      <MatchCelebration data={celebration} onClose={() => setCelebration(null)} />
+      <MatchCelebration
+        data={celebration}
+        onClose={() => {
+          setCelebration(null);
+          // FR-70 — push is offered after the first match, never on entry.
+          pushPrompt.offer();
+        }}
+      />
+      {pushPrompt.element}
       <BlockerSheet open={blockerOpen} onOpenChange={setBlockerOpen} blockers={me.blockers} />
       <PaywallSheet
         open={paywallOpen}

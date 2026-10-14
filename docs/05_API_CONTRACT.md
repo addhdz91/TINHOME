@@ -31,12 +31,12 @@
 | `completeSignup` | A | `{ firstName, lastName, birthDate, referralCode?, acceptedTerms: version, acceptedPrivacy: version }` | `{ me: Me }` | `E_UNDERAGE`, `E_LEGAL_VERSION`, `E_ALREADY_EXISTS`, `E_VALIDATION` (fecha futura o > 110 años) | Crea `users` (`onboarding.step = 2`), `publicProfiles`, `legalAcceptances` (TERMS, PRIVACY, IP /24), `referralCodes/{código propio}`; `referrals` si el código es válido (uno desconocido se ignora); si hay `waitlist` con ese email → `CONVERTED` + `users.waitlistPrefill`; encola N-02 |
 | `getMe` | A | `{}` | `Me` (ver §4) | `E_NOT_FOUND` (cuenta de Auth sin `completeSignup`: el cliente muestra «Completa tu registro») | — |
 | `updateProfile` | A, EV | `{ displayFirstName?, about?, languages?, travelsWith?, avatarPath? }` | `{ profile: PublicProfile }` | `E_TEXT_VIOLATION`, `E_VALIDATION` | Actualiza `publicProfiles` |
-| `updateSettings` | A | `{ theme?: 'system'\|'light'\|'dark'\|'black', notifications? }` | `{ ok: true }` | — | — |
+| `updateSettings` | A | `{ theme?: 'system'\|'light'\|'dark'\|'black', notifications?: { [MATCHES\|MESSAGES\|LIKES\|EXCHANGES\|REVIEWS]: { email?: bool, push?: bool } }, pushPreview?: bool }` | `{ ok: true }` | `E_VALIDATION` (incluye `SERVICE`/`LEGAL`, que no se pueden desactivar) | `users.settings` (una clave por categoría y canal, M8) |
 | `confirmPhoneLinked` | A, EV | `{}` | `{ phoneVerified: true }` | `E_PHONE_NOT_LINKED`, `E_PHONE_NOT_ES` (solo móviles `+34 6/7…`) | Lee el teléfono de Auth, marca `phoneVerified`, guarda `phoneE164` y pasa el onboarding al paso 3 |
 | `acceptLegalDocs` | A | `{ items: { slug, version }[] }` (slugs aceptables: `terminos`, `privacidad`, `normas-comunidad`) | `{ ok: true }` | `E_LEGAL_VERSION`, `E_VALIDATION` | `legalAcceptances`, `users.legal` |
 | `requestAccountDeletion` | A (reautenticado < 5 min) | `{ confirm: 'ELIMINAR' }` | `{ purgeAt }` | `E_REAUTH_REQUIRED` | BR-29, cancela Stripe al fin de periodo, N-18 |
 | `signOutEverywhere` | A (reautenticado: `auth_time` < 5 min) | `{}` | `{ ok: true }` | `E_REAUTH_REQUIRED` | Revoca los *refresh tokens*; N-27 |
-| `registerPushToken` / `unregisterPushToken` | A | `{ token }` | `{ ok: true }` | `E_VALIDATION` | `users/{uid}/pushTokens` |
+| `registerPushToken` / `unregisterPushToken` | A | `{ token }` (20–4096) | `{ ok: true }` | `E_VALIDATION` | `users/{uid}/pushTokens/{sha256(token)}` (`token`, `platform`, `userAgent` ≤ 200, `createdAt`, `lastSeenAt`) |
 
 ### 2.2 Casa y preferencias (HOME, PREF)
 
@@ -103,7 +103,7 @@ Ciudades, ventanas y `demandStats` se leen directamente de Firestore (lectura p�
 
 | Callable | Guardas | Entrada | Salida | Errores | Efectos |
 |---|---|---|---|---|---|
-| `sendMessage` | A, ACT | `{ matchId, text (1–P-28), clientRequestId (uuid) }` | `{ message: { id, createdAt, paymentWarning } }` | `E_NOT_PARTICIPANT`, `E_MATCH_INACTIVE`, `E_ON_HOLD`, `E_MESSAGE_TOO_LONG`, `E_RATE_LIMIT`, `E_VALIDATION` | Transacción: mensaje + `lastMessage` + `unread` del otro; push N-20; email resumen diferido |
+| `sendMessage` | A, ACT | `{ matchId, text (1–P-28), clientRequestId (uuid) }` | `{ message: { id, createdAt, paymentWarning } }` | `E_NOT_PARTICIPANT`, `E_MATCH_INACTIVE`, `E_ON_HOLD`, `E_MESSAGE_TOO_LONG`, `E_RATE_LIMIT`, `E_VALIDATION` | Transacción: mensaje + `lastMessage` + `unread` del otro (+ `unreadSince` si era 0); después push N-20 (sin texto salvo `pushPreview`) y `pushedAt`; email resumen N-20 por J-13 si sigue sin leer a las 2 h y no hubo push (máx. 1 cada 6 h por chat) |
 | `markConversationRead` | A | `{ matchId }` | `{ ok: true }` | `E_NOT_PARTICIPANT` | `unread[uid] = 0`, `lastReadAt[uid]` |
 | `deleteMessageForMe` | A | `{ matchId, messageId }` | `{ ok: true }` | `E_NOT_PARTICIPANT` | Añade a `deletedFor` |
 
@@ -113,15 +113,21 @@ Los mensajes se leen en tiempo real desde Firestore (`matches/{id}/messages`, or
 
 | Callable | Guardas | Entrada | Salida | Errores | Efectos |
 |---|---|---|---|---|---|
-| `proposeExchange` | A, ACT, LEG | `{ matchId, startDate, endDate, guests: { [uid]: int }, pets: { [uid]: int }, note? }` | `{ exchange }` | `E_MATCH_INACTIVE`, `E_EXCHANGE_DATES`, `E_EXCHANGE_CAPACITY`, `E_EXCHANGE_PETS`, `E_EXCHANGE_PENDING_EXISTS` | N-08 |
-| `respondExchange` | A, ACT | `{ exchangeId, accept: boolean }` | `{ exchange }` | `E_NOT_PARTICIPANT`, `E_EXCHANGE_STATE`, `E_SELF_RESPONSE` | N-08 |
-| `cancelExchange` | A | `{ exchangeId, reason? }` | `{ exchange }` | `E_EXCHANGE_STATE` (solo `PROPOSED` del proponente o `CONFIRMED` antes del inicio) | N-08 |
+| `proposeExchange` | A, EV, ACT, LEG | `{ matchId, startDate, endDate, guests: { [uid]: 1–12 }, pets: { [uid]: 0–5 }, note? (≤ 300) }` — `guests` con exactamente los dos participantes (lo que cada uno lleva a la casa del otro) | `{ exchange: ExchangeView }` | `E_MATCH_INACTIVE`, `E_EXCHANGE_DATES`, `E_EXCHANGE_CAPACITY`, `E_EXCHANGE_PETS`, `E_EXCHANGE_PENDING_EXISTS`, `E_HOME_STATE`, `E_LEGAL_OUTDATED`, `E_NOT_PARTICIPANT`, `E_VALIDATION` | `exchanges` (`PROPOSED`, `expiresAt` = ahora + P-19), `matches.activeExchangeId`, mensaje de sistema `EXCHANGE_PROPOSED` (con `exchangeId`), N-08 a la otra parte (centro + email + push) |
+| `respondExchange` | A, EV, ACT | `{ exchangeId, accept: boolean }` | `{ exchange }` | `E_NOT_PARTICIPANT`, `E_EXCHANGE_STATE` (no `PROPOSED` o caducada), `E_SELF_RESPONSE`, `E_MATCH_INACTIVE`, `E_EXCHANGE_DATES` (el inicio ya pasó) | `CONFIRMED` (o `DECLINED` y libera el match), mensaje de sistema, N-08 a quien propuso |
+| `cancelExchange` | A, EV | `{ exchangeId, reason? (≤ 300) }` | `{ exchange }` | `E_EXCHANGE_STATE` (solo `PROPOSED` de quien la propuso o `CONFIRMED` antes del inicio), `E_NOT_PARTICIPANT` | `CANCELLED` (`cancelledBy`, `cancelReason`, sin sanción), libera el match, mensaje de sistema, N-08 |
+
+`ExchangeView`: `{ id, matchId, participants, proposedBy, startDate, endDate, nights, guests, pets, note, status, expiresAt, confirmedAt, cancelledBy, cancelReason, completedAt, reviewDeadline }` (`reviewDeadline` = último día para valorar, `YYYY-MM-DD`). El cliente lee `exchanges/{id}` en tiempo real (solo participantes).
+
+> M8: un solo intercambio abierto (`PROPOSED` o `CONFIRMED`) por match, porque `matches.activeExchangeId` es único; BR-15 solo exige una propuesta (10_DECISIONS §5). Jobs: J-01 caduca propuestas (N-08 `EXPIRED` a quien la propuso), J-02 completa tras `endDate` y abre valoraciones (N-10), J-06 envía N-09 tres días antes y N-10 a los 10 días.
 
 ### 2.9 Valoraciones (REV)
 
 | Callable | Guardas | Entrada | Salida | Errores |
 |---|---|---|---|---|
-| `submitReview` | A, ACT | `{ exchangeId, overall: 1–5, sub: { cleanliness, accuracy, communication, care }, comment? }` | `{ review, published: boolean }` | `E_REVIEW_WINDOW_CLOSED`, `E_REVIEW_EXISTS`, `E_EXCHANGE_STATE`, `E_TEXT_VIOLATION` |
+| `submitReview` | A, EV, ACT | `{ exchangeId, overall: 1–5, sub: { cleanliness, accuracy, communication, care }, comment? (≤ 1000) }` | `{ review: { id, status: 'PENDING'\|'PUBLISHED', publishedAt }, published: boolean }` | `E_REVIEW_WINDOW_CLOSED`, `E_REVIEW_EXISTS`, `E_EXCHANGE_STATE`, `E_TEXT_VIOLATION`, `E_NOT_PARTICIPANT` |
+
+Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda se publican las dos. J-03 publica las pendientes al vencer el plazo. Cada publicación recalcula `homes.rating`, `homes.isTop` (BR-13) y `publicProfiles.ratingAvg/reviewsCount/isTopHost`, y envía N-11.
 
 ### 2.10 Premium (PREM)
 
@@ -175,7 +181,7 @@ Los mensajes se leen en tiempo real desde Firestore (`matches/{id}/messages`, or
 
 | Callable | Guardas | Entrada | Salida |
 |---|---|---|---|
-| `markAllNotificationsRead` | A | `{}` | `{ updated: int }` |
+| `markAllNotificationsRead` | A | `{}` | `{ updated: int }` (máx. 500 por llamada; leer uno: el cliente fija `readAt`, la regla solo permite ese campo) |
 | `getSponsored` | A, EV | `{ placement: 'MATCH'\|'EXCHANGE'\|'DECK', cityId? }` | `{ card: SponsoredCard \| null }` |
 | `trackEvent` | A | `{ name: AnalyticsEvent, props?: Record<string, string\|number\|boolean> }` | `{ ok: true }` |
 | `submitGdprRequest` | A | `{ type, details }` | `{ requestId, dueAt }` |

@@ -24,7 +24,8 @@
     "appLabel": "Secciones de la app",
     "myHome": "Mi casa",
     "trip": "Mi viaje",
-    "verification": "Verificación"
+    "verification": "Verificación",
+    "exchanges": "Intercambios"
   },
   "theme": {
     "label": "Tema",
@@ -1292,8 +1293,12 @@
       "EXCHANGE_DECLINED": "Intercambio rechazado",
       "EXCHANGE_CANCELLED": "Intercambio cancelado",
       "phoneShared": "{{name}} ha compartido su teléfono",
-      "phoneSharedMine": "Has compartido tu teléfono"
-    }
+      "phoneSharedMine": "Has compartido tu teléfono",
+      "EXCHANGE_EXPIRED": "La propuesta de intercambio ha caducado",
+      "EXCHANGE_COMPLETED": "Intercambio completado: ya podéis valoraros"
+    },
+    "viewExchange": "Ver intercambio",
+    "proposeExchange": "Declarar intercambio"
   },
   "agreement": {
     "title": "Acuerdo de intercambio de casas (modelo PROVISIONAL)",
@@ -1400,5 +1405,170 @@
     "send": "Enviar con me gusta",
     "button": "Me gusta con mensaje",
     "buttonLocked": "Me gusta con mensaje (Premium)"
+  },
+  "exchange": {
+    "nights_one": "{{count}} noche",
+    "nights_other": "{{count}} noches",
+    "status": {
+      "PROPOSED": "Pendiente de confirmar",
+      "CONFIRMED": "Confirmado",
+      "DECLINED": "Rechazado",
+      "EXPIRED": "Caducado",
+      "CANCELLED": "Cancelado",
+      "COMPLETED": "Completado"
+    },
+    "phases": {
+      "PROPOSED": "Propuesto",
+      "CONFIRMED": "Confirmado",
+      "IN_PROGRESS": "En curso",
+      "COMPLETED": "Completado"
+    },
+    "propose": {
+      "title": "Declarar intercambio con {{name}}",
+      "body": "Indicad fechas y quién va a cada casa. Cuando lo confirme, podréis valoraros al terminar.",
+      "dates": "Fechas",
+      "shortcuts": "Atajos de fechas",
+      "start": "Llegada",
+      "end": "Salida",
+      "datesError": "Elige una llegada desde hoy y una salida posterior (máximo {{max}} noches).",
+      "myGuests": "Personas que vais a casa de {{name}}",
+      "theirGuests": "Personas que vienen de casa de {{name}}",
+      "capacity_one": "Esa casa admite {{count}} persona",
+      "capacity_other": "Esa casa admite {{count}} personas",
+      "myPets": "Mascotas que lleváis",
+      "theirPets": "Mascotas que trae {{name}}",
+      "noPetsThere": "La casa de {{name}} no admite mascotas.",
+      "noPetsHere": "Tu casa no admite mascotas.",
+      "less": "Quitar una ({{label}})",
+      "more": "Añadir una ({{label}})",
+      "note": "Nota (opcional)",
+      "notePlaceholder": "Por ejemplo: llegamos el sábado por la tarde",
+      "summary_one": "Del {{start}} al {{end}} · {{count}} noche",
+      "summary_other": "Del {{start}} al {{end}} · {{count}} noches",
+      "disclaimer": "El acuerdo lo cerráis vosotros. TinHome no participa ni cobra nada por el intercambio.",
+      "submit": "Enviar a {{name}} para confirmar",
+      "sent": "Propuesta enviada a {{name}}"
+    },
+    "page": {
+      "title": "Intercambio con {{name}}",
+      "otherFallback": "tu match",
+      "datesRange": "Del {{start}} al {{end}}",
+      "timeline": "Estado del intercambio",
+      "stepDone": "(hecho)",
+      "countdown_one": "Falta {{count}} día",
+      "countdown_other": "Faltan {{count}} días",
+      "inProgress": "¡El intercambio está en curso!",
+      "waiting": "Esperando a que {{name}} confirme. La propuesta caduca el {{date}}.",
+      "askConfirm": "{{name}} te propone este intercambio. ¿Lo confirmas?",
+      "confirm": "Confirmar intercambio",
+      "decline": "Rechazar",
+      "confirmedToast": "Intercambio confirmado",
+      "declinedToast": "Has rechazado la propuesta",
+      "youTake": "Vais a casa de {{name}}",
+      "theyTake": "Vienen de casa de {{name}}",
+      "people": "{{guests}} personas · {{pets}} mascotas",
+      "note": "Nota",
+      "kit": "Prepara el intercambio",
+      "review": "Valorar el intercambio",
+      "reviewUntil": "Puedes valorarlo hasta el {{date}}.",
+      "reviewed": "Ya has valorado este intercambio. Se publicará cuando la otra persona valore o al terminar el plazo.",
+      "backToChat": "Volver al chat",
+      "cancel": "Cancelar intercambio",
+      "withdraw": "Retirar propuesta",
+      "cancelTitle": "¿Cancelar el intercambio?",
+      "cancelBody": "Avisaremos a {{name}}. Cancelar no tiene sanción, pero intenta hablarlo antes en el chat.",
+      "cancelReason": "Motivo (opcional)",
+      "cancelConfirm": "Sí, cancelar",
+      "cancelledToast": "Intercambio cancelado",
+      "notFound": "Este intercambio no existe o no es tuyo",
+      "ended": {
+        "PROPOSED": "Pendiente de confirmar.",
+        "CONFIRMED": "Confirmado.",
+        "COMPLETED": "Completado.",
+        "DECLINED": "La propuesta se rechazó. Podéis proponer otras fechas desde el chat.",
+        "EXPIRED": "La propuesta caducó sin respuesta. Podéis volver a proponerla desde el chat.",
+        "CANCELLED": "Este intercambio se canceló."
+      }
+    },
+    "list": {
+      "title": "Mis intercambios",
+      "empty": "Aún no has declarado ningún intercambio",
+      "emptyBody": "Cuando habléis en un chat, declarad el intercambio para poder valoraros al terminar."
+    }
+  },
+  "rate": {
+    "title": "Valora tu intercambio con {{name}}",
+    "blind": "Doble ciego: tu valoración se publicará cuando {{name}} también valore o el {{date}}. No se puede editar.",
+    "step": "Paso {{step}} de {{total}}",
+    "overall": "¿Qué tal fue en general?",
+    "stars_one": "{{count}} estrella",
+    "stars_other": "{{count}} estrellas",
+    "sub": {
+      "cleanliness": "Limpieza",
+      "accuracy": "Fidelidad al anuncio",
+      "communication": "Comunicación",
+      "care": "Cuidado de mi casa"
+    },
+    "comment": "Comentario (opcional)",
+    "commentHint": "Cuenta lo que ayude a otras personas: la casa, la zona, la comunicación. Sin teléfonos, emails ni precios.",
+    "final": "Al enviar, tu valoración queda guardada y no se puede editar.",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "submit": "Enviar valoración",
+    "thanks": "¡Gracias por valorar!",
+    "sentPending": "Se publicará cuando {{name}} también valore o al terminar el plazo.",
+    "sentPublished": "Las dos valoraciones ya están publicadas.",
+    "alreadyDone": "Ya has valorado este intercambio",
+    "closed": "El plazo para valorar ha terminado",
+    "notCompleted": "Podrás valorar cuando termine el intercambio",
+    "backToExchange": "Volver al intercambio"
+  },
+  "notifications": {
+    "title": "Avisos",
+    "bellUnread_one": "Avisos: {{count}} sin leer",
+    "bellUnread_other": "Avisos: {{count}} sin leer",
+    "markAll": "Marcar todo como leído",
+    "empty": "No tienes avisos",
+    "emptyBody": "Aquí verás tus matches, intercambios, valoraciones y avisos de tu cuenta.",
+    "unread": "Sin leer:",
+    "settingsLink": "Elegir qué avisos recibo",
+    "settings": {
+      "title": "Avisos",
+      "category": "Tipo",
+      "channels": {
+        "email": "Email",
+        "push": "Móvil"
+      },
+      "categories": {
+        "MATCHES": "Matches",
+        "MESSAGES": "Mensajes",
+        "LIKES": "Me gusta",
+        "EXCHANGES": "Intercambios",
+        "REVIEWS": "Valoraciones"
+      },
+      "toggle": "{{category}} por {{channel}}",
+      "mandatory": "Los avisos de tu cuenta, pagos, verificación y textos legales se envían siempre. Nunca te enviamos publicidad sin tu permiso.",
+      "preview": "Mostrar el texto de los mensajes en las notificaciones",
+      "previewHint": "Si lo desactivas, solo verás «Javier te ha escrito»."
+    }
+  },
+  "push": {
+    "title": "¿Te avisamos al momento?",
+    "body": "Activa las notificaciones para enterarte de mensajes, matches e intercambios aunque no tengas TinHome abierto. Nunca te enviaremos publicidad.",
+    "enable": "Activar notificaciones",
+    "later": "Ahora no",
+    "enabled": "Notificaciones activadas",
+    "denied": "Has bloqueado las notificaciones. Puedes activarlas en los ajustes del navegador.",
+    "error": "No hemos podido activar las notificaciones. Inténtalo de nuevo.",
+    "device": "Notificaciones en este dispositivo",
+    "disable": "Desactivar en este dispositivo",
+    "unavailable": "Este navegador no admite notificaciones.",
+    "blocked": "Las notificaciones están bloqueadas en este navegador. Actívalas desde sus ajustes.",
+    "ios": {
+      "title": "Instala TinHome para recibir avisos",
+      "step1": "Toca el botón Compartir de Safari.",
+      "step2": "Elige «Añadir a pantalla de inicio».",
+      "step3": "Abre TinHome desde el icono y activa las notificaciones."
+    }
   }
 }

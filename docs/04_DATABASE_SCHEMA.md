@@ -88,7 +88,7 @@
 | `firstSubscribedAt` | Timestamp | O,S | Desistimiento (P-07D días desde la primera suscripción; lo fija la primera suscripción activa) |
 | `withdrawalUsed` | bool | R,S | |
 | `legal` | `{ [docSlug]: version }` | R,S | Versiones aceptadas |
-| `settings` | `{ theme: 'system'\|'light'\|'dark'\|'black', notifications: { [category]: bool } }` | R | Vía `updateSettings` |
+| `settings` | `{ theme: 'system'\|'light'\|'dark'\|'black', notifications: { [MATCHES\|MESSAGES\|LIKES\|EXCHANGES\|REVIEWS]: { email?: bool, push?: bool } }, pushPreview: bool }` | R | Vía `updateSettings`. Falta = activado; SERVICE y LEGAL no son configurables (M8) |
 | `deletionRequestedAt` | Timestamp | O,S | |
 | `waitlistPrefill` | `{ cityId, destinations, windowIds }` | O,S | M2 · copia de la lista de espera con el mismo email (FR-19) para precargar los pasos 3–4 |
 
@@ -150,17 +150,18 @@
 | `unread` | `{ [uid]: int }` | No leídos por participante |
 | `lastReadAt` | `{ [uid]: Timestamp }` | Para «✓✓ leído» |
 | `phoneSharedBy` | `string[]` | uids que han compartido su teléfono en este match (BR-08) |
-| `activeExchangeId` | string \| null | |
+| `activeExchangeId` | string \| null | Intercambio abierto (`PROPOSED`/`CONFIRMED`); se libera al rechazar, caducar, cancelar o completar (M8) |
+| `unreadSince`, `pushedAt`, `digestAt` | `{ [uid]: Timestamp }` | J-13 (M8): primer mensaje sin leer, último push entregado y último email resumen N-20 |
 | `createdAt`, `lastActivityAt`, `closedAt?`, `closedBy?` | | |
 
 ### 2.7 `exchanges/{id}`
-`matchId`, `participants: [uidA, uidB]`, `proposedBy`, `startDate`, `endDate` (strings), `nights` (S), `guests: { [uid]: int }` (personas que cada uno lleva a la casa del otro), `pets: { [uid]: int }`, `note?` (≤ 300), `status: PROPOSED|CONFIRMED|DECLINED|EXPIRED|CANCELLED|COMPLETED`, `expiresAt`, `confirmedAt?`, `cancelledBy?`, `cancelReason?`, `completedAt?`, `reviewDeadline?` (Timestamp).
+`matchId`, `participants: [uidA, uidB]`, `proposedBy`, `startDate`, `endDate` (strings), `nights` (S), `guests: { [uid]: int }` (personas que cada uno lleva a la casa del otro), `pets: { [uid]: int }`, `note?` (≤ 300), `status: PROPOSED|CONFIRMED|DECLINED|EXPIRED|CANCELLED|COMPLETED`, `expiresAt`, `confirmedAt?`, `cancelledBy?`, `cancelReason?` (`BLOCKED`/`UNMATCHED` si lo cierra el match), `cancelledAt?`, `completedAt?`, `reviewDeadlineDate?` (`YYYY-MM-DD`, último día para valorar), `reviewDeadline?` (Timestamp: inicio del día siguiente en Madrid, para J-03), `reviewsClosed?` (J-03 ya publicó), `createdAt`, `updatedAt`. `pets` siempre con los dos participantes.
 
 ### 2.7b `matches/{matchId}/messages/{messageId}`
-`senderUid` (null en mensajes de sistema), `type: 'TEXT'|'SYSTEM'|'PHONE_SHARED'|'PREMIUM_LIKE_MESSAGE'`, `text` (≤ P-28), `systemCode?` (`MATCH_CREATED`, `EXCHANGE_PROPOSED`…), `paymentWarning: bool` (S, el texto menciona pagos), `hiddenByModeration: bool`, `deletedFor: string[]` («eliminar para mí»), `clientRequestId`, `createdAt` (servidor). Inmutable salvo `hiddenByModeration`/`deletedFor`.
+`senderUid` (null en mensajes de sistema), `type: 'TEXT'|'SYSTEM'|'PHONE_SHARED'|'PREMIUM_LIKE_MESSAGE'`, `text` (≤ P-28), `systemCode?` (`MATCH_CREATED`, `EXCHANGE_PROPOSED|CONFIRMED|DECLINED|CANCELLED|EXPIRED|COMPLETED`…), `exchangeId?` (mensajes de intercambio, M8), `paymentWarning: bool` (S, el texto menciona pagos), `hiddenByModeration: bool`, `deletedFor: string[]` («eliminar para mí»), `clientRequestId`, `createdAt` (servidor). Inmutable salvo `hiddenByModeration`/`deletedFor`.
 
 ### 2.8 `reviews/{exchangeId}_{authorUid}`
-`exchangeId`, `authorUid`, `targetUid`, `targetHomeId`, `overall: 1–5`, `sub: { cleanliness, accuracy, communication, care }` (1–5), `comment?` (≤ 1000), `status: PENDING|PUBLISHED`, `commentHidden: bool`, `publishedAt?`, `createdAt`.
+`exchangeId`, `authorUid`, `authorDisplayName` (copia), `targetUid`, `targetHomeId` (= `targetUid`, las casas usan el uid del titular), `overall: 1–5`, `sub: { cleanliness, accuracy, communication, care }` (1–5), `comment?` (≤ 1000), `status: PENDING|PUBLISHED`, `commentHidden: bool`, `publishedAt?`, `createdAt`.
 
 ### 2.9 `blocks/{blockerUid}_{blockedUid}`
 `blockerUid`, `blockedUid`, `createdAt`.
@@ -202,7 +203,7 @@
 `inviterUid`, `inviteeUid`, `code`, `status: REGISTERED|REWARDED|INELIGIBLE`, `ineligibleReason?`, `rewardedAt?`.
 
 ### 2.19 `notifications/{uid}/items/{id}`
-`type` (N-xx), `title`, `body`, `link` (ruta interna), `createdAt`, `readAt?`.
+`type` (N-xx), `title`, `body`, `link` (ruta interna), `createdAt`, `readAt` (`null` hasta leerse; el cliente solo puede escribir este campo). Lo escribe `notify()` (M8): el centro siempre; email y push según `users.settings.notifications`. Los mensajes de chat no crean aviso en el centro (solo push y resumen N-20).
 
 ### 2.20 `legalDocs/{slug}` y `legalDocs/{slug}/versions/{version}`
 Slugs: `aviso-legal`, `terminos`, `privacidad`, `cookies`, `normas-comunidad`, `info-dsa`, `declaracion-responsable`, `autorizacion-arrendador`, `acuerdo-intercambio`. Documento padre: `currentVersion`, `title`. Versión: `markdown`, `publishedAt`, `requiresReacceptance: bool`, `changeSummary`.
@@ -264,6 +265,9 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 | `exchanges` | `status ASC, expiresAt ASC` | J-01 |
 | `reviews` | `targetHomeId ASC, status ASC, publishedAt DESC` | Valoraciones de una casa |
 | `reviews` | `status ASC, createdAt ASC` | J-03 |
+| `exchanges` | `status ASC, reviewsClosed ASC, reviewDeadline ASC` | J-03 (M8) |
+| `exchanges` | `participants ARRAY_CONTAINS, startDate DESC` | «Mis intercambios» (M8) |
+| `matches` | `status ASC, lastActivityAt ASC` | J-13 (M8) |
 | `verifications` | `status ASC, submittedAt ASC` | Cola de admin |
 | `verifications` | `filesPurgeAt ASC` | J-04 |
 | `reports` | `status ASC, priority ASC, createdAt ASC` | Cola de moderación |

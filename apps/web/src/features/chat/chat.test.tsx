@@ -12,6 +12,7 @@ const message = (id: string, overrides: Partial<MessageView> = {}): MessageView 
   type: 'TEXT',
   text: `Mensaje ${id}`,
   systemCode: null,
+  exchangeId: null,
   paymentWarning: false,
   hiddenByModeration: false,
   deletedFor: [],

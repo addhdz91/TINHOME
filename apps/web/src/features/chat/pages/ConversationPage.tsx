@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
+  CalendarPlus,
   FileDown,
   Info,
   MessageCircle,
@@ -22,7 +23,8 @@ import { ErrorState } from '@/components/ErrorState';
 import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
-import { useLegalDoc } from '@/features/legal';
+import { ProposeExchangeSheet } from '@/features/exchange';
+import { usePushPrompt } from '@/features/notifications';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import {
   blockUser,
@@ -37,8 +39,8 @@ import { useMatch, useMessages } from '../api/use-chat-data';
 import { ChatThread, type PendingMessage } from '../components/ChatThread';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { MessageComposer } from '../components/MessageComposer';
-import { buildAgreementPdf, downloadBlob } from '../lib/agreement-pdf';
 import { otherOf } from '../lib/types';
+import { useAgreementDownload } from '../lib/use-agreement';
 
 const SAFETY_KEY = 'tinhome-chat-safety-seen';
 
@@ -76,11 +78,12 @@ export function ConversationPage() {
   const active = match.status === 'ready' && match.data?.status === 'ACTIVE';
   const messages = useMessages(matchId, active);
   const online = useOnline();
-  const agreementTemplate = useLegalDoc('acuerdo-intercambio');
   const [pending, setPending] = useState<PendingMessage[]>([]);
   const [confirm, setConfirm] = useState<'phone' | 'unmatch' | 'block' | null>(null);
   const [safetyOpen, setSafetyOpen] = useState(() => !seenSafety());
   const [nextStepOpen, setNextStepOpen] = useState(true);
+  const [exchangeOpen, setExchangeOpen] = useState(false);
+  const pushPrompt = usePushPrompt();
   const lastRead = useRef(0);
 
   const data = match.status === 'ready' ? match.data : null;
@@ -112,14 +115,18 @@ export function ConversationPage() {
     (text: string, id: string = crypto.randomUUID()) => {
       setPending((list) => [...list.filter((p) => p.id !== id), { id, text, status: 'sending' }]);
       sendMessage({ matchId, text, clientRequestId: id })
-        .then(() => setPending((list) => list.filter((p) => p.id !== id)))
+        .then(() => {
+          setPending((list) => list.filter((p) => p.id !== id));
+          // FR-70 — push is offered after the first message, never on entry.
+          pushPrompt.offer();
+        })
         .catch((error: unknown) => {
           setPending((list) => list.map((p) => (p.id === id ? { ...p, status: 'failed' } : p)));
           const code = toAppError(error).code;
           toast.error(code === 'E_RATE_LIMIT' ? t('chat.tooFast') : toUserMessage(t, error));
         });
     },
-    [matchId, t],
+    [matchId, pushPrompt, t],
   );
 
   const sharePhone = useMutation({
@@ -137,52 +144,13 @@ export function ConversationPage() {
     onError: (error) => toast.error(toUserMessage(t, error)),
   });
 
-  const downloadAgreement = useCallback(async () => {
-    if (!data || !other) return;
-    const mine = data.people[me.uid];
-    const blob = await buildAgreementPdf({
-      parties: [
-        {
-          name: mine?.displayName ?? me.firstName,
-          homeTitle: mine?.homeTitle ?? '',
-          cityName: mine?.cityName ?? '',
-        },
-        { name: other.displayName, homeTitle: other.homeTitle, cityName: other.cityName },
-      ],
-      templateMarkdown: agreementTemplate.data?.markdown ?? '',
-      templateVersion: agreementTemplate.data?.version ?? 'provisional',
-      labels: {
-        title: t('agreement.title'),
-        notParty: t('agreement.notParty'),
-        partiesTitle: t('agreement.parties'),
-        homesTitle: t('agreement.details'),
-        fields: [
-          t('agreement.fields.dates'),
-          t('agreement.fields.people'),
-          t('agreement.fields.pets'),
-          t('agreement.fields.rules'),
-          t('agreement.fields.handover'),
-          t('agreement.fields.emergency'),
-        ],
-        checklistTitle: t('agreement.checklistTitle'),
-        checklist: [
-          t('agreement.checklist.keys'),
-          t('agreement.checklist.photos'),
-          t('agreement.checklist.inventory'),
-          t('agreement.checklist.meters'),
-          t('agreement.checklist.contacts'),
-        ],
-        footer: t('agreement.footer'),
-      },
-    });
-    downloadBlob(blob, 'acuerdo-intercambio-tinhome.pdf');
-  }, [agreementTemplate.data, data, me.firstName, me.uid, other, t]);
+  const { download: downloadAgreement, ready: agreementReady } = useAgreementDownload(data);
 
   // «Descargar acuerdo» from the match celebration (`?acuerdo=1`).
   const askedAgreement = params.get('acuerdo') === '1';
   useEffect(() => {
-    if (askedAgreement && data && agreementTemplate.isSuccess) void downloadAgreement();
-  }, [askedAgreement, data, agreementTemplate.isSuccess, downloadAgreement]);
+    if (askedAgreement && agreementReady) void downloadAgreement();
+  }, [askedAgreement, agreementReady, downloadAgreement]);
 
   if (match.status === 'loading') return <Skeleton className="h-[60vh]" />;
   if (match.status === 'error') return <ErrorState />;
@@ -201,6 +169,11 @@ export function ConversationPage() {
     );
   }
   const maskedPhone = me.verification.phoneVerified ? t('chat.phoneMasked') : '';
+  const exchangeId = data.activeExchangeId;
+  const openExchange = () => {
+    if (exchangeId) void navigate(`/app/intercambios/${exchangeId}`);
+    else setExchangeOpen(true);
+  };
 
   return (
     <section className="flex h-[calc(100dvh-9rem)] flex-col lg:h-[calc(100dvh-4rem)]">
@@ -259,6 +232,13 @@ export function ConversationPage() {
               ) : null}
               <DropdownMenu.Item
                 className="flex min-h-11 cursor-pointer items-center gap-2 rounded px-3 outline-none data-[highlighted]:bg-surface-muted"
+                onSelect={openExchange}
+              >
+                <CalendarPlus aria-hidden="true" className="size-4" />
+                {exchangeId ? t('chat.viewExchange') : t('chat.proposeExchange')}
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                className="flex min-h-11 cursor-pointer items-center gap-2 rounded px-3 outline-none data-[highlighted]:bg-surface-muted"
                 onSelect={() => void downloadAgreement()}
               >
                 <FileDown aria-hidden="true" className="size-4" />
@@ -288,6 +268,13 @@ export function ConversationPage() {
         <div className="mt-2 flex items-start gap-2 rounded-md bg-brand-soft p-3 text-sm text-brand-text">
           <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
           <p className="flex-1">{t('chat.nextStep')}</p>
+          <button
+            type="button"
+            className="min-h-11 px-2 text-xs font-semibold underline"
+            onClick={openExchange}
+          >
+            {exchangeId ? t('chat.viewExchange') : t('chat.proposeExchange')}
+          </button>
           <button
             type="button"
             className="min-h-11 px-2 text-xs font-semibold underline"
@@ -366,6 +353,14 @@ export function ConversationPage() {
         disabled={false}
       />
 
+      <ProposeExchangeSheet
+        open={exchangeOpen}
+        onOpenChange={setExchangeOpen}
+        matchId={matchId}
+        otherUid={otherUid}
+        otherName={other.displayName}
+      />
+      {pushPrompt.element}
       <ConfirmDialog
         open={confirm === 'phone'}
         onOpenChange={(open) => setConfirm(open ? 'phone' : null)}

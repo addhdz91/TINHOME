@@ -7,6 +7,9 @@ import {
 import { mentionsPayment, minuteBucket, whatsappUrl } from '@tinhome/shared/domain';
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
+import { publicUrl } from '../../core/public-url.js';
+import { resolvePushSender, type PushSender } from '../notifications/push.js';
+import { notify } from '../notifications/service.js';
 import { otherParticipant, participantMatch } from './matches.js';
 
 const PREVIEW_LENGTH = 120;
@@ -42,6 +45,7 @@ export async function sendMessage(
   input: { matchId: string; text: string; clientRequestId: string },
   params: Params,
   now: Date,
+  push: PushSender = resolvePushSender(publicUrl()),
 ): Promise<{ id: string; createdAt: string; paymentWarning: boolean }> {
   if (input.text.length > params.chatMessageMaxLength) throw appError('E_MESSAGE_TOO_LONG');
   const match = await participantMatch(db, uid, input.matchId);
@@ -52,7 +56,7 @@ export async function sendMessage(
   const messageRef = match.ref.collection('messages').doc(input.clientRequestId);
   const counterRef = db.doc(`chatCounters/${uid}_${minuteBucket(now)}`);
   const paymentWarning = mentionsPayment(input.text);
-  return db.runTransaction(async (tx) => {
+  const sent = await db.runTransaction(async (tx) => {
     const [existing, counter, current] = await Promise.all([
       tx.get(messageRef),
       tx.get(counterRef),
@@ -92,12 +96,52 @@ export async function sendMessage(
         type: 'TEXT',
       },
       [`unread.${other}`]: FieldValue.increment(1),
+      // J-13 — when the oldest unread message arrived (only set on the first one).
+      ...(((current.get('unread') as Record<string, number> | undefined)?.[other] ?? 0) === 0
+        ? { [`unreadSince.${other}`]: createdAt }
+        : {}),
       [`lastReadAt.${uid}`]: createdAt,
       lastActivityAt: createdAt,
       unseenBy: FieldValue.arrayRemove(uid),
     });
-    return { id: messageRef.id, createdAt: now.toISOString(), paymentWarning };
+    return { id: messageRef.id, createdAt: now.toISOString(), paymentWarning, isNew: true };
   });
+  if ('isNew' in sent) await pushNewMessage(db, push, match.id, uid, other, input.text, now);
+  return { id: sent.id, createdAt: sent.createdAt, paymentWarning: sent.paymentWarning };
+}
+
+/**
+ * FR-70 / N-20 — push to the receiver (no in-app item for every message: the chat list has the
+ * unread badge). Without the preview option the push never carries the text (03 §17).
+ */
+async function pushNewMessage(
+  db: Firestore,
+  push: PushSender,
+  matchId: string,
+  from: string,
+  to: string,
+  text: string,
+  now: Date,
+): Promise<void> {
+  const profile = await db.doc(`publicProfiles/${from}`).get();
+  const name = String(profile.get('displayName') ?? 'Tu match');
+  const { pushed } = await notify(
+    db,
+    push,
+    {
+      uid: to,
+      type: 'N-20',
+      title: `${name} te ha escrito`,
+      body: 'Abre TinHome para leer el mensaje.',
+      pushPreview: text.slice(0, PREVIEW_LENGTH),
+      link: `/app/chats/${matchId}`,
+      push: true,
+      inApp: false,
+    },
+    now,
+  );
+  if (pushed)
+    await db.doc(`matches/${matchId}`).update({ [`pushedAt.${to}`]: Timestamp.fromDate(now) });
 }
 
 export async function markConversationRead(

@@ -2,10 +2,17 @@ import type { EmailTemplateId } from '@tinhome/shared/constants';
 import type { WelcomeData } from './templates/n02-welcome.js';
 import type { IdentityData } from './templates/n03-identity.js';
 import type { FounderData } from './templates/n04-founder.js';
+import type { LikesDigestData } from './templates/n06-likes-digest.js';
 import type { MatchData } from './templates/n07-match.js';
+import type { ExchangeData } from './templates/n08-exchange.js';
+import type { ExchangeReminderData } from './templates/n09-reminder.js';
+import type { ReviewInviteData } from './templates/n10-review.js';
+import type { ReviewsPublishedData } from './templates/n11-reviews-published.js';
 import type { BillingData } from './templates/n12-billing.js';
 import type { ReferralData } from './templates/n13-referral.js';
 import type { WaitlistConfirmationData } from './templates/n19-waitlist-confirmation.js';
+import type { UnreadDigestData } from './templates/n20-unread.js';
+import type { MessageLikeData } from './templates/n21-message-like.js';
 import type { HoldData } from './templates/n23-hold.js';
 import type { SecurityData } from './templates/n27-security.js';
 
@@ -25,6 +32,13 @@ export interface EmailTemplateData {
   'N-12': BillingData;
   'N-13': ReferralData;
   'N-19': WaitlistConfirmationData;
+  'N-06': LikesDigestData;
+  'N-08': ExchangeData;
+  'N-09': ExchangeReminderData;
+  'N-10': ReviewInviteData;
+  'N-11': ReviewsPublishedData;
+  'N-20': UnreadDigestData;
+  'N-21': MessageLikeData;
   'N-23': HoldData;
   'N-27': SecurityData;
 }

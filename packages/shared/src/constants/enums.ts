@@ -72,10 +72,17 @@ export const EMAIL_TEMPLATES = [
   'N-02',
   'N-03',
   'N-04',
+  'N-06',
   'N-07',
+  'N-08',
+  'N-09',
+  'N-10',
+  'N-11',
   'N-12',
   'N-13',
   'N-19',
+  'N-20',
+  'N-21',
   'N-23',
   'N-27',
 ] as const;
@@ -253,9 +260,76 @@ export const SYSTEM_CODES = [
   'EXCHANGE_CONFIRMED',
   'EXCHANGE_DECLINED',
   'EXCHANGE_CANCELLED',
+  'EXCHANGE_EXPIRED',
+  'EXCHANGE_COMPLETED',
 ] as const;
 export type SystemCode = (typeof SYSTEM_CODES)[number];
 
 /** FR-35 — Premium plans (P-21 / P-22). */
 export const PREMIUM_PLANS = ['MONTHLY', 'YEARLY'] as const;
 export type PremiumPlan = (typeof PREMIUM_PLANS)[number];
+
+/** 04 §2.7 — exchange lifecycle (01_PRD.md §6). */
+export const EXCHANGE_STATUS = [
+  'PROPOSED',
+  'CONFIRMED',
+  'DECLINED',
+  'EXPIRED',
+  'CANCELLED',
+  'COMPLETED',
+] as const;
+export type ExchangeStatus = (typeof EXCHANGE_STATUS)[number];
+
+/** S-09 — steps of the exchange timeline (IN_PROGRESS is derived from the dates). */
+export const EXCHANGE_PHASES = ['PROPOSED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED'] as const;
+export type ExchangePhase = (typeof EXCHANGE_PHASES)[number];
+
+/** 04 §2.8 — double-blind reviews (BR-16). */
+export const REVIEW_STATUS = ['PENDING', 'PUBLISHED'] as const;
+export type ReviewStatus = (typeof REVIEW_STATUS)[number];
+export const REVIEW_SUBSCORES = ['cleanliness', 'accuracy', 'communication', 'care'] as const;
+export type ReviewSubscore = (typeof REVIEW_SUBSCORES)[number];
+
+/**
+ * FR-46 / BR-44 — notification categories for preferences. SERVICE and LEGAL cannot be turned
+ * off (account, verification, billing, moderation and legal notices).
+ */
+export const NOTIFICATION_CATEGORIES = [
+  'MATCHES',
+  'MESSAGES',
+  'LIKES',
+  'EXCHANGES',
+  'REVIEWS',
+  'SERVICE',
+  'LEGAL',
+] as const;
+export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
+export const MANDATORY_NOTIFICATION_CATEGORIES = [
+  'SERVICE',
+  'LEGAL',
+] as const satisfies readonly NotificationCategory[];
+
+/** Channels a preference controls (the in-app notification center is always on). */
+export const NOTIFICATION_CHANNELS = ['email', 'push'] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
+
+/** Notification types written to `notifications/{uid}/items` (02 §8). */
+export const NOTIFICATION_TYPES = [
+  'N-02',
+  'N-03',
+  'N-04',
+  'N-06',
+  'N-07',
+  'N-08',
+  'N-09',
+  'N-10',
+  'N-11',
+  'N-12',
+  'N-13',
+  'N-20',
+  'N-21',
+  'N-22',
+  'N-23',
+  'N-28',
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

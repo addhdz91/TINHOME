@@ -19,7 +19,7 @@ import {
   pendingLegalDocs,
   toIsoDate,
 } from '@tinhome/shared/domain';
-import type { Me } from '@tinhome/shared/schemas';
+import { NotificationPreferencesSchema, type Me } from '@tinhome/shared/schemas';
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { currentLegalVersions } from '../../core/legal.js';
@@ -164,8 +164,20 @@ export async function buildMe(
     foundingMember: user.foundingMember === true,
     referralCode: String(user.referralCode ?? ''),
     roles: session.role ? [session.role] : [],
-    settings: {
-      theme: (user.settings as { theme?: ThemePreference } | undefined)?.theme ?? 'system',
-    },
+    settings: settingsOf(user.settings),
+  };
+}
+
+function settingsOf(raw: unknown): Me['settings'] {
+  const settings = (raw ?? {}) as {
+    theme?: ThemePreference;
+    notifications?: unknown;
+    pushPreview?: unknown;
+  };
+  const notifications = NotificationPreferencesSchema.safeParse(settings.notifications ?? {});
+  return {
+    theme: settings.theme ?? 'system',
+    notifications: notifications.success ? notifications.data : {},
+    pushPreview: settings.pushPreview === true,
   };
 }

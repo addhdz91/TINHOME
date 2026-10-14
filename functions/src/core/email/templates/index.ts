@@ -2,10 +2,17 @@ import type { MailQueueItem, RenderedEmail } from '../types.js';
 import { welcome } from './n02-welcome.js';
 import { identity } from './n03-identity.js';
 import { founder } from './n04-founder.js';
+import { likesDigest } from './n06-likes-digest.js';
 import { match } from './n07-match.js';
+import { exchange } from './n08-exchange.js';
+import { exchangeReminder } from './n09-reminder.js';
+import { reviewInvite } from './n10-review.js';
+import { reviewsPublished } from './n11-reviews-published.js';
 import { billing } from './n12-billing.js';
 import { referral } from './n13-referral.js';
 import { waitlistConfirmation } from './n19-waitlist-confirmation.js';
+import { unreadDigest } from './n20-unread.js';
+import { messageLike } from './n21-message-like.js';
 import { hold } from './n23-hold.js';
 import { security } from './n27-security.js';
 
@@ -26,6 +33,20 @@ export function renderEmail(item: MailQueueItem): RenderedEmail {
       return referral(item.data);
     case 'N-19':
       return waitlistConfirmation(item.data);
+    case 'N-06':
+      return likesDigest(item.data);
+    case 'N-08':
+      return exchange(item.data);
+    case 'N-09':
+      return exchangeReminder(item.data);
+    case 'N-10':
+      return reviewInvite(item.data);
+    case 'N-11':
+      return reviewsPublished(item.data);
+    case 'N-20':
+      return unreadDigest(item.data);
+    case 'N-21':
+      return messageLike(item.data);
     case 'N-23':
       return hold(item.data);
     case 'N-27':

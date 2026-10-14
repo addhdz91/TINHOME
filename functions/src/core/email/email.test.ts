@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { escapeHtml } from './html.js';
-import { consoleEmailProvider, resolveEmailProvider } from './providers.js';
+import { consoleEmailProvider, httpEmailProvider, resolveEmailProvider } from './providers.js';
 import { renderEmail } from './templates/index.js';
+import type { MailQueueItem } from './types.js';
 
 const data = {
   cityName: 'Málaga <script>',
@@ -109,5 +110,89 @@ describe('email providers', () => {
     expect(() => resolveEmailProvider()).toThrow(/No e-mail provider/);
     vi.unstubAllEnvs();
     warn.mockRestore();
+  });
+});
+
+describe('M8 templates (N-06, N-08…N-11, N-20, N-21)', () => {
+  const items: MailQueueItem[] = [
+    { to: 'a@b.es', templateId: 'N-06', data: { count: 3, url: 'https://t.es/app/me-gusta' } },
+    ...(['PROPOSED', 'CONFIRMED', 'DECLINED', 'CANCELLED', 'EXPIRED'] as const).map(
+      (kind): MailQueueItem => ({
+        to: 'a@b.es',
+        templateId: 'N-08',
+        data: {
+          kind,
+          otherName: 'Javier S.',
+          dates: 'del 20 al 28 de marzo',
+          url: 'https://t.es/x',
+        },
+      }),
+    ),
+    {
+      to: 'a@b.es',
+      templateId: 'N-09',
+      data: { otherName: 'Javier S.', dates: 'd', url: 'https://t.es/x' },
+    },
+    {
+      to: 'a@b.es',
+      templateId: 'N-10',
+      data: { otherName: 'Javier S.', deadline: '11 de abril', url: 'https://t.es/x' },
+    },
+    { to: 'a@b.es', templateId: 'N-11', data: { otherName: 'Javier S.', url: 'https://t.es/x' } },
+    {
+      to: 'a@b.es',
+      templateId: 'N-20',
+      data: { otherName: 'Javier S.', count: 2, url: 'https://t.es/x' },
+    },
+    { to: 'a@b.es', templateId: 'N-21', data: { otherName: 'Javier S.', url: 'https://t.es/x' } },
+  ];
+
+  it('every e-mail has a subject, HTML and a plain-text version with its link', () => {
+    for (const item of items) {
+      const email = renderEmail(item);
+      expect(email.subject.length).toBeGreaterThan(5);
+      expect(email.html).toContain('lang="es"');
+      expect(email.text).toContain('https://t.es/');
+      expect(`${email.subject} ${email.text}`).not.toMatch(
+        /alquil|precio por noche|tinder|seguro/i,
+      );
+    }
+  });
+});
+
+describe('HttpEmailProvider (03 §11)', () => {
+  it('posts the rendered e-mail with a bearer key and fails on non-2xx answers', async () => {
+    const fetchImpl = vi.fn(async () => new Response('{}', { status: 202 }));
+    const provider = httpEmailProvider({
+      url: 'https://mail.example.eu/send',
+      apiKey: 'k',
+      from: 'TinHome <hola@tinhome.es>',
+      fetchImpl,
+    });
+    const email = { subject: 'S', html: '<p>h</p>', text: 't' };
+    await provider.send({ to: 'a@b.es', email });
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://mail.example.eu/send');
+    expect(init.headers).toMatchObject({ authorization: 'Bearer k' });
+    expect(JSON.parse(init.body as string)).toEqual({
+      from: 'TinHome <hola@tinhome.es>',
+      to: 'a@b.es',
+      subject: 'S',
+      html: '<p>h</p>',
+      text: 't',
+    });
+    fetchImpl.mockResolvedValueOnce(new Response('quota', { status: 429 }));
+    await expect(provider.send({ to: 'a@b.es', email })).rejects.toThrow('429');
+  });
+
+  it('is chosen with EMAIL_PROVIDER=http and needs its configuration', () => {
+    vi.stubEnv('EMAIL_PROVIDER', 'http');
+    vi.stubEnv('EMAIL_API_URL', '');
+    expect(() => resolveEmailProvider()).toThrow('EMAIL_API_URL');
+    vi.stubEnv('EMAIL_API_URL', 'https://mail.example.eu/send');
+    vi.stubEnv('EMAIL_API_KEY', 'k');
+    vi.stubEnv('EMAIL_FROM', 'hola@tinhome.es');
+    expect(resolveEmailProvider().name).toBe('http');
+    vi.unstubAllEnvs();
   });
 });

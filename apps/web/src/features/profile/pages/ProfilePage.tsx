@@ -1,4 +1,4 @@
-import { ChevronRight, Crown, Gift, HelpCircle, LogOut } from 'lucide-react';
+import { CalendarDays, ChevronRight, Crown, Gift, HelpCircle, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -7,6 +7,7 @@ import { useTheme } from '@/app/theme-context';
 import { Seo } from '@/components/Seo';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
+import { NotificationSettings } from '@/features/notifications';
 import { updateSettings } from '@/lib/callables';
 import { SignOutEverywhere } from '../components/SignOutEverywhere';
 
@@ -64,7 +65,19 @@ export function ProfilePage() {
         />
       </section>
 
+      <NotificationSettings />
+
       <nav aria-label={t('profile.account')} className="flex flex-col gap-2">
+        <Link
+          to="/app/intercambios"
+          className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
+        >
+          <span className="flex items-center gap-3">
+            <CalendarDays aria-hidden="true" className="size-5" />
+            {t('exchange.list.title')}
+          </span>
+          <ChevronRight aria-hidden="true" className="size-5 text-muted" />
+        </Link>
         <Link
           to="/app/premium"
           className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
