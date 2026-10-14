@@ -42,6 +42,8 @@ pnpm test:e2e                # Playwright (emuladores + seed + web); PLAYWRIGHT_
 pnpm set-role <email> <rol>   # admin | superadmin | none (custom claim + auditLog)
 pnpm brand:assets            # regenera los logos WebP de la web desde assets/brand/logo (solo redimensiona)
 pnpm lint && pnpm typecheck  # obligatorio antes de cada commit
+pnpm --filter @tinhome/web size   # presupuesto de bundle (tras pnpm build; 250 KB gzip, 09 §4)
+scripts/ops/configure-gcp.sh <proyecto>   # PITR, copias, TTL, versionado, alertas (simulación; APPLY=1 aplica)
 stripe listen --forward-to http://127.0.0.1:5001/demo-tinhome/europe-southwest1/stripeWebhook
 ```
 

@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router';
 import { REPORT_STATUS, type ReportStatus } from '@tinhome/shared/constants';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
@@ -68,7 +69,7 @@ export function ReportsPage() {
       ) : items.length === 0 ? (
         <EmptyState icon={<Inbox />} title={t('admin.reports.empty')} />
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollRegion label={t('common.tableRegion')}>
           <table className="w-full min-w-[720px] text-left">
             <thead className="text-sm text-muted">
               <tr>
@@ -109,7 +110,7 @@ export function ReportsPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
       {list.hasNextPage ? (
         <Button

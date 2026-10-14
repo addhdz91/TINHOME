@@ -7,13 +7,13 @@ import { useAuth } from '@/app/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { toUserMessage } from '@/lib/app-error';
 import { devSimulateStripe } from '@/lib/callables';
-import { useEmulators } from '@/lib/firebase';
+import { emulatorsEnabled } from '@/lib/firebase';
 
 /** Emulator only — stands in for the Stripe customer portal and webhooks (10_DECISIONS §5, M7). */
 export function SimulatedPortalPage() {
   const { t } = useTranslation();
   const { refreshMe } = useAuth();
-  const emulated = useEmulators();
+  const emulated = emulatorsEnabled();
   const run = useMutation({
     mutationFn: (action: (typeof DEV_STRIPE_ACTIONS)[number]) => devSimulateStripe({ action }),
     onSuccess: async () => {

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useSetMyHome } from '@/features/home';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { getMyHome, requestLocationReview, verifyHomeLocation } from '@/lib/callables';
-import { isGeoProblem, isMobileDevice, readPosition, type GeoProblem } from '../lib/geolocation';
+import { isGeoError, isMobileDevice, readPosition, type GeoProblem } from '../lib/geolocation';
 
 type Outcome = { result: LocationResult; distanceKm: number; attemptsLeft: number } | null;
 
@@ -35,7 +35,7 @@ export function LocationCheck({ home, cityName }: { home: HomeOwnerView; cityNam
       await refresh();
     },
     onError: (error) => {
-      if (isGeoProblem(error)) setProblem(error);
+      if (isGeoError(error)) setProblem(error.problem);
     },
   });
   const review = useMutation({
@@ -65,7 +65,7 @@ export function LocationCheck({ home, cityName }: { home: HomeOwnerView; cityNam
 
   const canRequestReview =
     home.locationCheck === 'FAIL' || home.locationCheck === 'MANUAL_REJECTED';
-  const verifyError = verify.error && !isGeoProblem(verify.error) ? toAppError(verify.error) : null;
+  const verifyError = verify.error && !isGeoError(verify.error) ? toAppError(verify.error) : null;
 
   return (
     <div className="flex flex-col gap-5">

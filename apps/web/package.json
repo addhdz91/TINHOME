@@ -8,7 +8,8 @@
     "build": "vite build && vite build --ssr src/entry-prerender.tsx --outDir dist-ssr && tsx scripts/prerender.ts",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "size": "tsx scripts/check-bundle.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

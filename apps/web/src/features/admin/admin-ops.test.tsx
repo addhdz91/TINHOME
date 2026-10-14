@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderRoutesWithAuth } from '@/test/render';
 import { signedIn } from '@/test/session';
-import { AdminRoleProvider } from './lib/role';
+import { AdminRoleProvider } from './components/AdminRoleProvider';
 import { MetricsPage } from './pages/MetricsPage';
 import { UsersPage } from './pages/UsersPage';
 

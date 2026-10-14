@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router';
 import { VERIFICATION_STATUS, type VerificationStatus } from '@tinhome/shared/constants';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
@@ -58,7 +59,7 @@ export function VerificationsPage() {
       ) : items.length === 0 ? (
         <EmptyState icon={<Inbox />} title={t('admin.verifications.empty')} />
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollRegion label={t('common.tableRegion')}>
           <table className="w-full min-w-[640px] text-left">
             <thead className="text-sm text-muted">
               <tr>
@@ -103,7 +104,7 @@ export function VerificationsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
       {list.hasNextPage ? (
         <Button

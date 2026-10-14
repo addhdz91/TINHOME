@@ -1,11 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { onIdTokenChanged, signOut as firebaseSignOut, type User } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTheme } from '@/app/theme-context';
 import { toAppError } from '@/lib/app-error';
 import { getMe, updateSettings } from '@/lib/callables';
-import { firebase } from '@/lib/firebase';
+import { firebaseAuth } from '@/lib/firebase-auth';
 import { AuthContext, meKey, type AuthContextValue, type AuthState } from './auth-context';
 
 /**
@@ -17,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null | undefined>(undefined);
 
-  useEffect(() => onIdTokenChanged(firebase().auth, (next) => setUser(next)), []);
+  useEffect(() => onIdTokenChanged(firebaseAuth(), (next) => setUser(next)), []);
 
   const uid = user?.uid;
   const me = useQuery({
@@ -36,27 +35,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Real-time: any server-side change to users/{uid} refreshes Me.
+  // Real-time: any server-side change to users/{uid} refreshes Me. Firestore loads only once
+  // someone is signed in, so the sign-in screens paint with the Auth SDK alone (NFR-02).
   useEffect(() => {
     if (!uid) return undefined;
-    return onSnapshot(
-      doc(firebase().db, 'users', uid),
-      () => void queryClient.invalidateQueries({ queryKey: meKey(uid) }),
-      () => undefined,
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+    void Promise.all([import('firebase/firestore'), import('@/lib/firebase')]).then(
+      ([{ doc, onSnapshot }, { firebase }]) => {
+        if (cancelled) return;
+        unsubscribe = onSnapshot(
+          doc(firebase().db, 'users', uid),
+          () => void queryClient.invalidateQueries({ queryKey: meKey(uid) }),
+          () => undefined,
+        );
+      },
     );
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, [uid, queryClient]);
 
   useThemeSync(me.data?.settings.theme, uid);
 
   const refreshMe = useCallback(async () => {
     if (!uid) return;
-    const current = firebase().auth.currentUser;
+    const current = firebaseAuth().currentUser;
     if (current) await current.getIdToken(true);
     await queryClient.invalidateQueries({ queryKey: meKey(uid) });
   }, [uid, queryClient]);
 
   const signOut = useCallback(async () => {
-    await firebaseSignOut(firebase().auth);
+    await firebaseSignOut(firebaseAuth());
     queryClient.removeQueries({ queryKey: ['me'] });
   }, [queryClient]);
 

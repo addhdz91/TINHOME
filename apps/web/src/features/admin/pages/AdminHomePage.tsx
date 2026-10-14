@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { PREMIUM_SOURCE } from '@tinhome/shared/constants';
 import { ErrorState } from '@/components/ErrorState';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { adminGetDashboard } from '@/lib/callables';
@@ -86,7 +87,7 @@ export function AdminHomePage() {
           <h2 id="cities-title" className="text-h2">
             {t('admin.home.cities')}
           </h2>
-          <div className="overflow-x-auto">
+          <ScrollRegion label={t('common.tableRegion')}>
             <table className="w-full min-w-[560px] text-left">
               <thead className="text-sm text-muted">
                 <tr>
@@ -119,7 +120,7 @@ export function AdminHomePage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         </section>
       </>
     );

@@ -36,6 +36,7 @@ jobs:
       - run: pnpm test
       - run: pnpm test:rules
       - run: pnpm build
+      - run: pnpm --filter @tinhome/web size
       - name: Install Playwright Chromium
         run: pnpm --filter @tinhome/e2e exec playwright install --with-deps chromium
       - run: pnpm test:e2e

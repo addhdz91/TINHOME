@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
@@ -65,7 +66,7 @@ export function AuditPage() {
       ) : items.length === 0 ? (
         <EmptyState icon={<ScrollText />} title={t('admin.audit.empty')} />
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollRegion label={t('common.tableRegion')}>
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="text-muted">
               <tr>
@@ -94,7 +95,7 @@ export function AuditPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollRegion>
       )}
       {list.hasNextPage ? (
         <Button

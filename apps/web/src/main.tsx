@@ -8,9 +8,11 @@ import { createBrowserRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { Providers } from './app/Providers';
 import { buildRoutes } from './app/routes';
+import { registerShellWorker } from './lib/pwa';
 import { initSentry } from './lib/sentry';
 
 void initSentry();
+registerShellWorker();
 
 const router = createBrowserRouter(buildRoutes());
 

@@ -68,7 +68,7 @@ export function MatchCelebration({
             </motion.div>
           </div>
           {data.perfectFit ? (
-            <p className="self-center rounded-full bg-accent px-3 py-1 text-sm font-semibold text-primary-foreground">
+            <p className="self-center rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground">
               {t('compat.perfectFit')}
             </p>
           ) : null}

@@ -826,7 +826,8 @@
     "showPassword": "Mostrar contraseña",
     "hidePassword": "Ocultar contraseña",
     "or": "o",
-    "comingSoon": "Disponible muy pronto"
+    "comingSoon": "Disponible muy pronto",
+    "tableRegion": "Tabla (se desplaza en horizontal)"
   },
   "seo": {
     "landing": {

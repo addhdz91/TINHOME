@@ -64,7 +64,7 @@ export function CompatibilityChips({
           className={cn(
             'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold [&_svg]:size-3.5',
             chip.strong
-              ? 'bg-accent text-primary-foreground'
+              ? 'bg-primary text-primary-foreground'
               : onMedia
                 ? 'bg-overlay text-on-media'
                 : 'bg-brand-soft text-brand-text',

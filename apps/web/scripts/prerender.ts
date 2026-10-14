@@ -17,9 +17,15 @@ const marker = '<div id="root"></div>';
 if (!shell.includes(marker)) throw new Error('index.html has no empty #root');
 
 await writeFile(resolve(dist, 'app.html'), shell);
-await writeFile(
-  resolve(dist, 'index.html'),
-  shell.replace(marker, `<div id="root">${render()}</div>`),
-);
+
+// NFR-02 — the landing's LCP is its <h1>: inline the stylesheet so the first paint only needs
+// the HTML (on 4G it otherwise waits behind the preloaded JS). CSP allows inline styles.
+const stylesheet = /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/.exec(shell);
+let landing = shell.replace(marker, `<div id="root">${render()}</div>`);
+if (stylesheet?.[1]) {
+  const css = await readFile(resolve(dist, stylesheet[1].slice(1)), 'utf8');
+  landing = landing.replace(stylesheet[0], `<style>${css}</style>`);
+}
+await writeFile(resolve(dist, 'index.html'), landing);
 await rm(resolve(root, 'dist-ssr'), { recursive: true, force: true });
 console.log('✔ prerendered / → dist/index.html (shell for other routes: dist/app.html)');

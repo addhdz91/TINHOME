@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ export function UsersPage() {
     content = <EmptyState icon={<Users />} title={t('admin.users.empty')} />;
   else
     content = (
-      <div className="overflow-x-auto">
+      <ScrollRegion label={t('common.tableRegion')}>
         <table className="w-full min-w-[640px] text-left">
           <thead className="text-sm text-muted">
             <tr>
@@ -58,7 +59,7 @@ export function UsersPage() {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     );
   return (
     <section className="flex flex-col gap-6">

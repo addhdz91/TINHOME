@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { toIsoDate, addDays } from '@tinhome/shared/domain';
 import { ErrorState } from '@/components/ErrorState';
+import { ScrollRegion } from '@/components/ScrollRegion';
 import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
@@ -115,7 +116,7 @@ export function MetricsPage() {
           <h2 id="metrics-demand" className="text-h3">
             {t('admin.metrics.demand')}
           </h2>
-          <div className="overflow-x-auto">
+          <ScrollRegion label={t('common.tableRegion')}>
             <table className="w-full min-w-[480px] text-left text-sm">
               <thead className="text-muted">
                 <tr>
@@ -139,7 +140,7 @@ export function MetricsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollRegion>
         </section>
         <section aria-labelledby="metrics-sponsored" className="flex flex-col gap-2">
           <h2 id="metrics-sponsored" className="text-h3">
