@@ -447,3 +447,16 @@ export const TICKET_STATUS = [
   'CLOSED',
 ] as const;
 export type TicketStatus = (typeof TICKET_STATUS)[number];
+
+/** FR-47 — sponsored partners (TRAVEL_INSURANCE blocked while P-26 is false). */
+export const PARTNER_CATEGORIES = [
+  'CLEANING',
+  'KEYS',
+  'TRANSPORT',
+  'LUGGAGE',
+  'TRAVEL_INSURANCE',
+  'OTHER',
+] as const;
+export type PartnerCategory = (typeof PARTNER_CATEGORIES)[number];
+export const SPONSORED_PLACEMENTS = ['MATCH', 'EXCHANGE', 'DECK'] as const;
+export type SponsoredPlacement = (typeof SPONSORED_PLACEMENTS)[number];

@@ -4136,8 +4136,8 @@ paths:
       operationId: getSponsored
       tags:
       - Patrocinados
-      summary: Tarjeta patrocinada para una ubicación
-      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      summary: Una tarjeta patrocinada para esta pantalla (BR-28)
+      description: 'Callable de Firebase. Guardas: A, EV. Máx. 1 por pantalla; DECK nunca a Premium; filtra por activo, fechas, ubicación, ciudad y P-26. clickUrl = /r/{partnerId}?p={placement}. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -4148,7 +4148,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     placement:
                       type: string
@@ -4156,7 +4155,10 @@ paths:
                       - MATCH
                       - EXCHANGE
                       - DECK
-                    cityId: *id001
+                    cityId:
+                      type: string
+                      minLength: 1
+                      maxLength: 60
                   required:
                   - placement
               required:
@@ -4172,14 +4174,36 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       card:
-                        oneOf:
-                        - $ref: '#/components/schemas/SponsoredCard'
+                        anyOf:
+                        - type: object
+                          properties:
+                            partnerId:
+                              type: string
+                            title:
+                              type: string
+                            text:
+                              type: string
+                            logoUrl:
+                              type: string
+                            clickUrl:
+                              type: string
+                            label:
+                              type: string
+                              const: Patrocinado
+                          required:
+                          - partnerId
+                          - title
+                          - text
+                          - logoUrl
+                          - clickUrl
+                          - label
+                          additionalProperties: false
                         - type: 'null'
                     required:
                     - card
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7194,8 +7218,8 @@ paths:
       operationId: adminUpsertPartner
       tags:
       - Admin
-      summary: Crear/editar partner (superadmin)
-      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      summary: Crea o edita un partner (FR-47)
+      description: 'Callable de Firebase. Guardas: SADM. Rechaza TRAVEL_INSURANCE con E_VALIDATION mientras P-26 = false. URLs solo https. Auditado. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -7206,10 +7230,15 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
-                    name: *id001
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 60
+                    name:
+                      type: string
+                      minLength: 2
+                      maxLength: 80
                     category:
                       type: string
                       enum:
@@ -7219,18 +7248,37 @@ paths:
                       - LUGGAGE
                       - TRAVEL_INSURANCE
                       - OTHER
-                    title: *id001
+                    title:
+                      type: string
+                      minLength: 2
+                      maxLength: 60
                     text:
                       type: string
+                      minLength: 2
                       maxLength: 140
-                    logoUrl: *id001
-                    targetUrl: *id001
+                    logoUrl:
+                      anyOf:
+                      - type: string
+                        maxLength: 500
+                        format: uri
+                      - type: string
+                        pattern: ^\/[A-Za-z0-9/_.-]{1,200}$
+                    targetUrl:
+                      type: string
+                      maxLength: 500
+                      format: uri
                     cityIds:
-                      oneOf:
-                      - type: array
-                        items: *id001
+                      anyOf:
+                      - maxItems: 50
+                        type: array
+                        items:
+                          type: string
+                          minLength: 1
+                          maxLength: 60
                       - type: 'null'
                     placements:
+                      minItems: 1
+                      maxItems: 3
                       type: array
                       items:
                         type: string
@@ -7238,9 +7286,22 @@ paths:
                         - MATCH
                         - EXCHANGE
                         - DECK
-                    active: *id004
-                    startsAt: *id008
-                    endsAt: *id008
+                    active:
+                      type: boolean
+                    startsAt:
+                      default: null
+                      anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                      - type: 'null'
+                    endsAt:
+                      default: null
+                      anyOf:
+                      - type: string
+                        format: date-time
+                        pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                      - type: 'null'
                   required:
                   - name
                   - category
@@ -7248,6 +7309,7 @@ paths:
                   - text
                   - logoUrl
                   - targetUrl
+                  - cityIds
                   - placements
                   - active
               required:
@@ -7263,6 +7325,77 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      partner:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+                          category:
+                            type: string
+                            enum:
+                            - CLEANING
+                            - KEYS
+                            - TRANSPORT
+                            - LUGGAGE
+                            - TRAVEL_INSURANCE
+                            - OTHER
+                          title:
+                            type: string
+                          text:
+                            type: string
+                          logoUrl:
+                            type: string
+                          targetUrl:
+                            type: string
+                          cityIds:
+                            anyOf:
+                            - type: array
+                              items:
+                                type: string
+                            - type: 'null'
+                          placements:
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                              - MATCH
+                              - EXCHANGE
+                              - DECK
+                          active:
+                            type: boolean
+                          startsAt:
+                            type:
+                            - string
+                            - 'null'
+                          endsAt:
+                            type:
+                            - string
+                            - 'null'
+                          clicks30d:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                        required:
+                        - id
+                        - name
+                        - category
+                        - title
+                        - text
+                        - logoUrl
+                        - targetUrl
+                        - cityIds
+                        - placements
+                        - active
+                        - startsAt
+                        - endsAt
+                        - clicks30d
+                        additionalProperties: false
+                    required:
+                    - partner
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -10918,6 +11051,122 @@ paths:
                     - currentVersion
                     - markdown
                     - versions
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListPartners:
+    post:
+      operationId: adminListPartners
+      tags:
+      - Admin
+      summary: Partners con clics de los últimos 30 días
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            category:
+                              type: string
+                              enum:
+                              - CLEANING
+                              - KEYS
+                              - TRANSPORT
+                              - LUGGAGE
+                              - TRAVEL_INSURANCE
+                              - OTHER
+                            title:
+                              type: string
+                            text:
+                              type: string
+                            logoUrl:
+                              type: string
+                            targetUrl:
+                              type: string
+                            cityIds:
+                              anyOf:
+                              - type: array
+                                items:
+                                  type: string
+                              - type: 'null'
+                            placements:
+                              type: array
+                              items:
+                                type: string
+                                enum:
+                                - MATCH
+                                - EXCHANGE
+                                - DECK
+                            active:
+                              type: boolean
+                            startsAt:
+                              type:
+                              - string
+                              - 'null'
+                            endsAt:
+                              type:
+                              - string
+                              - 'null'
+                            clicks30d:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - id
+                          - name
+                          - category
+                          - title
+                          - text
+                          - logoUrl
+                          - targetUrl
+                          - cityIds
+                          - placements
+                          - active
+                          - startsAt
+                          - endsAt
+                          - clicks30d
+                          additionalProperties: false
+                    required:
+                    - items
                     additionalProperties: false
                 required:
                 - result

@@ -170,7 +170,8 @@
       "params": "Parámetros",
       "legal": "Textos legales",
       "metrics": "Métricas",
-      "audit": "Auditoría"
+      "audit": "Auditoría",
+      "partners": "Patrocinados"
     },
     "denied": {
       "title": "No tienes acceso",
@@ -640,6 +641,44 @@
       "when": "Fecha",
       "action": "Acción",
       "target": "Objeto"
+    },
+    "partners": {
+      "title": "Patrocinados",
+      "intro": "Tarjetas de partners propios. Siempre llevan la etiqueta «Patrocinado» y el clic se cuenta con una redirección propia, sin cookies.",
+      "new": "Nuevo partner",
+      "edit": "Editar",
+      "form": "Partner",
+      "name": "Nombre interno",
+      "category": "Categoría",
+      "cardTitle": "Título de la tarjeta",
+      "text": "Texto (máx. 140)",
+      "logoUrl": "Logo (URL https o ruta /...)",
+      "targetUrl": "URL de destino (https)",
+      "cities": "Ciudades (ids separados por coma; vacío = todas)",
+      "placements": "Dónde se muestra",
+      "startsAt": "Desde (opcional)",
+      "endsAt": "Hasta (opcional)",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "save": "Guardar",
+      "saved": "Partner guardado",
+      "empty": "Aún no hay partners",
+      "clicks_one": "{{count}} clic en 30 días",
+      "clicks_other": "{{count}} clics en 30 días",
+      "insuranceBlocked": "La categoría de seguros está bloqueada hasta la validación legal (P-26).",
+      "categories": {
+        "CLEANING": "Limpieza",
+        "KEYS": "Llaves",
+        "TRANSPORT": "Transporte",
+        "LUGGAGE": "Equipaje",
+        "TRAVEL_INSURANCE": "Seguro de viaje",
+        "OTHER": "Otros"
+      },
+      "placementNames": {
+        "MATCH": "Pantalla de match",
+        "EXCHANGE": "Ficha de intercambio",
+        "DECK": "Intersticial del mazo (solo gratis)"
+      }
     }
   },
   "appShell": {
@@ -2098,5 +2137,12 @@
     "descriptionHint": "Cuanto más concreta sea la explicación, antes podremos actuar.",
     "goodFaith": "Declaro de buena fe que la información de esta denuncia es correcta y completa.",
     "goodFaithError": "Debes confirmar que denuncias de buena fe."
+  },
+  "sponsored": {
+    "label": "Patrocinado",
+    "visit": "Ver oferta",
+    "visitAria": "Ver oferta de {{title}} (se abre en una pestaña nueva)",
+    "continue": "Seguir descubriendo",
+    "why": "TinHome no participa en el servicio del partner."
   }
 }

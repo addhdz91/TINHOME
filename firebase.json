@@ -20,6 +20,13 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
+        "source": "/r/**",
+        "function": {
+          "functionId": "partnerRedirect",
+          "region": "europe-southwest1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/app.html"
       }

@@ -590,6 +590,26 @@ async function seedVerifications(): Promise<number> {
   return pending.length;
 }
 
+/** FR-47 — one demo partner (all placements) so the «Patrocinado» card can be seen in the emulator. */
+async function seedPartners(): Promise<void> {
+  await db.recursiveDelete(db.collection('partnerClicks'));
+  await db.doc('partners/demo-limpieza').set({
+    name: 'Partner de ejemplo',
+    category: 'CLEANING',
+    title: 'Limpieza antes de tu intercambio',
+    text: 'Ejemplo de tarjeta patrocinada para probar en el emulador.',
+    logoUrl: '/icons/icon-192.png',
+    targetUrl: 'https://example.com/?ref=demo',
+    cityIds: null,
+    placements: ['MATCH', 'EXCHANGE', 'DECK'],
+    active: true,
+    startsAt: null,
+    endsAt: null,
+    createdAt: now,
+    updatedAt: now,
+  });
+}
+
 async function main(): Promise<void> {
   console.log(`Seeding ${projectId} at ${emulatorHost}…`);
   await seedConfig();
@@ -614,6 +634,8 @@ async function main(): Promise<void> {
   console.log(
     `✔ ${await seedExchanges()} completed exchange to review (Javier ⇄ Sofía) and notices`,
   );
+  await seedPartners();
+  console.log('✔ 1 demo sponsored partner');
   console.log('Done.');
 }
 

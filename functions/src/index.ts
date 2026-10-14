@@ -131,3 +131,9 @@ export {
   submitComplaint,
   submitPublicReport,
 } from './modules/support/callables.js';
+export {
+  adminListPartners,
+  adminUpsertPartner,
+  getSponsored,
+  partnerRedirect,
+} from './modules/sponsored/callables.js';

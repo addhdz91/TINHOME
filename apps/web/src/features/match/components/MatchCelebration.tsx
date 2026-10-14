@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { SponsoredCard, useSponsored } from '@/features/sponsored';
 import { cn } from '@/lib/utils';
 
 export interface CelebrationData {
@@ -42,6 +43,7 @@ export function MatchCelebration({
 }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
+  const sponsored = useSponsored('MATCH', data !== null);
   return (
     <Dialog open={data !== null} onOpenChange={(open) => !open && onClose()}>
       {data ? (
@@ -85,6 +87,7 @@ export function MatchCelebration({
           >
             {t('match.agreement')}
           </Link>
+          {sponsored.data ? <SponsoredCard card={sponsored.data} /> : null}
         </DialogContent>
       ) : null}
     </Dialog>

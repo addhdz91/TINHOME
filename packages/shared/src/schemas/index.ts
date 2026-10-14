@@ -12,3 +12,4 @@ export * from './exchange.js';
 export * from './moderation.js';
 export * from './support.js';
 export * from './admin-ops.js';
+export * from './sponsored.js';

@@ -31,6 +31,8 @@ beforeEach(async () => {
     await setDoc(doc(db, 'appeals/a1'), { uid: 'javier', status: 'OPEN' });
     await setDoc(doc(db, 'adminAlerts/x1'), { type: 'REPORT_HIGH', handledAt: null });
     await setDoc(doc(db, 'adminDirectory/admin'), { email: 'admin@tinhome.es', role: 'admin' });
+    await setDoc(doc(db, 'partners/p1'), { name: 'Limpiezas Sol', active: true });
+    await setDoc(doc(db, 'partnerClicks/c1'), { partnerId: 'p1', placement: 'MATCH' });
   });
 });
 
@@ -59,5 +61,14 @@ describe('moderation collections (FR-42…45, FR-68)', () => {
   it('the admin directory (N-26 recipients) is never readable from the client', async () => {
     await assertFails(getDoc(doc(admin(), 'adminDirectory/admin')));
     await assertFails(getDoc(doc(as('laura'), 'adminDirectory/admin')));
+  });
+
+  it('partners and their clicks (FR-47): admin read only, no client writes', async () => {
+    await assertSucceeds(getDoc(doc(admin(), 'partners/p1')));
+    await assertSucceeds(getDoc(doc(admin(), 'partnerClicks/c1')));
+    await assertFails(getDoc(doc(as('laura'), 'partners/p1')));
+    await assertFails(getDoc(doc(as('laura'), 'partnerClicks/c1')));
+    await assertFails(setDoc(doc(admin(), 'partners/p2'), { name: 'X' }));
+    await assertFails(setDoc(doc(as('laura'), 'partnerClicks/c2'), { partnerId: 'p1' }));
   });
 });

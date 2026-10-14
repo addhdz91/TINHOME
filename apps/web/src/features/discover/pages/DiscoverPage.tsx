@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { isSponsoredSlot } from '@tinhome/shared/domain';
 import type { HomeCard } from '@tinhome/shared/schemas';
 import { useMe } from '@/app/auth/auth-context';
 import { BlockerSheet } from '@/components/BlockerSheet';
@@ -16,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import { useActiveWindows, useCities, useInvite } from '@/features/cities';
 import { useLikeFlow } from '@/features/match';
 import { StrikeNotice } from '@/features/safety';
+import { SponsoredCard } from '@/features/sponsored';
+import { usePublicConfig } from '@/hooks/use-public-config';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { passHome, undoPass } from '@/lib/callables';
 import { useDeck } from '../api/use-deck';
@@ -44,11 +47,20 @@ export function DiscoverPage() {
   const [announcement, setAnnouncement] = useState('');
   const [blockerOpen, setBlockerOpen] = useState(false);
   const [paywall, setPaywall] = useState<'undo' | 'likes' | null>(null);
+  const config = usePublicConfig();
+  // BR-28 — interstitial every P-15 cards for free users (the server sends none to Premium).
+  const [sponsoredSeenAt, setSponsoredSeenAt] = useState(0);
 
   const allCards = useMemo(() => deck.data?.pages.flatMap((page) => page.cards) ?? [], [deck.data]);
   const remaining = allCards.filter((card) => !consumed.includes(card.homeId));
   const first = deck.data?.pages[0];
   const top = remaining[0];
+  const sponsoredCard = deck.data?.pages[0]?.sponsored ?? null;
+  const showSponsored =
+    sponsoredCard !== null &&
+    top !== undefined &&
+    sponsoredSeenAt !== consumed.length &&
+    isSponsoredSlot(consumed.length, config.data?.sponsoredEveryNCards ?? 0);
   const windowNames = useMemo(
     () => new Map((windows.data ?? []).map((w) => [w.id, w.name])),
     [windows.data],
@@ -157,6 +169,15 @@ export function DiscoverPage() {
           </div>
         }
       />
+    );
+  } else if (showSponsored) {
+    content = (
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-4">
+        <SponsoredCard card={sponsoredCard} />
+        <Button onClick={() => setSponsoredSeenAt(consumed.length)}>
+          {t('sponsored.continue')}
+        </Button>
+      </div>
     );
   } else {
     content = (

@@ -10,6 +10,7 @@ import type {
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { activeMatchBetween } from '../match/matches.js';
+import { getSponsored } from '../sponsored/service.js';
 import { iso } from '../verification/view.js';
 import {
   compatibilityWith,
@@ -84,8 +85,10 @@ export async function discoverDeck(
     canLike: viewer.me.canLike,
     blockers: viewer.me.blockers,
     likesRemaining: viewer.me.likes.remainingToday,
-    // Sponsored cards (BR-28) arrive with partners in M9.
-    sponsored: null,
+    // BR-28 — one interstitial card for free users (the client shows it every P-15 cards).
+    sponsored: viewer.isPremium
+      ? null
+      : (await getSponsored(db, viewer.uid, { placement: 'DECK' }, params, now)).card,
   };
 }
 

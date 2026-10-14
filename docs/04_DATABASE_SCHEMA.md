@@ -216,7 +216,7 @@ Slugs: `aviso-legal`, `terminos`, `privacidad`, `cookies`, `normas-comunidad`, `
 - `params`: todos los P-xx de `01_PRD.md` §9 (fuente de verdad del servidor). `updateParams` mantiene `public` sincronizado.
 
 ### 2.23 `partners/{id}` y `partnerClicks/{id}`
-Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTHER`, `title`, `text` (≤ 140), `logoUrl`, `targetUrl`, `cityIds | null`, `placements: ('MATCH'|'EXCHANGE'|'DECK')[]`, `active`, `startsAt?`, `endsAt?`. Click: `partnerId`, `placement`, `uidHash?`, `createdAt`.
+Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTHER`, `title`, `text` (≤ 140), `logoUrl`, `targetUrl`, `cityIds | null`, `placements: ('MATCH'|'EXCHANGE'|'DECK')[]`, `active`, `startsAt?`, `endsAt?`. Click: `partnerId`, `placement` (`UNKNOWN` si no llega), `uidHash?` (no se rellena en Fase 1: la redirección es una navegación sin sesión), `createdAt`.
 
 ### 2.23b Moderación en documentos existentes (M9)
 - `homes.hiddenByModeration: bool` — contenido ocultado por moderación (cuenta como `ON_HOLD` en la visibilidad).

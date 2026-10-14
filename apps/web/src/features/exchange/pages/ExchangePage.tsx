@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useAgreementDownload, useMatch } from '@/features/chat';
+import { SponsoredCard, useSponsored } from '@/features/sponsored';
 import { toUserMessage } from '@/lib/app-error';
 import { cancelExchange, respondExchange } from '@/lib/callables';
 import { formatInstant, formatIsoDate } from '@/lib/format';
@@ -55,6 +56,7 @@ export function ExchangePage() {
   const data = exchange.status === 'ready' ? exchange.data : null;
   const match = useMatch(data?.matchId ?? exchangeId);
   const matchData = match.status === 'ready' ? match.data : null;
+  const sponsored = useSponsored('EXCHANGE', data !== null);
   const otherUid = data?.participants.find((p) => p !== me.uid) ?? '';
   const otherName = matchData?.people[otherUid]?.displayName ?? t('exchange.page.otherFallback');
   const dates = data
@@ -220,6 +222,7 @@ export function ExchangePage() {
         ) : null}
       </div>
       <p className="text-xs text-muted">{t('exchange.propose.disclaimer')}</p>
+      {sponsored.data ? <SponsoredCard card={sponsored.data} /> : null}
 
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <DialogContent

@@ -188,7 +188,7 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | Callable | Guardas | Entrada | Salida |
 |---|---|---|---|
 | `markAllNotificationsRead` | A | `{}` | `{ updated: int }` (máx. 500 por llamada; leer uno: el cliente fija `readAt`, la regla solo permite ese campo) |
-| `getSponsored` | A, EV | `{ placement: 'MATCH'\|'EXCHANGE'\|'DECK', cityId? }` | `{ card: SponsoredCard \| null }` |
+| `getSponsored` | A, EV | `{ placement: 'MATCH'\|'EXCHANGE'\|'DECK', cityId? }` | `{ card: SponsoredCard \| null }` (BR-28: uno por pantalla; `DECK` nunca a Premium; ciudad por defecto la de la casa; rotación estable por persona y día; `getDiscoverDeck.sponsored` usa la misma lógica con `DECK`) |
 | `trackEvent` | A | `{ name: AnalyticsEvent, props?: Record<string, string\|number\|boolean> }` | `{ ok: true }` |
 | `submitGdprRequest` | A | `{ type, details }` | `{ requestId, dueAt }` |
 | `exportMyData` | A (reautenticado) | `{}` | `{ url, expiresAt }` (JSON, URL firmada 15 min) |
@@ -206,7 +206,8 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `adminUpsertCity` | SADM | `City` sin contadores | `{ city }` |
 | `adminUpsertWindow` | SADM | `Window` | `{ window }` |
 | `adminUpdateParams` | SADM | `Partial<Params>` | `{ params }` |
-| `adminUpsertPartner` | SADM | `Partner` | `{ partner }` (rechaza `TRAVEL_INSURANCE` si `P-26 = false`) |
+| `adminUpsertPartner` | SADM | `Partner` (`id?`; sin `id` crea; URLs solo `https`; `startsAt/endsAt` ISO o `null`) | `{ partner: PartnerView }` (rechaza `TRAVEL_INSURANCE` con `E_VALIDATION` si `P-26 = false`; auditado) |
+| `adminListPartners` | SADM | `{}` | `{ items: PartnerView[] }` (con `clicks30d`) |
 | `adminPublishLegalDoc` | SADM | `{ slug, markdown, requiresReacceptance, changeSummary }` | `{ version }` |
 | `adminGetMetrics` | ADM | `{ from, to, cityId? }` | `{ funnel, premium, demand, sponsored }` |
 | `adminExportCsv` | ADM | `{ report: 'FUNNEL'\|'DEMAND'\|'USERS', from, to }` | `{ url }` |
@@ -222,7 +223,7 @@ Todas las `admin*` que cambian algo escriben en `auditLog`.
 | Endpoint | Método | Descripción |
 |---|---|---|
 | `/stripeWebhook` | POST | Firma `Stripe-Signature` verificada con `STRIPE_WEBHOOK_SECRET`; idempotente; responde 200 rápido. |
-| `/r/{partnerId}?p={placement}` | GET | Registra clic (sin cookies) y redirige 302 a `targetUrl` con `utm_source=tinhome`. |
+| `/r/{partnerId}?p={placement}` | GET | Registra clic (sin cookies ni uid: `partnerClicks {partnerId, placement, createdAt}`) y redirige 302 a `targetUrl` con `utm_source=tinhome`. Partner desconocido o inactivo → 302 a `/app`. `Cache-Control: no-store`, `Referrer-Policy: no-referrer`. Función `partnerRedirect` (rewrite de Hosting `/r/**`; en desarrollo, proxy de Vite al emulador). |
 
 ---
 
