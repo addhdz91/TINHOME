@@ -3059,8 +3059,8 @@ paths:
       operationId: createCheckoutSession
       tags:
       - Premium
-      summary: Sesión de Stripe Checkout
-      description: 'Callable de Firebase. Guardas: A,EV,ACT. Ver 05_API_CONTRACT.md.'
+      summary: Sesión de Stripe Checkout (FR-35)
+      description: 'Callable de Firebase. Guardas: A,EV,ACT. Guarda la aceptación WITHDRAWAL_START. En el emulador, pasarela simulada (activa al momento). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -3071,7 +3071,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     plan:
                       type: string
@@ -3079,6 +3078,7 @@ paths:
                       - MONTHLY
                       - YEARLY
                     acceptImmediateStart:
+                      type: boolean
                       const: true
                   required:
                   - plan
@@ -3096,11 +3096,12 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      url: *id001
+                      url:
+                        type: string
                     required:
                     - url
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3117,7 +3118,7 @@ paths:
       operationId: createPortalSession
       tags:
       - Premium
-      summary: Portal del cliente de Stripe
+      summary: Portal de cliente de Stripe (FR-36)
       description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -3127,7 +3128,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
               required:
               - data
       responses:
@@ -3141,11 +3145,12 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      url: *id001
+                      url:
+                        type: string
                     required:
                     - url
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3162,8 +3167,8 @@ paths:
       operationId: withdrawSubscription
       tags:
       - Premium
-      summary: Desistimiento en 14 días
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Desistimiento en P-07D días (FR-37)
+      description: 'Callable de Firebase. Guardas: A. Exige haber iniciado sesión en los últimos 5 minutos (E_REAUTH_REQUIRED). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -3174,9 +3179,9 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     confirm:
+                      type: boolean
                       const: true
                   required:
                   - confirm
@@ -3193,13 +3198,17 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      refundedCents: *id005
-                      endedAt: *id008
+                      refundedCents:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      endedAt:
+                        type: string
                     required:
                     - refundedCents
                     - endedAt
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3216,7 +3225,7 @@ paths:
       operationId: getReferralSummary
       tags:
       - Crecimiento
-      summary: Resumen de invitaciones
+      summary: Código, enlace e invitados (FR-39)
       description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -3226,7 +3235,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
               required:
               - data
       responses:
@@ -3240,32 +3252,53 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      code: *id001
-                      link: *id001
+                      code:
+                        type: string
+                      link:
+                        type: string
                       invited:
                         type: array
                         items:
                           type: object
-                          additionalProperties: false
                           properties:
-                            displayName: *id001
+                            displayName:
+                              type: string
                             status:
                               type: string
                               enum:
                               - REGISTERED
                               - REWARDED
                               - INELIGIBLE
-                            createdAt: *id008
-                      rewardsThisYear: *id005
-                      maxRewards: *id005
+                            createdAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - displayName
+                          - status
+                          - createdAt
+                          additionalProperties: false
+                      rewardsThisYear:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      maxRewards:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      rewardDays:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
                     required:
                     - code
                     - link
                     - invited
                     - rewardsThisYear
                     - maxRewards
+                    - rewardDays
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7051,6 +7084,65 @@ paths:
                           additionalProperties: false
                     required:
                     - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /devSimulateStripe:
+    post:
+      operationId: devSimulateStripe
+      tags:
+      - Premium
+      summary: 'Solo emulador: simula portal y webhooks'
+      description: 'Callable de Firebase. Guardas: A. Responde E_NOT_FOUND fuera del emulador. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    action:
+                      type: string
+                      enum:
+                      - CANCEL_AT_PERIOD_END
+                      - RESUME
+                      - RENEW
+                      - PAYMENT_FAILED
+                      - END_PERIOD
+                  required:
+                  - action
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
                     additionalProperties: false
                 required:
                 - result

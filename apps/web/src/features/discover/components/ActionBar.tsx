@@ -1,4 +1,4 @@
-import { Heart, Info, RotateCcw, X } from 'lucide-react';
+import { Heart, Info, Lock, Mail, RotateCcw, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -8,6 +8,8 @@ export function ActionBar({
   onPass,
   onOpen,
   onLike,
+  onMessageLike,
+  isPremium,
   canUndo,
   disabled,
 }: {
@@ -15,6 +17,9 @@ export function ActionBar({
   onPass: () => void;
   onOpen: () => void;
   onLike: () => void;
+  /** FR-61 — like with a message (lock for free users). */
+  onMessageLike: () => void;
+  isPremium: boolean;
   canUndo: boolean;
   disabled: boolean;
 }) {
@@ -66,6 +71,18 @@ export function ActionBar({
         aria-keyshortcuts="ArrowRight"
       >
         <Heart aria-hidden="true" className="size-8 fill-current" />
+      </button>
+      <button
+        type="button"
+        className={cn(round, 'relative size-11')}
+        onClick={onMessageLike}
+        disabled={disabled}
+        aria-label={isPremium ? t('messageLike.button') : t('messageLike.buttonLocked')}
+      >
+        <Mail aria-hidden="true" className="size-5" />
+        {isPremium ? null : (
+          <Lock aria-hidden="true" className="absolute -top-1 -right-1 size-4 text-premium" />
+        )}
       </button>
     </div>
   );

@@ -6,14 +6,37 @@
 | M1 — Público: landing, lista de espera y textos legales | ✅ Hecho | 09/10/2026 | Landing prerenderizada, `/como-funciona`, `/precios`, `/lista-espera` (+ `/confirmar`), `/legal/:slug`; `joinWaitlist`/`confirmWaitlist`, `mailQueue` + N-19; Lighthouse landing 92/100/100/100. Rama `feat/m1-public`. |
 | M2 — Cuenta, sesión y onboarding (pasos 1–2) | ✅ Hecho | 09/10/2026 | Registro email/Google, verificación, entrar/recuperar, `AuthProvider` + guardas, `AppShell`, onboarding 1–2 (teléfono), referidos, reaceptación, cerrar sesión en todos los dispositivos, `/ayuda`. Rama `feat/m2-account`. |
 | M3 — Casa, fotos, preferencias y publicación | ✅ Hecho | 10/10/2026 | Pasos 3–6 del onboarding, editor de casa con vista previa, fotos (trigger sharp: EXIF fuera, 3 WebP, dHash, retención por duplicado/cambios), preferencias de viaje, declaración responsable, publicar, `/app/mi-casa`, `/app/viaje`. Rama `feat/m3-home`. |
-
 | M4 — Verificación de identidad y panel de administración base | ✅ Hecho | 10/10/2026 | Paso 5 real (documentos + ubicación), `/app/verificacion` (+ `/ubicacion` con QR), revisión en `/admin` (rol + 2FA, visor seguro con marca de agua y auditoría), fundadores y referidos, J-04/J-10, N-03/N-04/N-13, KPIs. Rama `feat/m4-verification`. |
-| M5 — Descubrir, Explorar y ficha de casa | ⏳ Siguiente | — | |
-| M6 — Me gusta, match y chat | Pendiente | — | |
-| M7 — Premium y crecimiento | ⏳ Siguiente | — | |
-| M8 — Intercambios, valoraciones y notificaciones | Pendiente | — | |
+| M5 — Descubrir, Explorar y ficha de casa | ✅ Hecho | 10/10/2026 | Mazo con Encaje perfecto primero y BR-14, deslizar con teclado/gestos, pasar/deshacer, Explorar con filtros (Premium), ficha de casa, 60 casas de catálogo en el seed, E2E-05. Rama `feat/m5-discover`. |
+| M6 — Me gusta, match y chat | ✅ Hecho | 10/10/2026 | Me gusta con límites, match recíproco con celebración, me gusta recibidos, chat de texto en tiempo real (BR-22/36), bloquear, deshacer match, kit de acuerdo en PDF, N-07, E2E-06 (< 1 s). Rama `feat/m6-match`. |
+| M7 — Premium y crecimiento | ✅ Hecho | 14/10/2026 | Checkout/Portal de Stripe (simulados en el emulador), webhook idempotente con firma, J-09, derechos encadenados, desistimiento con reautenticación y reembolso P-07, N-12, `/app/premium`, `/app/invita`, me gusta con mensaje, E2E-07. Rama `feat/m7-premium`. |
+| M8 — Intercambios, valoraciones y notificaciones | ⏳ Siguiente | — | |
 | M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | Pendiente | — | |
 | M10 — Endurecimiento y lanzamiento | Pendiente | — | |
+
+## M7 — Detalle de la DoD
+
+- ✅ Suscribirse → Premium activo al instante y `homes.ownerPremium` — integración y E2E-07 (checkout simulado).
+- ✅ Cancelar al final del periodo mantiene Premium hasta `currentPeriodEnd`; `END_PERIOD` lo retira — integración + E2E-07.
+- ✅ Desistimiento en 14 días con reautenticación, una sola vez, con reembolso P-07 y N-12 — integración + E2E-07.
+- ✅ Webhook: firma inválida → 400, eventos repetidos sin efecto, evento falsificado rechazado — integración.
+- ✅ Referidos: resumen con enlace, invitados y recompensas del año — integración + componente.
+- Pruebas: shared 112, functions 28 unitarias + 94 de integración, web 118, reglas 39, E2E 15/15.
+- Pendiente fuera del código: cuenta de Stripe (precios mensual/anual con IVA, Portal configurado, endpoint de webhook con versión de API fijada) y secretos `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` en staging/producción.
+
+## M6 — Detalle de la DoD
+
+- ✅ Me gusta recíproco → match con ID determinista y celebración — integración + E2E-06.
+- ✅ Mensaje en < 1 s en el otro navegador — E2E-06 (con mensaje de calentamiento; en producción `minInstances: 1`).
+- ✅ Solo participantes con match activo leen mensajes — reglas.
+- ✅ Teléfonos, emails y pagos en el chat se bloquean o avisan (BR-22) — dominio + integración.
+
+## M5 — Detalle de la DoD
+
+- ✅ Encaje perfecto primero, luego BR-14 — dominio + E2E-05.
+- ✅ Pasar con teclado y no vuelve (BR-11) — E2E-05.
+- ✅ Filtros Premium bloqueados para gratis (`E_PREMIUM_REQUIRED`) — integración + componente.
+- Verificación manual pendiente: 60 fps en un móvil de gama media (no medible en el sandbox).
 
 ## M4 — Detalle de la DoD
 

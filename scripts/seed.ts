@@ -116,6 +116,10 @@ async function seedFaqs(): Promise<void> {
 async function seedUsers(): Promise<void> {
   for (const demo of DEMO_USERS) {
     await auth.deleteUser(demo.uid).catch(() => undefined);
+    // Premium state from earlier runs (M7: subscriptions and their entitlements) starts clean.
+    await db.doc(`subscriptions/${demo.uid}`).delete();
+    const oldEntitlements = await db.collection('entitlements').where('uid', '==', demo.uid).get();
+    await Promise.all(oldEntitlements.docs.map((entitlement) => entitlement.ref.delete()));
     await auth.createUser({
       uid: demo.uid,
       email: demo.email,

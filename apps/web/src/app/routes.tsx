@@ -14,6 +14,7 @@ import { legalRoutes } from '@/features/legal/routes';
 import { likesRoutes } from '@/features/likes/routes';
 import { matchRoutes } from '@/features/match/routes';
 import { onboardingRoutes } from '@/features/onboarding/routes';
+import { premiumRoutes } from '@/features/premium/routes';
 import { pricingRoutes } from '@/features/pricing/routes';
 import { profileRoutes } from '@/features/profile/routes';
 import { verificationRoutes } from '@/features/verification/routes';
@@ -74,6 +75,7 @@ export function buildRoutes(): RouteObject[] {
               children: [
                 { index: true, element: <Navigate to="/app/descubrir" replace /> },
                 ...profileRoutes,
+                ...premiumRoutes,
                 ...discoverRoutes,
                 ...exploreRoutes,
                 ...homeDetailRoutes,

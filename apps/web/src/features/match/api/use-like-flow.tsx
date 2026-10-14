@@ -11,6 +11,7 @@ import { usePublicConfig } from '@/hooks/use-public-config';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { likeHome } from '@/lib/callables';
 import { MatchCelebration, type CelebrationData } from '../components/MatchCelebration';
+import { MessageLikeSheet } from '../components/MessageLikeSheet';
 
 /** Errors that mean «a requirement of BR-05 is missing»: the BlockerSheet explains them. */
 const BLOCKER_CODES: readonly AppErrorCode[] = [
@@ -38,7 +39,8 @@ export interface LikeTarget {
  * limit → PaywallSheet, missing requirement → BlockerSheet. Render `element` once.
  */
 export function useLikeFlow(): {
-  like: (target: LikeTarget) => Promise<boolean>;
+  like: (target: LikeTarget, message?: string) => Promise<boolean>;
+  likeWithMessage: (target: LikeTarget, onDone?: () => void) => void;
   element: ReactNode;
 } {
   const { t } = useTranslation();
@@ -50,14 +52,19 @@ export function useLikeFlow(): {
   const [celebration, setCelebration] = useState<CelebrationData | null>(null);
   const [blockerOpen, setBlockerOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [messageTarget, setMessageTarget] = useState<{
+    target: LikeTarget;
+    onDone?: () => void;
+  } | null>(null);
+  const [messagePaywall, setMessagePaywall] = useState(false);
 
-  const like = async (target: LikeTarget): Promise<boolean> => {
+  const like = async (target: LikeTarget, message?: string): Promise<boolean> => {
     if (!me.canLike) {
       setBlockerOpen(true);
       return false;
     }
     try {
-      const result = await likeHome({ homeId: target.homeId });
+      const result = await likeHome({ homeId: target.homeId, ...(message ? { message } : {}) });
       void queryClient.invalidateQueries({ queryKey: ['home-detail', target.homeId] });
       if (result.matched && result.matchId) {
         setCelebration({
@@ -73,6 +80,7 @@ export function useLikeFlow(): {
     } catch (error) {
       const code = toAppError(error).code;
       if (code === 'E_LIKE_LIMIT') setPaywallOpen(true);
+      else if (code === 'E_PREMIUM_REQUIRED') setMessagePaywall(true);
       else if (BLOCKER_CODES.includes(code)) {
         await refreshMe();
         setBlockerOpen(true);
@@ -81,8 +89,38 @@ export function useLikeFlow(): {
     }
   };
 
+  const likeWithMessage = (target: LikeTarget, onDone?: () => void) => {
+    if (!me.premium.active) {
+      setMessagePaywall(true);
+      return;
+    }
+    if (!me.canLike) {
+      setBlockerOpen(true);
+      return;
+    }
+    setMessageTarget({ target, ...(onDone ? { onDone } : {}) });
+  };
+
   const element = (
     <>
+      <MessageLikeSheet
+        open={messageTarget !== null}
+        onOpenChange={(open) => !open && setMessageTarget(null)}
+        targetName={messageTarget?.target.ownerName ?? ''}
+        onSend={async (message) => {
+          const current = messageTarget;
+          if (!current) return;
+          if (await like(current.target, message)) {
+            setMessageTarget(null);
+            current.onDone?.();
+          }
+        }}
+      />
+      <PaywallSheet
+        open={messagePaywall}
+        onOpenChange={setMessagePaywall}
+        title={t('paywall.messageTitle')}
+      />
       <MatchCelebration data={celebration} onClose={() => setCelebration(null)} />
       <BlockerSheet open={blockerOpen} onOpenChange={setBlockerOpen} blockers={me.blockers} />
       <PaywallSheet
@@ -93,5 +131,5 @@ export function useLikeFlow(): {
       />
     </>
   );
-  return { like, element };
+  return { like, likeWithMessage, element };
 }

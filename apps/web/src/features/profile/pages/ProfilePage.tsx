@@ -1,4 +1,4 @@
-import { ChevronRight, HelpCircle, LogOut } from 'lucide-react';
+import { ChevronRight, Crown, Gift, HelpCircle, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { updateSettings } from '@/lib/callables';
 import { SignOutEverywhere } from '../components/SignOutEverywhere';
 
-/** S-11 (M2 subset) — status, theme, help and session. Home, trip and Premium arrive later. */
+/** S-11 (M2 subset) — status, theme, help and session. Premium (M7) and invitations included. */
 export function ProfilePage() {
   const { t } = useTranslation();
   const me = useMe();
@@ -65,6 +65,26 @@ export function ProfilePage() {
       </section>
 
       <nav aria-label={t('profile.account')} className="flex flex-col gap-2">
+        <Link
+          to="/app/premium"
+          className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
+        >
+          <span className="flex items-center gap-3">
+            <Crown aria-hidden="true" className="size-5 text-premium" />
+            {me.premium.active ? t('profile.premiumActive') : t('profile.premium')}
+          </span>
+          <ChevronRight aria-hidden="true" className="size-5 text-muted" />
+        </Link>
+        <Link
+          to="/app/invita"
+          className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
+        >
+          <span className="flex items-center gap-3">
+            <Gift aria-hidden="true" className="size-5" />
+            {t('invite.title')}
+          </span>
+          <ChevronRight aria-hidden="true" className="size-5 text-muted" />
+        </Link>
         <Link
           to="/app/bloqueados"
           className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"

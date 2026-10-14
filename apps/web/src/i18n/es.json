@@ -732,7 +732,9 @@
     "reauthGoogle": "Confirmar con Google",
     "reauthConfirm": "Cerrar todas las sesiones",
     "signedOutEverywhere": "Hemos cerrado la sesión en todos tus dispositivos.",
-    "themeSaveError": "No hemos podido guardar el tema en tu cuenta."
+    "themeSaveError": "No hemos podido guardar el tema en tu cuenta.",
+    "premium": "Hazte Premium",
+    "premiumActive": "Tu Premium"
   },
   "legalReaccept": {
     "title": "Hemos actualizado nuestras condiciones",
@@ -1121,7 +1123,8 @@
     "likesTitle": "Sigue descubriendo sin límite",
     "filtersTitle": "Encuentra antes tu intercambio",
     "likesBody": "Has usado tus {{count}} me gusta de hoy. Se renuevan a las 00:00.",
-    "whoLikedTitle": "Mira quién quiere intercambiar contigo"
+    "whoLikedTitle": "Mira quién quiere intercambiar contigo",
+    "messageTitle": "Escribe antes del match con Premium"
   },
   "discover": {
     "to": "A:",
@@ -1322,5 +1325,80 @@
     "since": "Desde el {{date}}",
     "unblock": "Desbloquear",
     "unblocked": "Desbloqueada"
+  },
+  "premium": {
+    "title": "TinHome Premium",
+    "paid": "¡Listo! Tu Premium ya está activo.",
+    "cancelled": "No se ha completado el pago. No te hemos cobrado nada.",
+    "activeTitle": "Tu Premium está activo",
+    "source": "Origen",
+    "until": "Activo hasta",
+    "endsOn": "Termina el",
+    "plan": "Plan",
+    "plans": {
+      "MONTHLY": "Mensual",
+      "YEARLY": "Anual"
+    },
+    "cancelledNote": "Has cancelado la renovación. Conservas Premium hasta la fecha indicada y no se te volverá a cobrar.",
+    "manage": "Gestionar suscripción",
+    "withdraw": "Desistir de la suscripción",
+    "withdrawTitle": "Desistir de Premium",
+    "withdrawBody": "Puedes desistir durante los primeros días desde tu primera suscripción. Premium terminará ahora y te devolveremos el importe que corresponda. Texto PROVISIONAL pendiente de revisión legal.",
+    "withdrawConfirm": "Confirmar desistimiento",
+    "withdrawn": "Has desistido. Te devolveremos {{amount}} al mismo medio de pago.",
+    "choose": "Elige tu plan",
+    "immediateStart": "Quiero empezar a usar Premium ahora y entiendo que, si desisto en los {{days}} días siguientes, se me devolverá la parte que corresponda.",
+    "checkout": "Continuar al pago seguro",
+    "redirecting": "Abriendo el pago…",
+    "secure": "El pago lo gestiona Stripe. TinHome no guarda los datos de tu tarjeta. Puedes cancelar cuando quieras.",
+    "dev": {
+      "title": "Portal de pagos simulado",
+      "body": "Solo en el emulador: simula lo que haría el portal de Stripe y sus avisos.",
+      "done": "Evento simulado aplicado.",
+      "back": "Volver a Premium",
+      "actions": {
+        "CANCEL_AT_PERIOD_END": "Cancelar al final del periodo",
+        "RESUME": "Reanudar la renovación",
+        "RENEW": "Simular renovación",
+        "PAYMENT_FAILED": "Simular pago fallido",
+        "END_PERIOD": "Terminar el periodo ahora"
+      }
+    }
+  },
+  "invite": {
+    "title": "Invita a alguien",
+    "message": "Te invito a TinHome para intercambiar casa entre residentes en España: {{link}}",
+    "copied": "Enlace copiado",
+    "copyFailed": "No se ha podido copiar. Selecciona el enlace y cópialo a mano.",
+    "highlight": "Invita a alguien de {{city}}",
+    "highlightAny": "Invita a alguien de otra ciudad",
+    "reward": "Cuando verifique su identidad, los dos tendréis {{days}} días de Premium.",
+    "share": "Compartir enlace",
+    "yourCode": "Tu enlace de invitación",
+    "copy": "Copiar enlace",
+    "rewards_one": "Este año llevas {{count}} recompensa de {{max}}.",
+    "rewards_other": "Este año llevas {{count}} recompensas de {{max}}.",
+    "invited": "Personas invitadas",
+    "empty": "Aún no has invitado a nadie",
+    "someone": "Alguien",
+    "status": {
+      "REGISTERED": "Registrada, pendiente de verificar",
+      "REWARDED": "Verificada: recompensa conseguida",
+      "INELIGIBLE": "Sin recompensa"
+    }
+  },
+  "messageLike": {
+    "title": "Escribe a {{name}}",
+    "body_one": "Tu mensaje llegará con el me gusta. Puedes enviar {{count}} al día.",
+    "body_other": "Tu mensaje llegará con el me gusta. Puedes enviar {{count}} al día.",
+    "suggestions": {
+      "dates": "¡Hola! Tenemos fechas parecidas, ¿te encajaría un intercambio?",
+      "city": "¡Hola! Tu ciudad está en nuestra lista, ¿te apetece venir a la nuestra?",
+      "family": "¡Hola! Viajamos en familia y tu casa nos encaja muy bien."
+    },
+    "label": "Tu mensaje",
+    "send": "Enviar con me gusta",
+    "button": "Me gusta con mensaje",
+    "buttonLocked": "Me gusta con mensaje (Premium)"
   }
 }

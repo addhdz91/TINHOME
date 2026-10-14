@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Heart,
   Home as HomeIcon,
+  Mail,
   Maximize,
   Share2,
   Users,
@@ -320,6 +321,26 @@ export function HomeDetailPage() {
                 >
                   <X aria-hidden="true" />
                   {relation.passed ? t('detail.passed') : t('discover.pass')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  aria-label={
+                    me.premium.active ? t('messageLike.button') : t('messageLike.buttonLocked')
+                  }
+                  onClick={() =>
+                    likeFlow.likeWithMessage(
+                      {
+                        homeId: home.homeId,
+                        ownerName: host.displayName,
+                        photoUrl: home.photos[0]?.thumbUrl ?? null,
+                        perfectFit: compatibility.perfectFit,
+                      },
+                      () => void detail.refetch(),
+                    )
+                  }
+                >
+                  <Mail aria-hidden="true" />
                 </Button>
                 <Button variant="gradient" size="lg" className="flex-1" onClick={() => void like()}>
                   <Heart aria-hidden="true" className="fill-current" />

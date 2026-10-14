@@ -73,6 +73,7 @@ export const EMAIL_TEMPLATES = [
   'N-03',
   'N-04',
   'N-07',
+  'N-12',
   'N-13',
   'N-19',
   'N-23',
@@ -254,3 +255,7 @@ export const SYSTEM_CODES = [
   'EXCHANGE_CANCELLED',
 ] as const;
 export type SystemCode = (typeof SYSTEM_CODES)[number];
+
+/** FR-35 — Premium plans (P-21 / P-22). */
+export const PREMIUM_PLANS = ['MONTHLY', 'YEARLY'] as const;
+export type PremiumPlan = (typeof PREMIUM_PLANS)[number];

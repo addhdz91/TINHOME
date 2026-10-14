@@ -57,5 +57,14 @@ export {
   unblockUser,
   unmatch,
 } from './modules/match/callables.js';
+export {
+  createCheckoutSession,
+  createPortalSession,
+  devSimulateStripe,
+  getReferralSummary,
+  jobReconcileSubscriptions,
+  stripeWebhook,
+  withdrawSubscription,
+} from './modules/premium/callables.js';
 export { onMailQueued } from './modules/mail/triggers.js';
 export { confirmWaitlist, joinWaitlist } from './modules/waitlist/callables.js';

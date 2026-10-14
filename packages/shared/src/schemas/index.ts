@@ -7,3 +7,4 @@ export * from './home.js';
 export * from './verification.js';
 export * from './discover.js';
 export * from './match.js';
+export * from './premium.js';

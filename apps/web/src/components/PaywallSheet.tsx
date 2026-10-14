@@ -40,7 +40,7 @@ export function PaywallSheet({
         </ul>
         {monthly ? <p className="font-semibold">{t('paywall.price', { price: monthly })}</p> : null}
         <Button asChild variant="gradient" size="lg">
-          <Link to="/precios">{t('paywall.cta')}</Link>
+          <Link to="/app/premium">{t('paywall.cta')}</Link>
         </Button>
         <DialogClose asChild>
           <Button variant="ghost">{t('paywall.later')}</Button>

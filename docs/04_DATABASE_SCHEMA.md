@@ -85,7 +85,7 @@
 | `referralCode` | string (8, sin ambiguos) | R,S | Único |
 | `referredBy` | uid | O,S | Inmutable |
 | `stripeCustomerId` | string | O,S | |
-| `firstSubscribedAt` | Timestamp | O,S | Desistimiento |
+| `firstSubscribedAt` | Timestamp | O,S | Desistimiento (P-07D días desde la primera suscripción; lo fija la primera suscripción activa) |
 | `withdrawalUsed` | bool | R,S | |
 | `legal` | `{ [docSlug]: version }` | R,S | Versiones aceptadas |
 | `settings` | `{ theme: 'system'\|'light'\|'dark'\|'black', notifications: { [category]: bool } }` | R | Vía `updateSettings` |
@@ -193,7 +193,7 @@
 `uid`, `source: STRIPE|FOUNDER|REFERRAL|ADMIN`, `startsAt`, `endsAt`, `refId?` (subscriptionId / referralId / auditId), `reason?` (ADMIN), `revokedAt?`.
 
 ### 2.17 `subscriptions/{uid}`
-`stripeCustomerId`, `stripeSubscriptionId`, `plan: MONTHLY|YEARLY`, `status` (estado Stripe), `currentPeriodEnd`, `cancelAtPeriodEnd`, `startedAt`, `updatedAt`.
+`stripeCustomerId`, `stripeSubscriptionId`, `plan: MONTHLY|YEARLY`, `status` (estado Stripe), `currentPeriodStart`, `currentPeriodEnd`, `cancelAtPeriodEnd`, `lastInvoiceAmountCents?` (M7: base del reembolso por desistimiento), `withdrawnAt?`, `refundedCents?`, `startedAt`, `updatedAt`. Solo la escribe el servidor (webhook, J-09, `withdrawSubscription`). Cada periodo pagado genera `entitlements/stripe-{subscriptionId}` (se revoca al terminar o al desistir).
 
 ### 2.17b `referralCodes/{code}` (solo servidor, M2)
 `uid`, `createdAt`. Garantiza que cada código de invitación es único (se reserva con `create` en la transacción de `completeSignup`) y permite resolver `?ref=` sin consultas.
@@ -238,7 +238,7 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 - `events/{id}`: `name`, `uidHash`, `cityId?`, `props` (sin PII), `createdAt`. TTL 400 días.
 - `auditLog/{id}`: `actorUid`, `actorRole`, `action`, `targetType`, `targetId`, `before?`, `after?`, `reason?`, `createdAt`. Solo inserción.
 - `mailQueue/{id}`: `to`, `templateId`, `data`, `status: QUEUED|SENT|FAILED`, `attempts`, `lastError?`, `createdAt`, `sentAt?`, `expiresAt` (TTL 90 días).
-- `stripeEvents/{eventId}`: `type`, `processedAt`. TTL 90 días.
+- `stripeEvents/{eventId}`: `kind` (tipo normalizado), `createdAt`, `expiresAt` (TTL 90 días). Se crea con `create()` antes de aplicar el evento: un reenvío del mismo evento es un no-op (idempotencia, M7).
 
 ---
 

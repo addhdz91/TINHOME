@@ -47,7 +47,7 @@ stripe listen --forward-to http://127.0.0.1:5001/demo-tinhome/europe-southwest1/
 
 Firebase CLI: dependencia de desarrollo; úsala con `pnpm exec firebase …` (no hace falta instalación global).
 
-Usuarios demo (emulador): `laura@demo.tinhome` (gratis, Madrid), `javier@demo.tinhome` (Premium, Valencia), `admin@demo.tinhome` (superadmin), `marta@demo.tinhome` (Valencia; debe reaceptar los Términos, para probar FR-58), `pablo@demo.tinhome` (Madrid, sin casa; lo usa E2E-03), `sofia@demo.tinhome` (Madrid, casa sin ubicación verificada; E2E-04). Javier tiene identidad aprobada y casa visible; Marta tiene la identidad pendiente en la cola de `/admin`. El admin entra con segundo factor por SMS (código en el emulador de Auth). Contraseña: `Demo1234!`.
+Usuarios demo (emulador): `laura@demo.tinhome` (gratis, Madrid), `javier@demo.tinhome` (Premium, Valencia), `admin@demo.tinhome` (superadmin), `marta@demo.tinhome` (Valencia; debe reaceptar los Términos, para probar FR-58), `pablo@demo.tinhome` (Madrid, sin casa; lo usa E2E-03), `sofia@demo.tinhome` (Madrid, casa sin ubicación verificada; E2E-04). Javier tiene identidad aprobada y casa visible; Marta tiene la identidad pendiente en la cola de `/admin`. El admin entra con segundo factor por SMS (código en el emulador de Auth). Contraseña: `Demo1234!`. Premium en el emulador: sin `STRIPE_SECRET_KEY` el pago y el portal de Stripe se simulan (`/app/premium` → pago al instante; «Gestionar suscripción» abre `/app/premium/portal-simulado`); con claves de prueba de Stripe se usa el SDK real y `stripe listen`.
 
 ## 4. Reglas de oro (no negociables)
 

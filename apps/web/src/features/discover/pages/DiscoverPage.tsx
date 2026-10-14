@@ -173,6 +173,18 @@ export function DiscoverPage() {
           onPass={() => requestSwipe('pass')}
           onOpen={() => openDetail(top)}
           onLike={() => requestSwipe('like')}
+          onMessageLike={() =>
+            likeFlow.likeWithMessage(
+              {
+                homeId: top.homeId,
+                ownerName: top.host.displayName,
+                photoUrl: top.photos[0]?.thumbUrl ?? null,
+                perfectFit: top.compatibility.perfectFit,
+              },
+              () => setConsumed((list) => [...list, top.homeId]),
+            )
+          }
+          isPremium={me.premium.active}
           canUndo={lastPassed !== null && !undo.isPending}
           disabled={false}
         />

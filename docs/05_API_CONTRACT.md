@@ -129,13 +129,16 @@ Los mensajes se leen en tiempo real desde Firestore (`matches/{id}/messages`, or
 |---|---|---|---|---|
 | `createCheckoutSession` | A, EV, ACT | `{ plan: 'MONTHLY'\|'YEARLY', acceptImmediateStart: true }` | `{ url }` | `E_ALREADY_SUBSCRIBED`, `E_VALIDATION` |
 | `createPortalSession` | A | `{}` | `{ url }` | `E_NO_SUBSCRIPTION` |
-| `withdrawSubscription` | A (reautenticado) | `{ confirm: true }` | `{ refundedCents, endedAt }` | `E_WITHDRAWAL_EXPIRED`, `E_WITHDRAWAL_USED`, `E_NO_SUBSCRIPTION` |
+| `withdrawSubscription` | A (reautenticado: `auth_time` ≤ 5 min) | `{ confirm: true }` | `{ refundedCents, endedAt }` | `E_REAUTH_REQUIRED`, `E_WITHDRAWAL_EXPIRED`, `E_WITHDRAWAL_USED`, `E_NO_SUBSCRIPTION` |
+| `devSimulateStripe` | A · **solo emulador** | `{ action: 'CANCEL_AT_PERIOD_END'\|'RESUME'\|'RENEW'\|'PAYMENT_FAILED'\|'END_PERIOD' }` | `{ ok: true }` | `E_NOT_FOUND` fuera del emulador |
+
+> M7: `createCheckoutSession` guarda la aceptación `WITHDRAWAL_START` (art. 103 m TRLGDCU, texto PROVISIONAL) en `legalAcceptances`. En el emulador (sin `STRIPE_SECRET_KEY`) las sesiones de Checkout y Portal las sustituye una pasarela simulada: el checkout activa la suscripción al momento y devuelve `successUrl`; el portal abre `/app/premium/portal-simulado`, que llama a `devSimulateStripe` (10_DECISIONS §5, M7). El reembolso del desistimiento sigue P-07 (`FULL` por defecto, o prorrateado).
 
 ### 2.11 Crecimiento (GROW)
 
 | Callable | Guardas | Entrada | Salida |
 |---|---|---|---|
-| `getReferralSummary` | A, EV | `{}` | `{ code, link, invited: { displayName, status, createdAt }[], rewardsThisYear, maxRewards }` |
+| `getReferralSummary` | A, EV | `{}` | `{ code, link, invited: { displayName, status: 'REGISTERED'\|'REWARDED'\|'INELIGIBLE', createdAt }[], rewardsThisYear, maxRewards, rewardDays }` |
 
 ### 2.12 Seguridad y moderación (SAFE)
 
