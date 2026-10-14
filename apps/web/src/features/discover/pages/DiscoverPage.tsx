@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
 import { useActiveWindows, useCities, useInvite } from '@/features/cities';
 import { useLikeFlow } from '@/features/match';
+import { StrikeNotice } from '@/features/safety';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { passHome, undoPass } from '@/lib/callables';
 import { useDeck } from '../api/use-deck';
@@ -201,6 +202,7 @@ export function DiscoverPage() {
   return (
     <section className="flex flex-col gap-4 py-2">
       <Seo title={`${t('nav.discover')} — TinHome`} />
+      <StrikeNotice />
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-h1">{t('nav.discover')}</h1>
         <label className="flex items-center gap-2 text-sm font-semibold">

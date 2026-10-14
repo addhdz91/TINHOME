@@ -153,13 +153,18 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `blockUser` | A | `{ targetUid }` | `{ ok: true }` | `E_SELF_BLOCK` |
 | `unblockUser` | A | `{ targetUid }` | `{ ok: true }` | `E_NOT_FOUND` |
 | `listBlocked` | A | `{}` | `{ items: { uid, displayName, blockedAt }[] }` | — |
-| `submitReport` | A, EV | `{ targetType: 'HOME'\|'USER'\|'REVIEW'\|'MESSAGE', targetId, reason: 'PHOTOS_NOT_OWN'\|'RUDE'\|'HARASSMENT'\|'INAPPROPRIATE_MESSAGES'\|'FRAUD'\|'HIDDEN_RENTAL'\|'ILLEGAL'\|'PERSONAL_DATA'\|'OTHER', description, attachmentPaths?, alsoBlock?: boolean }` | `{ reportId, priority, preventiveHold: boolean }` | `E_RATE_LIMIT`, `E_VALIDATION` | Alerta de admin (N-26) si prioridad alta; retención preventiva si BR-42; acuse N-14 |
+| `submitReport` | A, EV | `{ targetType: 'HOME'\|'USER'\|'REVIEW'\|'MESSAGE', targetId (MESSAGE: `matchId/messageId`), reason: 'PHOTOS_NOT_OWN'\|'RUDE'\|'HARASSMENT'\|'INAPPROPRIATE_MESSAGES'\|'FRAUD'\|'HIDDEN_RENTAL'\|'ILLEGAL'\|'PERSONAL_DATA'\|'OTHER', description (20–2000), attachmentPaths? (≤ 5, `private/reports/{uid}/…`), alsoBlock?: boolean }` | `{ reportId, priority, preventiveHold: boolean }` | `E_RATE_LIMIT` (10/día), `E_VALIDATION` (incluye denunciarse a uno mismo), `E_NOT_FOUND` (contenido inexistente; mensaje de un chat ajeno) | Instantánea (`targetSnapshot`; mensajes: el denunciado y los 10 anteriores); alerta `REPORT_HIGH` + N-26 por email si prioridad alta; retención preventiva si BR-42 (casa si es HOME o fotos ajenas, cuenta en otro caso); acuse N-14 |
 | `submitPublicReport` | PUB | `{ name, email, targetUrl, description, goodFaith: true }` | `{ reportId }` | `E_RATE_LIMIT`, `E_VALIDATION` |
-| `submitAppeal` | A | `{ actionId, text }` | `{ appealId }` | `E_APPEAL_WINDOW_CLOSED`, `E_APPEAL_EXISTS` |
+| `submitAppeal` | A | `{ actionId, text (20–2000) }` | `{ appealId }` (= `actionId`) | `E_APPEAL_WINDOW_CLOSED`, `E_APPEAL_EXISTS`, `E_NOT_FOUND`, `E_STATE` (acción no restrictiva) |
+| `getMyStanding` | A | `{}` | `{ strikes: StrikeView[], actions: ModerationActionView[] (con `statement`, `appeal`, `appealable`), hold: { scope, reason, dueAt } \| null }` | — |
 | `adminListReports` | ADM | `{ status?, priority?, cursor?, limit? }` | `{ items, nextCursor }` | — |
 | `adminGetReport` | ADM | `{ id }` | `{ report, targetUserHistory }` | `E_NOT_FOUND` |
-| `adminModerate` | ADM | `{ reportId?, targetType, targetId, targetUid, action: 'DISMISS'\|'WARN'\|'HIDE_CONTENT'\|'HIDE_MESSAGE'\|'SUSPEND'\|'BAN'\|'RESTORE'\|'RELEASE_HOLD', recordStrike?: boolean, suspendedUntil?, statement: { templateId, facts, ground, groundDetail } }` | `{ actionId, strikesActive, suggestedNext: 'NONE'\|'SUSPEND'\|'BAN' }` | `E_STATEMENT_REQUIRED`, `E_VALIDATION` |
-| `adminDecideAppeal` | ADM | `{ appealId, decision: 'UPHOLD'\|'REJECT', text }` | `{ appeal }` | `E_SAME_ADMIN` (si hay otro admin disponible, se advierte; no bloquea) |
+| `adminModerate` | ADM | `{ reportId?, targetType, targetId, targetUid, action: 'DISMISS'\|'WARN'\|'HIDE_CONTENT'\|'HIDE_MESSAGE'\|'SUSPEND'\|'BAN'\|'RESTORE'\|'RELEASE_HOLD', recordStrike?: boolean (solo restrictivas), suspendedUntil? (ISO; por defecto P-32 días), statement?: { templateId, facts (20–2000), ground: 'LAW'\|'TERMS', groundDetail } }` | `{ actionId, strikesActive, suggestedNext: 'NONE'\|'SUSPEND'\|'BAN' }` | `E_STATEMENT_REQUIRED` (WARN, HIDE_*, SUSPEND, BAN), `E_VALIDATION`, `E_NOT_FOUND` |
+| `adminDecideAppeal` | ADM | `{ appealId, decision: 'UPHOLD'\|'REJECT', text (10–2000) }` | `{ appeal: { id, status }, sameAdmin: boolean }` | `E_STATE` (ya resuelto). Si lo decide la misma persona que tomó la decisión, `sameAdmin = true` (aviso, no bloquea; equipo pequeño) |
+| `adminListAppeals` | ADM | `{}` | `{ items: AppealSummary[] }` | — |
+| `adminListHolds` | ADM | `{}` | `{ items: { uid, scope, displayName, reason, since, dueAt }[] }` | — |
+
+> M9: toda decisión restrictiva guarda `statementOfReasons` (hechos, base, alcance, duración y cómo recurrir; textos PROVISIONAL) y avisa por email y en la app (N-15 contenido, N-24 advertencia/suspensión; la expulsión solo por email). El denunciante recibe N-16 sin detalles. Toda decisión libera una retención preventiva (archivar la libera sin advertencia). Jobs: J-07 (fin de suspensiones), J-11 (caducidad de advertencias), J-12 (plazos → alertas y escalado a superadmin). Los destinatarios de N-26 están en `adminDirectory` (lo mantienen `set-role` y `adminSetRole`).
 
 ### 2.12b Ubicación, fotos, ayuda y quejas
 
@@ -169,8 +174,8 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `requestLocationReview` | A, EV | `{ note }` (10–500) | `{ ok: true }` | `E_STATE` (solo tras `FAIL` o `MANUAL_REJECTED`) | `locationCheck = MANUAL_PENDING`, alerta `LOCATION_MANUAL` |
 | `adminListLocationReviews` | ADM | `{}` | `{ items: LocationReviewSummary[] }` (nota, última lectura) | — | — |
 | `adminDecideLocationReview` | ADM | `{ homeId, decision: 'APPROVE'\|'REJECT', reason }` | `{ home }` | `E_STATE` |
-| `adminResolveHold` | ADM | `{ homeId \| uid, decision: 'RELEASE'\|'CONFIRM', statement? }` | `{ ok: true }` | `E_STATE` |
-| `adminListAlerts` / `adminHandleAlert` | ADM | — / `{ alertId }` | — | — |
+| `adminResolveHold` | ADM | `{ uid, scope: 'HOME'\|'USER', decision: 'RELEASE'\|'CONFIRM', statement? }` | `{ ok: true }` | `E_STATE` (sin retención), `E_STATEMENT_REQUIRED` (CONFIRM: oculta la casa o suspende la cuenta P-32 días) |
+| `adminListAlerts` / `adminHandleAlert` | ADM | `{}` / `{ alertId }` | `{ items: AdminAlertView[] }` / `{ ok: true }` | `E_NOT_FOUND`. El panel lee `adminAlerts` en tiempo real (regla: admin con 2FA) |
 | `submitComplaint` | A o PUB (con `email`) | `{ category, subject, description, attachmentPaths?, email? }` | `{ ticketId, number, dueAt }` | `E_RATE_LIMIT`, `E_VALIDATION` |
 | `addComplaintMessage` | A | `{ ticketId, text }` | `{ ok: true }` | `E_TICKET_CLOSED`, `E_NOT_FOUND` |
 | `adminListComplaints` / `adminReplyComplaint` | ADM | `{ status?, cursor? }` / `{ ticketId, text, status }` | — | — |

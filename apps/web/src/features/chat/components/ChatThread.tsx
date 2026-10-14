@@ -1,5 +1,5 @@
 import { AlertTriangle, Check, CheckCheck, Clock, RotateCcw } from 'lucide-react';
-import { Fragment, useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { formatTime } from '@/lib/format';
@@ -28,6 +28,7 @@ export function ChatThread({
   pending,
   otherReadAt,
   onRetry,
+  renderReport,
 }: {
   uid: string;
   otherName: string;
@@ -35,6 +36,8 @@ export function ChatThread({
   pending: PendingMessage[];
   otherReadAt: Date | null;
   onRetry: (message: PendingMessage) => void;
+  /** FR-42 — report action on a received message (≤ 2 taps). */
+  renderReport?: (message: MessageView) => ReactNode;
 }) {
   const { t } = useTranslation();
   const end = useRef<HTMLLIElement>(null);
@@ -108,6 +111,9 @@ export function ChatThread({
                     </>
                   )
                 ) : null}
+                {!mine && renderReport && !message.hiddenByModeration
+                  ? renderReport(message)
+                  : null}
               </span>
               {!mine && message.paymentWarning ? (
                 <p

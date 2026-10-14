@@ -80,10 +80,15 @@ export const EMAIL_TEMPLATES = [
   'N-11',
   'N-12',
   'N-13',
+  'N-14',
+  'N-15',
+  'N-16',
   'N-19',
   'N-20',
   'N-21',
   'N-23',
+  'N-24',
+  'N-26',
   'N-27',
 ] as const;
 export type EmailTemplateId = (typeof EMAIL_TEMPLATES)[number];
@@ -184,7 +189,13 @@ export type Amenity = (typeof AMENITIES)[number];
 export const DESTINATION_MODES = ['LIST', 'ANY_OPEN'] as const;
 export type DestinationMode = (typeof DESTINATION_MODES)[number];
 
-export const HOLD_REASONS = ['PHOTO_DUPLICATE', 'PHOTO_CHANGES', 'CITY_CHANGE', 'REPORT'] as const;
+export const HOLD_REASONS = [
+  'PHOTO_DUPLICATE',
+  'PHOTO_CHANGES',
+  'CITY_CHANGE',
+  'REPORT',
+  'REPORTS_THRESHOLD',
+] as const;
 export type HoldReason = (typeof HOLD_REASONS)[number];
 
 export const LOCATION_CHECK_STATUS = [
@@ -241,6 +252,8 @@ export const ADMIN_ALERT_TYPES = [
   'COMPLAINT_DUE',
   'LOCATION_MANUAL',
   'VERIFICATION_DUPLICATE',
+  'REPORT_DUE',
+  'HOLD_OVERDUE',
 ] as const;
 export type AdminAlertType = (typeof ADMIN_ALERT_TYPES)[number];
 
@@ -330,6 +343,83 @@ export const NOTIFICATION_TYPES = [
   'N-21',
   'N-22',
   'N-23',
+  'N-15',
+  'N-16',
+  'N-24',
+  'N-25',
   'N-28',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/** FR-42 / 04 §2.24 — what can be reported and why. */
+export const REPORT_TARGETS = ['HOME', 'USER', 'REVIEW', 'MESSAGE'] as const;
+export type ReportTarget = (typeof REPORT_TARGETS)[number];
+export const REPORT_REASONS = [
+  'PHOTOS_NOT_OWN',
+  'RUDE',
+  'HARASSMENT',
+  'INAPPROPRIATE_MESSAGES',
+  'FRAUD',
+  'HIDDEN_RENTAL',
+  'ILLEGAL',
+  'PERSONAL_DATA',
+  'OTHER',
+] as const;
+export type ReportReason = (typeof REPORT_REASONS)[number];
+/** FR-44 — high priority (24 h, e-mail to admins): photos not theirs, fraud, harassment or threats, illegal. */
+export const HIGH_PRIORITY_REASONS = [
+  'PHOTOS_NOT_OWN',
+  'FRAUD',
+  'HARASSMENT',
+  'ILLEGAL',
+] as const satisfies readonly ReportReason[];
+export const REPORT_STATUS = ['OPEN', 'RESOLVED', 'DISMISSED'] as const;
+export type ReportStatus = (typeof REPORT_STATUS)[number];
+export const REPORT_PRIORITIES = ['HIGH', 'NORMAL'] as const;
+export type ReportPriority = (typeof REPORT_PRIORITIES)[number];
+
+/** FR-44 / 05 §2.12 — moderation actions. */
+export const MODERATION_ACTIONS = [
+  'DISMISS',
+  'WARN',
+  'HIDE_CONTENT',
+  'HIDE_MESSAGE',
+  'SUSPEND',
+  'BAN',
+  'RESTORE',
+  'RELEASE_HOLD',
+] as const;
+export type ModerationAction = (typeof MODERATION_ACTIONS)[number];
+/** BR-27 — actions that restrict someone and need a statement of reasons. */
+export const RESTRICTIVE_ACTIONS = [
+  'WARN',
+  'HIDE_CONTENT',
+  'HIDE_MESSAGE',
+  'SUSPEND',
+  'BAN',
+] as const satisfies readonly ModerationAction[];
+export const STATEMENT_GROUNDS = ['LAW', 'TERMS'] as const;
+export type StatementGround = (typeof STATEMENT_GROUNDS)[number];
+/** Statement-of-reasons templates (texts PROVISIONAL in es.json, reviewed by the lawyer). */
+export const STATEMENT_TEMPLATES = [
+  'PHOTOS_NOT_OWN',
+  'RUDE',
+  'HARASSMENT',
+  'SPAM',
+  'FRAUD',
+  'HIDDEN_RENTAL',
+  'ILLEGAL',
+  'PERSONAL_DATA',
+  'OTHER',
+] as const;
+export type StatementTemplate = (typeof STATEMENT_TEMPLATES)[number];
+export const SANCTION_SUGGESTIONS = ['NONE', 'SUSPEND', 'BAN'] as const;
+export type SanctionSuggestion = (typeof SANCTION_SUGGESTIONS)[number];
+export const STRIKE_SEVERITY = ['MINOR', 'SERIOUS'] as const;
+export type StrikeSeverity = (typeof STRIKE_SEVERITY)[number];
+export const APPEAL_STATUS = ['OPEN', 'UPHELD', 'REJECTED'] as const;
+export type AppealStatus = (typeof APPEAL_STATUS)[number];
+export const APPEAL_DECISIONS = ['UPHOLD', 'REJECT'] as const;
+export type AppealDecision = (typeof APPEAL_DECISIONS)[number];
+export const HOLD_DECISIONS = ['RELEASE', 'CONFIRM'] as const;
+export type HoldDecision = (typeof HOLD_DECISIONS)[number];

@@ -9,3 +9,4 @@ export * from './discover.js';
 export * from './match.js';
 export * from './premium.js';
 export * from './exchange.js';
+export * from './moderation.js';

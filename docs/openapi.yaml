@@ -3844,8 +3844,8 @@ paths:
       operationId: submitReport
       tags:
       - Seguridad
-      summary: Denuncia de usuario
-      description: 'Callable de Firebase. Guardas: A,EV. Ver 05_API_CONTRACT.md.'
+      summary: Denuncia una casa, perfil, valoración o mensaje (FR-42)
+      description: 'Callable de Firebase. Guardas: A,EV. 10 al día. MESSAGE = matchId/messageId (solo participantes). Instantánea del contenido; retención preventiva si BR-42; alerta y N-26 si prioridad alta; acuse N-14. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -3856,7 +3856,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     targetType:
                       type: string
@@ -3865,7 +3864,10 @@ paths:
                       - USER
                       - REVIEW
                       - MESSAGE
-                    targetId: *id001
+                    targetId:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
                     reason:
                       type: string
                       enum:
@@ -3883,10 +3885,13 @@ paths:
                       minLength: 20
                       maxLength: 2000
                     attachmentPaths:
-                      type: array
-                      items: *id001
                       maxItems: 5
-                    alsoBlock: *id004
+                      type: array
+                      items:
+                        type: string
+                        maxLength: 300
+                    alsoBlock:
+                      type: boolean
                   required:
                   - targetType
                   - targetId
@@ -3905,19 +3910,21 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      reportId: *id001
+                      reportId:
+                        type: string
                       priority:
                         type: string
                         enum:
                         - HIGH
                         - NORMAL
-                      preventiveHold: *id004
+                      preventiveHold:
+                        type: boolean
                     required:
                     - reportId
                     - priority
                     - preventiveHold
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3998,8 +4005,8 @@ paths:
       operationId: submitAppeal
       tags:
       - Seguridad
-      summary: Recurso contra una decisión de moderación
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Recurre una decisión restrictiva (FR-45)
+      description: 'Callable de Firebase. Guardas: A. Una vez por decisión, en P-14R meses. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -4010,13 +4017,15 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    actionId: *id001
+                    actionId:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
                     text:
                       type: string
                       minLength: 20
-                      maxLength: 4000
+                      maxLength: 2000
                   required:
                   - actionId
                   - text
@@ -4033,11 +4042,12 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      appealId: *id001
+                      appealId:
+                        type: string
                     required:
                     - appealId
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5026,7 +5036,7 @@ paths:
       operationId: adminListReports
       tags:
       - Admin
-      summary: Cola de denuncias
+      summary: Cola de denuncias por prioridad y plazo
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -5038,16 +5048,26 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    status: *id001
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                    status:
+                      type: string
+                      enum:
+                      - OPEN
+                      - RESOLVED
+                      - DISMISSED
                     priority:
                       type: string
                       enum:
                       - HIGH
                       - NORMAL
-                    cursor: *id001
-                    limit: &id007 {default: 20, maximum: 50, minimum: 1, type: integer}
               required:
               - data
       responses:
@@ -5061,19 +5081,77 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
+                          properties:
+                            id:
+                              type: string
+                            targetType:
+                              type: string
+                              enum:
+                              - HOME
+                              - USER
+                              - REVIEW
+                              - MESSAGE
+                            targetId:
+                              type: string
+                            targetUid:
+                              type: string
+                            reason:
+                              type: string
+                              enum:
+                              - PHOTOS_NOT_OWN
+                              - RUDE
+                              - HARASSMENT
+                              - INAPPROPRIATE_MESSAGES
+                              - FRAUD
+                              - HIDDEN_RENTAL
+                              - ILLEGAL
+                              - PERSONAL_DATA
+                              - OTHER
+                            priority:
+                              type: string
+                              enum:
+                              - HIGH
+                              - NORMAL
+                            status:
+                              type: string
+                              enum:
+                              - OPEN
+                              - RESOLVED
+                              - DISMISSED
+                            reporterVerified:
+                              type: boolean
+                            public:
+                              type: boolean
+                            dueAt:
+                              type: string
+                            createdAt:
+                              type: string
+                          required:
+                          - id
+                          - targetType
+                          - targetId
+                          - targetUid
+                          - reason
+                          - priority
+                          - status
+                          - reporterVerified
+                          - public
+                          - dueAt
+                          - createdAt
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - items
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5090,7 +5168,7 @@ paths:
       operationId: adminGetReport
       tags:
       - Admin
-      summary: Detalle de denuncia
+      summary: Detalle con instantánea e historial
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -5102,9 +5180,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
+                    id:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
                   required:
                   - id
               required:
@@ -5120,6 +5200,319 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      report:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          targetType:
+                            type: string
+                            enum:
+                            - HOME
+                            - USER
+                            - REVIEW
+                            - MESSAGE
+                          targetId:
+                            type: string
+                          targetUid:
+                            type: string
+                          reason:
+                            type: string
+                            enum:
+                            - PHOTOS_NOT_OWN
+                            - RUDE
+                            - HARASSMENT
+                            - INAPPROPRIATE_MESSAGES
+                            - FRAUD
+                            - HIDDEN_RENTAL
+                            - ILLEGAL
+                            - PERSONAL_DATA
+                            - OTHER
+                          priority:
+                            type: string
+                            enum:
+                            - HIGH
+                            - NORMAL
+                          status:
+                            type: string
+                            enum:
+                            - OPEN
+                            - RESOLVED
+                            - DISMISSED
+                          reporterVerified:
+                            type: boolean
+                          public:
+                            type: boolean
+                          dueAt:
+                            type: string
+                          createdAt:
+                            type: string
+                          description:
+                            type: string
+                          reporterName:
+                            type:
+                            - string
+                            - 'null'
+                          targetUrl:
+                            type:
+                            - string
+                            - 'null'
+                          snapshot:
+                            type: object
+                            properties:
+                              title:
+                                type:
+                                - string
+                                - 'null'
+                              text:
+                                type:
+                                - string
+                                - 'null'
+                              photoUrls:
+                                type: array
+                                items:
+                                  type: string
+                              messages:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    id:
+                                      type: string
+                                    senderUid:
+                                      type:
+                                      - string
+                                      - 'null'
+                                    text:
+                                      type: string
+                                    createdAt:
+                                      type:
+                                      - string
+                                      - 'null'
+                                    reported:
+                                      type: boolean
+                                  required:
+                                  - id
+                                  - senderUid
+                                  - text
+                                  - createdAt
+                                  - reported
+                                  additionalProperties: false
+                            required:
+                            - title
+                            - text
+                            - photoUrls
+                            - messages
+                            additionalProperties: false
+                          attachmentCount:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                        required:
+                        - id
+                        - targetType
+                        - targetId
+                        - targetUid
+                        - reason
+                        - priority
+                        - status
+                        - reporterVerified
+                        - public
+                        - dueAt
+                        - createdAt
+                        - description
+                        - reporterName
+                        - targetUrl
+                        - snapshot
+                        - attachmentCount
+                        additionalProperties: false
+                      targetUserHistory:
+                        type: object
+                        properties:
+                          displayName:
+                            type: string
+                          status:
+                            type: string
+                          strikesActive:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          strikes:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                reason:
+                                  type: string
+                                severity:
+                                  type: string
+                                  enum:
+                                  - MINOR
+                                  - SERIOUS
+                                createdAt:
+                                  type: string
+                                expiresAt:
+                                  type: string
+                              required:
+                              - id
+                              - reason
+                              - severity
+                              - createdAt
+                              - expiresAt
+                              additionalProperties: false
+                          actions:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                action:
+                                  type: string
+                                  enum:
+                                  - DISMISS
+                                  - WARN
+                                  - HIDE_CONTENT
+                                  - HIDE_MESSAGE
+                                  - SUSPEND
+                                  - BAN
+                                  - RESTORE
+                                  - RELEASE_HOLD
+                                targetType:
+                                  type: string
+                                  enum:
+                                  - HOME
+                                  - USER
+                                  - REVIEW
+                                  - MESSAGE
+                                targetId:
+                                  type: string
+                                statement:
+                                  anyOf:
+                                  - type: object
+                                    properties:
+                                      templateId:
+                                        type: string
+                                        enum:
+                                        - PHOTOS_NOT_OWN
+                                        - RUDE
+                                        - HARASSMENT
+                                        - SPAM
+                                        - FRAUD
+                                        - HIDDEN_RENTAL
+                                        - ILLEGAL
+                                        - PERSONAL_DATA
+                                        - OTHER
+                                      facts:
+                                        type: string
+                                        minLength: 20
+                                        maxLength: 2000
+                                      ground:
+                                        type: string
+                                        enum:
+                                        - LAW
+                                        - TERMS
+                                      groundDetail:
+                                        type: string
+                                        minLength: 5
+                                        maxLength: 500
+                                      scope:
+                                        type: string
+                                      duration:
+                                        type: string
+                                      redress:
+                                        type: string
+                                    required:
+                                    - templateId
+                                    - facts
+                                    - ground
+                                    - groundDetail
+                                    - scope
+                                    - duration
+                                    - redress
+                                    additionalProperties: false
+                                  - type: 'null'
+                                suspendedUntil:
+                                  type:
+                                  - string
+                                  - 'null'
+                                adminUid:
+                                  type:
+                                  - string
+                                  - 'null'
+                                createdAt:
+                                  type: string
+                                appeal:
+                                  anyOf:
+                                  - type: object
+                                    properties:
+                                      id:
+                                        type: string
+                                      status:
+                                        type: string
+                                        enum:
+                                        - OPEN
+                                        - UPHELD
+                                        - REJECTED
+                                      decisionText:
+                                        type:
+                                        - string
+                                        - 'null'
+                                    required:
+                                    - id
+                                    - status
+                                    - decisionText
+                                    additionalProperties: false
+                                  - type: 'null'
+                                appealable:
+                                  type: boolean
+                              required:
+                              - id
+                              - action
+                              - targetType
+                              - targetId
+                              - statement
+                              - suspendedUntil
+                              - adminUid
+                              - createdAt
+                              - appeal
+                              - appealable
+                              additionalProperties: false
+                          openReports:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          hold:
+                            anyOf:
+                            - type: object
+                              properties:
+                                reason:
+                                  type: string
+                                dueAt:
+                                  type:
+                                  - string
+                                  - 'null'
+                              required:
+                              - reason
+                              - dueAt
+                              additionalProperties: false
+                            - type: 'null'
+                        required:
+                        - displayName
+                        - status
+                        - strikesActive
+                        - strikes
+                        - actions
+                        - openReports
+                        - hold
+                        additionalProperties: false
+                    required:
+                    - report
+                    - targetUserHistory
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5136,8 +5529,8 @@ paths:
       operationId: adminModerate
       tags:
       - Admin
-      summary: Acción de moderación con declaración de motivos
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Decisión de moderación con declaración de motivos (FR-44, BR-27)
+      description: 'Callable de Firebase. Guardas: ADM. Las acciones restrictivas exigen statement (E_STATEMENT_REQUIRED). suggestedNext solo propone (BR-41). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -5148,17 +5541,26 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    reportId: *id001
+                    reportId:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
                     targetType:
                       type: string
                       enum:
                       - HOME
                       - USER
                       - REVIEW
-                    targetId: *id001
-                    targetUid: *id001
+                      - MESSAGE
+                    targetId:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
+                    targetUid:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
                     action:
                       type: string
                       enum:
@@ -5170,10 +5572,45 @@ paths:
                       - BAN
                       - RESTORE
                       - RELEASE_HOLD
-                    recordStrike: *id004
-                    suspendedUntil: *id008
+                    recordStrike:
+                      type: boolean
+                    suspendedUntil:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
                     statement:
-                      $ref: '#/components/schemas/StatementOfReasons'
+                      type: object
+                      properties:
+                        templateId:
+                          type: string
+                          enum:
+                          - PHOTOS_NOT_OWN
+                          - RUDE
+                          - HARASSMENT
+                          - SPAM
+                          - FRAUD
+                          - HIDDEN_RENTAL
+                          - ILLEGAL
+                          - PERSONAL_DATA
+                          - OTHER
+                        facts:
+                          type: string
+                          minLength: 20
+                          maxLength: 2000
+                        ground:
+                          type: string
+                          enum:
+                          - LAW
+                          - TERMS
+                        groundDetail:
+                          type: string
+                          minLength: 5
+                          maxLength: 500
+                      required:
+                      - templateId
+                      - facts
+                      - ground
+                      - groundDetail
                   required:
                   - targetType
                   - targetId
@@ -5192,10 +5629,13 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      actionId: *id001
-                      strikesActive: *id005
+                      actionId:
+                        type: string
+                      strikesActive:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
                       suggestedNext:
                         type: string
                         enum:
@@ -5206,6 +5646,7 @@ paths:
                     - actionId
                     - strikesActive
                     - suggestedNext
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5222,8 +5663,8 @@ paths:
       operationId: adminDecideAppeal
       tags:
       - Admin
-      summary: Resolver un recurso
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Resuelve un recurso (FR-45)
+      description: 'Callable de Firebase. Guardas: ADM. sameAdmin avisa si decide quien tomó la decisión (no bloquea). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -5234,15 +5675,20 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    appealId: *id001
+                    appealId:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
                     decision:
                       type: string
                       enum:
                       - UPHOLD
                       - REJECT
-                    text: *id001
+                    text:
+                      type: string
+                      minLength: 10
+                      maxLength: 2000
                   required:
                   - appealId
                   - decision
@@ -5260,6 +5706,28 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      appeal:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          status:
+                            type: string
+                            enum:
+                            - OPEN
+                            - UPHELD
+                            - REJECTED
+                        required:
+                        - id
+                        - status
+                        additionalProperties: false
+                      sameAdmin:
+                        type: boolean
+                    required:
+                    - appeal
+                    - sameAdmin
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5292,7 +5760,7 @@ paths:
                   properties:
                     q: *id001
                     cursor: *id001
-                    limit: *id007
+                    limit: &id007 {default: 20, maximum: 50, minimum: 1, type: integer}
                   required:
                   - q
               required:
@@ -6918,8 +7386,8 @@ paths:
       operationId: adminResolveHold
       tags:
       - Admin
-      summary: Liberar o confirmar una retención preventiva
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Libera o confirma una retención (FR-69)
+      description: 'Callable de Firebase. Guardas: ADM. CONFIRM exige statement: oculta la casa o suspende la cuenta P-32 días. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -6930,18 +7398,57 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    homeId: *id001
-                    uid: *id001
+                    uid:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
+                    scope:
+                      type: string
+                      enum:
+                      - HOME
+                      - USER
                     decision:
                       type: string
                       enum:
                       - RELEASE
                       - CONFIRM
                     statement:
-                      $ref: '#/components/schemas/StatementOfReasons'
+                      type: object
+                      properties:
+                        templateId:
+                          type: string
+                          enum:
+                          - PHOTOS_NOT_OWN
+                          - RUDE
+                          - HARASSMENT
+                          - SPAM
+                          - FRAUD
+                          - HIDDEN_RENTAL
+                          - ILLEGAL
+                          - PERSONAL_DATA
+                          - OTHER
+                        facts:
+                          type: string
+                          minLength: 20
+                          maxLength: 2000
+                        ground:
+                          type: string
+                          enum:
+                          - LAW
+                          - TERMS
+                        groundDetail:
+                          type: string
+                          minLength: 5
+                          maxLength: 500
+                      required:
+                      - templateId
+                      - facts
+                      - ground
+                      - groundDetail
                   required:
+                  - uid
+                  - scope
                   - decision
               required:
               - data
@@ -6954,7 +7461,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6971,8 +7486,8 @@ paths:
       operationId: adminListAlerts
       tags:
       - Admin
-      summary: Alertas de administración
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Alertas sin atender (N-26)
+      description: 'Callable de Firebase. Guardas: ADM. El panel también las lee en tiempo real desde adminAlerts. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -6983,8 +7498,8 @@ paths:
               properties:
                 data:
                   type: object
+                  properties: {}
                   additionalProperties: false
-                  properties: *id009
               required:
               - data
       responses:
@@ -6998,19 +7513,47 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
-                      nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                          properties:
+                            id:
+                              type: string
+                            type:
+                              type: string
+                              enum:
+                              - REPORT_HIGH
+                              - PHOTO_DUPLICATE
+                              - HOLD_DUE
+                              - COMPLAINT_DUE
+                              - LOCATION_MANUAL
+                              - VERIFICATION_DUPLICATE
+                              - REPORT_DUE
+                              - HOLD_OVERDUE
+                            refType:
+                              type: string
+                            refId:
+                              type: string
+                            priority:
+                              type: string
+                              enum:
+                              - HIGH
+                              - NORMAL
+                            createdAt:
+                              type: string
+                          required:
+                          - id
+                          - type
+                          - refType
+                          - refId
+                          - priority
+                          - createdAt
+                          additionalProperties: false
                     required:
                     - items
-                    - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7027,7 +7570,7 @@ paths:
       operationId: adminHandleAlert
       tags:
       - Admin
-      summary: Marcar alerta como atendida
+      summary: Marca una alerta como atendida
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -7039,9 +7582,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    alertId: *id001
+                    alertId:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
                   required:
                   - alertId
               required:
@@ -7055,7 +7600,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7525,6 +8078,491 @@ paths:
                         const: true
                     required:
                     - ok
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getMyStanding:
+    post:
+      operationId: getMyStanding
+      tags:
+      - Seguridad
+      summary: Mis advertencias, decisiones y retenciones (FR-68)
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      strikes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            reason:
+                              type: string
+                            severity:
+                              type: string
+                              enum:
+                              - MINOR
+                              - SERIOUS
+                            createdAt:
+                              type: string
+                            expiresAt:
+                              type: string
+                          required:
+                          - id
+                          - reason
+                          - severity
+                          - createdAt
+                          - expiresAt
+                          additionalProperties: false
+                      actions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            action:
+                              type: string
+                              enum:
+                              - DISMISS
+                              - WARN
+                              - HIDE_CONTENT
+                              - HIDE_MESSAGE
+                              - SUSPEND
+                              - BAN
+                              - RESTORE
+                              - RELEASE_HOLD
+                            targetType:
+                              type: string
+                              enum:
+                              - HOME
+                              - USER
+                              - REVIEW
+                              - MESSAGE
+                            targetId:
+                              type: string
+                            statement:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  templateId:
+                                    type: string
+                                    enum:
+                                    - PHOTOS_NOT_OWN
+                                    - RUDE
+                                    - HARASSMENT
+                                    - SPAM
+                                    - FRAUD
+                                    - HIDDEN_RENTAL
+                                    - ILLEGAL
+                                    - PERSONAL_DATA
+                                    - OTHER
+                                  facts:
+                                    type: string
+                                    minLength: 20
+                                    maxLength: 2000
+                                  ground:
+                                    type: string
+                                    enum:
+                                    - LAW
+                                    - TERMS
+                                  groundDetail:
+                                    type: string
+                                    minLength: 5
+                                    maxLength: 500
+                                  scope:
+                                    type: string
+                                  duration:
+                                    type: string
+                                  redress:
+                                    type: string
+                                required:
+                                - templateId
+                                - facts
+                                - ground
+                                - groundDetail
+                                - scope
+                                - duration
+                                - redress
+                                additionalProperties: false
+                              - type: 'null'
+                            suspendedUntil:
+                              type:
+                              - string
+                              - 'null'
+                            adminUid:
+                              type:
+                              - string
+                              - 'null'
+                            createdAt:
+                              type: string
+                            appeal:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  id:
+                                    type: string
+                                  status:
+                                    type: string
+                                    enum:
+                                    - OPEN
+                                    - UPHELD
+                                    - REJECTED
+                                  decisionText:
+                                    type:
+                                    - string
+                                    - 'null'
+                                required:
+                                - id
+                                - status
+                                - decisionText
+                                additionalProperties: false
+                              - type: 'null'
+                            appealable:
+                              type: boolean
+                          required:
+                          - id
+                          - action
+                          - targetType
+                          - targetId
+                          - statement
+                          - suspendedUntil
+                          - adminUid
+                          - createdAt
+                          - appeal
+                          - appealable
+                          additionalProperties: false
+                      hold:
+                        anyOf:
+                        - type: object
+                          properties:
+                            scope:
+                              type: string
+                              enum:
+                              - HOME
+                              - USER
+                            reason:
+                              type: string
+                            dueAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - scope
+                          - reason
+                          - dueAt
+                          additionalProperties: false
+                        - type: 'null'
+                    required:
+                    - strikes
+                    - actions
+                    - hold
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListAppeals:
+    post:
+      operationId: adminListAppeals
+      tags:
+      - Admin
+      summary: Recursos abiertos
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            actionId:
+                              type: string
+                            uid:
+                              type: string
+                            text:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - OPEN
+                              - UPHELD
+                              - REJECTED
+                            action:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                action:
+                                  type: string
+                                  enum:
+                                  - DISMISS
+                                  - WARN
+                                  - HIDE_CONTENT
+                                  - HIDE_MESSAGE
+                                  - SUSPEND
+                                  - BAN
+                                  - RESTORE
+                                  - RELEASE_HOLD
+                                targetType:
+                                  type: string
+                                  enum:
+                                  - HOME
+                                  - USER
+                                  - REVIEW
+                                  - MESSAGE
+                                targetId:
+                                  type: string
+                                statement:
+                                  anyOf:
+                                  - type: object
+                                    properties:
+                                      templateId:
+                                        type: string
+                                        enum:
+                                        - PHOTOS_NOT_OWN
+                                        - RUDE
+                                        - HARASSMENT
+                                        - SPAM
+                                        - FRAUD
+                                        - HIDDEN_RENTAL
+                                        - ILLEGAL
+                                        - PERSONAL_DATA
+                                        - OTHER
+                                      facts:
+                                        type: string
+                                        minLength: 20
+                                        maxLength: 2000
+                                      ground:
+                                        type: string
+                                        enum:
+                                        - LAW
+                                        - TERMS
+                                      groundDetail:
+                                        type: string
+                                        minLength: 5
+                                        maxLength: 500
+                                      scope:
+                                        type: string
+                                      duration:
+                                        type: string
+                                      redress:
+                                        type: string
+                                    required:
+                                    - templateId
+                                    - facts
+                                    - ground
+                                    - groundDetail
+                                    - scope
+                                    - duration
+                                    - redress
+                                    additionalProperties: false
+                                  - type: 'null'
+                                suspendedUntil:
+                                  type:
+                                  - string
+                                  - 'null'
+                                adminUid:
+                                  type:
+                                  - string
+                                  - 'null'
+                                createdAt:
+                                  type: string
+                                appeal:
+                                  anyOf:
+                                  - type: object
+                                    properties:
+                                      id:
+                                        type: string
+                                      status:
+                                        type: string
+                                        enum:
+                                        - OPEN
+                                        - UPHELD
+                                        - REJECTED
+                                      decisionText:
+                                        type:
+                                        - string
+                                        - 'null'
+                                    required:
+                                    - id
+                                    - status
+                                    - decisionText
+                                    additionalProperties: false
+                                  - type: 'null'
+                                appealable:
+                                  type: boolean
+                              required:
+                              - id
+                              - action
+                              - targetType
+                              - targetId
+                              - statement
+                              - suspendedUntil
+                              - adminUid
+                              - createdAt
+                              - appeal
+                              - appealable
+                              additionalProperties: false
+                            createdAt:
+                              type: string
+                          required:
+                          - id
+                          - actionId
+                          - uid
+                          - text
+                          - status
+                          - action
+                          - createdAt
+                          additionalProperties: false
+                    required:
+                    - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListHolds:
+    post:
+      operationId: adminListHolds
+      tags:
+      - Admin
+      summary: Casas y cuentas en retención preventiva
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uid:
+                              type: string
+                            scope:
+                              type: string
+                              enum:
+                              - HOME
+                              - USER
+                            displayName:
+                              type: string
+                            reason:
+                              type: string
+                            since:
+                              type:
+                              - string
+                              - 'null'
+                            dueAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - uid
+                          - scope
+                          - displayName
+                          - reason
+                          - since
+                          - dueAt
+                          additionalProperties: false
+                    required:
+                    - items
                     additionalProperties: false
                 required:
                 - result

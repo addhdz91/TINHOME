@@ -31,6 +31,7 @@ export function computeHomeState(
     locationCheck:
       (home.locationCheck as { status?: LocationCheckStatus } | undefined)?.status ?? 'NONE',
     onHold:
+      home.hiddenByModeration === true ||
       (home.moderationHold as { active?: boolean } | null | undefined)?.active === true ||
       (user?.moderationHold as { active?: boolean } | null | undefined)?.active === true,
     ownerStatus: (user?.status as UserStatus | undefined) ?? 'DELETED',

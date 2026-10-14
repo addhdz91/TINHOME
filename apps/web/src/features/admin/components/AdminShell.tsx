@@ -1,4 +1,15 @@
-import { BadgeCheck, Home, LogOut, MapPinned, Undo2, type LucideIcon } from 'lucide-react';
+import {
+  BadgeCheck,
+  BellRing,
+  Flag,
+  Home,
+  LogOut,
+  MapPinned,
+  PauseCircle,
+  Scale,
+  Undo2,
+  type LucideIcon,
+} from 'lucide-react';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router';
@@ -6,18 +17,37 @@ import { toast } from 'sonner';
 import { NavigationProgress } from '@/components/NavigationProgress';
 import { TinHomeLogo } from '@/components/TinHomeLogo';
 import { cn } from '@/lib/utils';
+import { useAdminAlerts } from '../api/use-alerts';
 import { useIdleSignOut } from '../lib/use-idle-sign-out';
 
 const NAV: {
-  key: 'home' | 'verifications' | 'locations';
+  key: 'home' | 'alerts' | 'verifications' | 'locations' | 'reports' | 'holds' | 'appeals';
   to: string;
   icon: LucideIcon;
   end?: boolean;
 }[] = [
   { key: 'home', to: '/admin', icon: Home, end: true },
+  { key: 'alerts', to: '/admin/alertas', icon: BellRing },
   { key: 'verifications', to: '/admin/verificaciones', icon: BadgeCheck },
   { key: 'locations', to: '/admin/ubicaciones', icon: MapPinned },
+  { key: 'reports', to: '/admin/denuncias', icon: Flag },
+  { key: 'holds', to: '/admin/retenciones', icon: PauseCircle },
+  { key: 'appeals', to: '/admin/recursos', icon: Scale },
 ];
+
+/** Real-time badge on «Alertas» (N-26). */
+function AlertsBadge() {
+  const { t } = useTranslation();
+  const alerts = useAdminAlerts();
+  const count = alerts?.length ?? 0;
+  if (count === 0) return null;
+  return (
+    <span className="ml-auto min-w-5 rounded-full bg-danger px-1 text-center text-xs leading-5 font-bold text-primary-foreground">
+      <span aria-hidden="true">{count > 9 ? '9+' : count}</span>
+      <span className="sr-only">{t('admin.alerts.unhandled', { count })}</span>
+    </span>
+  );
+}
 
 /** UX §9 — desktop-first admin shell with a sidebar; items of later milestones appear with them. */
 export function AdminShell({ onSignOut }: { onSignOut: () => Promise<void> }) {
@@ -62,6 +92,7 @@ export function AdminShell({ onSignOut }: { onSignOut: () => Promise<void> }) {
             >
               <Icon aria-hidden="true" className="size-5" />
               {t(`admin.nav.${key}`)}
+              {key === 'alerts' ? <AlertsBadge /> : null}
             </NavLink>
           ))}
           <Link

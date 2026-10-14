@@ -13,6 +13,7 @@ const REASON_TEXT: Record<HoldReason, string> = {
   PHOTO_CHANGES: 'Has cambiado muchas fotos de tu casa en poco tiempo.',
   CITY_CHANGE: 'Has cambiado la ciudad de tu casa.',
   REPORT: 'Hemos recibido una denuncia sobre tu casa.',
+  REPORTS_THRESHOLD: 'Hemos recibido varias denuncias sobre tu casa o tu cuenta.',
 };
 
 /**

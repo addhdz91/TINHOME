@@ -157,7 +157,11 @@
       "verifications": "Verificaciones",
       "locations": "Ubicación manual",
       "backToApp": "Volver a la app",
-      "signOut": "Cerrar sesión"
+      "signOut": "Cerrar sesión",
+      "alerts": "Alertas",
+      "reports": "Denuncias",
+      "holds": "Retenciones",
+      "appeals": "Recursos"
     },
     "denied": {
       "title": "No tienes acceso",
@@ -259,6 +263,185 @@
       "approve": "Aprobar ubicación",
       "reject": "Rechazar",
       "decided": "Decisión guardada"
+    },
+    "moderation": {
+      "decide": "Decisión",
+      "action": "Acción",
+      "actions": {
+        "DISMISS": "Archivar (no hay incumplimiento)",
+        "WARN": "Advertir",
+        "HIDE_CONTENT": "Ocultar contenido",
+        "HIDE_MESSAGE": "Ocultar mensaje",
+        "SUSPEND": "Suspender",
+        "BAN": "Expulsar",
+        "RESTORE": "Restablecer",
+        "RELEASE_HOLD": "Liberar retención"
+      },
+      "suspendedUntil": "Suspender hasta",
+      "suspendDefault": "Si no eliges fecha, se aplican los días del parámetro P-32.",
+      "statement": "Declaración de motivos (PROVISIONAL)",
+      "template": "Plantilla",
+      "templates": {
+        "PHOTOS_NOT_OWN": {
+          "name": "Fotos que no son suyas",
+          "facts": "Las fotos publicadas no corresponden a la vivienda de la persona titular o pertenecen a otra casa.",
+          "ground": "Normas de la comunidad: los anuncios deben mostrar la vivienda real."
+        },
+        "RUDE": {
+          "name": "Trato grosero",
+          "facts": "La persona se ha dirigido a otras personas usuarias de forma grosera o irrespetuosa.",
+          "ground": "Normas de la comunidad: trato respetuoso."
+        },
+        "HARASSMENT": {
+          "name": "Acoso o amenazas",
+          "facts": "La persona ha enviado mensajes de acoso o amenazas a otra persona usuaria.",
+          "ground": "Normas de la comunidad: prohibido el acoso y las amenazas."
+        },
+        "SPAM": {
+          "name": "Spam o mensajes inapropiados",
+          "facts": "La persona ha enviado mensajes repetitivos, comerciales o inapropiados.",
+          "ground": "Normas de la comunidad: prohibido el spam."
+        },
+        "FRAUD": {
+          "name": "Fraude o petición de dinero",
+          "facts": "La persona ha pedido dinero o datos bancarios a otra persona usuaria.",
+          "ground": "Términos: TinHome no admite pagos entre personas usuarias."
+        },
+        "HIDDEN_RENTAL": {
+          "name": "Alquiler encubierto",
+          "facts": "El anuncio o los mensajes ofrecen la vivienda a cambio de dinero.",
+          "ground": "Términos: solo intercambios de casa sin contraprestación económica."
+        },
+        "ILLEGAL": {
+          "name": "Contenido ilegal",
+          "facts": "El contenido publicado puede ser ilegal.",
+          "ground": "Legislación aplicable (detallar norma)."
+        },
+        "PERSONAL_DATA": {
+          "name": "Datos personales expuestos",
+          "facts": "El contenido muestra datos personales de terceras personas sin su consentimiento.",
+          "ground": "Normas de la comunidad y normativa de protección de datos."
+        },
+        "OTHER": {
+          "name": "Otro motivo",
+          "facts": "Describe los hechos concretos que motivan la decisión.",
+          "ground": "Indica la norma concreta incumplida."
+        }
+      },
+      "facts": "Hechos",
+      "ground": "Base",
+      "grounds": {
+        "LAW": "Ley",
+        "TERMS": "Normas de la comunidad / Términos"
+      },
+      "groundDetail": "Detalle de la base",
+      "preview": "Vista previa del email a la persona afectada",
+      "previewFacts": "Hechos:",
+      "previewGround": "Motivo:",
+      "previewServer": "Se añaden automáticamente el alcance, la duración y cómo recurrir.",
+      "recordStrike": "Registrar advertencia (strike)",
+      "apply": "Aplicar decisión",
+      "done_one": "Decisión aplicada. Advertencias activas: {{count}}.",
+      "done_other": "Decisión aplicada. Advertencias activas: {{count}}.",
+      "suggested": {
+        "NONE": "",
+        "SUSPEND": "El sistema propone una suspensión (BR-41).",
+        "BAN": "El sistema propone la expulsión (BR-41)."
+      },
+      "reviewSuggestion": "Revisar la sanción propuesta",
+      "confirm": {
+        "SUSPEND": "Confirmar suspensión",
+        "BAN": "Confirmar expulsión"
+      },
+      "confirmBody": "La sanción propuesta solo se aplica si la confirmas. Se usará la misma declaración de motivos."
+    },
+    "reports": {
+      "title": "Denuncias",
+      "detail": "Denuncia",
+      "back": "Volver a la cola",
+      "statusFilter": "Estado",
+      "statuses": {
+        "OPEN": "Abiertas",
+        "RESOLVED": "Resueltas",
+        "DISMISSED": "Archivadas"
+      },
+      "empty": "No hay denuncias en esta cola",
+      "deadline": "Plazo",
+      "priority": "Prioridad",
+      "reason": "Motivo",
+      "target": "Contenido",
+      "reporter": "Denunciante",
+      "open": "Abrir",
+      "priorities": {
+        "HIGH": "Alta (24 h)",
+        "NORMAL": "Normal (72 h)"
+      },
+      "targets": {
+        "HOME": "Casa",
+        "USER": "Perfil",
+        "REVIEW": "Valoración",
+        "MESSAGE": "Mensaje"
+      },
+      "public": "Visitante",
+      "verified": "Identidad verificada",
+      "unverified": "Sin verificar",
+      "due": "vence",
+      "description": "Descripción del denunciante",
+      "attachments_one": "{{count}} captura adjunta",
+      "attachments_other": "{{count}} capturas adjuntas",
+      "snapshot": "Contenido denunciado (copia)",
+      "messages": "Mensajes implicados",
+      "reportedPerson": "Persona denunciada",
+      "otherPerson": "Denunciante",
+      "reportedMessage": "mensaje denunciado",
+      "history": "Historial de {{name}}",
+      "historyLine": "Estado: {{status}} · advertencias activas: {{strikes}} · denuncias abiertas: {{open}}",
+      "onHold": "En retención preventiva ({{reason}})",
+      "closed": "Esta denuncia ya está cerrada."
+    },
+    "holds": {
+      "title": "Retenciones preventivas",
+      "empty": "No hay retenciones activas",
+      "scopes": {
+        "HOME": "Casa",
+        "USER": "Cuenta"
+      },
+      "release": "Liberar",
+      "confirm": "Confirmar",
+      "done": "Retención resuelta",
+      "confirmTitle": "Confirmar la retención",
+      "confirmBody": {
+        "HOME": "La casa quedará oculta y se enviará la declaración de motivos.",
+        "USER": "La cuenta quedará suspendida P-32 días y se enviará la declaración de motivos."
+      }
+    },
+    "appeals": {
+      "title": "Recursos",
+      "empty": "No hay recursos pendientes",
+      "answer": "Respuesta a la persona",
+      "uphold": "Aceptar y revertir",
+      "reject": "Rechazar",
+      "done": "Recurso resuelto",
+      "doneSameAdmin": "Recurso resuelto. Aviso: lo ha decidido la misma persona que tomó la decisión."
+    },
+    "alerts": {
+      "title": "Alertas",
+      "empty": "No hay alertas pendientes",
+      "sound": "Sonido",
+      "open": "Abrir",
+      "handle": "Marcar como atendida",
+      "unhandled_one": "{{count}} alerta pendiente",
+      "unhandled_other": "{{count}} alertas pendientes",
+      "types": {
+        "REPORT_HIGH": "Denuncia de prioridad alta",
+        "PHOTO_DUPLICATE": "Fotos duplicadas",
+        "HOLD_DUE": "Retención preventiva",
+        "COMPLAINT_DUE": "Queja a punto de vencer",
+        "LOCATION_MANUAL": "Revisión de ubicación",
+        "VERIFICATION_DUPLICATE": "Documento duplicado",
+        "REPORT_DUE": "Denuncia a punto de vencer",
+        "HOLD_OVERDUE": "Retención vencida"
+      }
     }
   },
   "appShell": {
@@ -888,7 +1071,8 @@
       "PHOTO_DUPLICATE": "Fotos en revisión",
       "PHOTO_CHANGES": "Cambios de fotos en revisión",
       "CITY_CHANGE": "Cambio de ciudad en revisión",
-      "REPORT": "En revisión"
+      "REPORT": "En revisión",
+      "REPORTS_THRESHOLD": "En revisión por varias denuncias"
     },
     "my": {
       "title": "Mi casa",
@@ -1298,7 +1482,8 @@
       "EXCHANGE_COMPLETED": "Intercambio completado: ya podéis valoraros"
     },
     "viewExchange": "Ver intercambio",
-    "proposeExchange": "Declarar intercambio"
+    "proposeExchange": "Declarar intercambio",
+    "report": "Denunciar"
   },
   "agreement": {
     "title": "Acuerdo de intercambio de casas (modelo PROVISIONAL)",
@@ -1569,6 +1754,80 @@
       "step1": "Toca el botón Compartir de Safari.",
       "step2": "Elige «Añadir a pantalla de inicio».",
       "step3": "Abre TinHome desde el icono y activa las notificaciones."
+    }
+  },
+  "report": {
+    "title": {
+      "HOME": "Denunciar la casa «{{name}}»",
+      "USER": "Denunciar a {{name}}",
+      "REVIEW": "Denunciar la valoración de {{name}}",
+      "MESSAGE": "Denunciar un mensaje de {{name}}"
+    },
+    "button": {
+      "HOME": "Denunciar esta casa",
+      "USER": "Denunciar a {{name}}",
+      "REVIEW": "Denunciar la valoración de {{name}}",
+      "MESSAGE": "Denunciar este mensaje de {{name}}"
+    },
+    "body": "Cuéntanos qué pasa. Lo revisará una persona del equipo.",
+    "reason": "Motivo",
+    "reasonRequired": "Elige un motivo.",
+    "reasons": {
+      "PHOTOS_NOT_OWN": "Fotos que no son de su vivienda o suplantación de otra casa",
+      "RUDE": "Trato grosero o irrespetuoso",
+      "HARASSMENT": "Acoso o amenazas",
+      "INAPPROPRIATE_MESSAGES": "Mensajes inapropiados o spam",
+      "FRAUD": "Fraude o petición de dinero",
+      "HIDDEN_RENTAL": "Alquiler encubierto",
+      "ILLEGAL": "Contenido ilegal",
+      "PERSONAL_DATA": "Datos personales expuestos",
+      "OTHER": "Otro motivo"
+    },
+    "description": "¿Qué ha pasado?",
+    "descriptionHint": "Al menos {{min}} caracteres. Cuanto más concreto, antes podremos actuar.",
+    "screenshots": "Capturas (opcional)",
+    "screenshotsHint": "Hasta {{max}} imágenes de 5 MB como máximo. Solo las verá el equipo.",
+    "alsoBlock": "Bloquear también a {{name}}",
+    "anonymous": "La persona denunciada no sabrá quién la ha denunciado.",
+    "submit": "Enviar denuncia",
+    "sent": "Hemos recibido tu denuncia. La revisaremos a fondo y te informaremos del resultado."
+  },
+  "standing": {
+    "title": "Mi cuenta: avisos y decisiones",
+    "strikes_one": "Tienes {{count}} advertencia activa",
+    "strikes_other": "Tienes {{count}} advertencias activas",
+    "strikesBody": "Caducan con el tiempo. Puedes ver el motivo y recurrir.",
+    "strikeItem": "Registrada el {{date}} · caduca el {{expires}}",
+    "holdTitle": "Tu casa o tu cuenta está en revisión",
+    "holdBody": "Normalmente lo resolvemos en 72 h. No tienes que hacer nada; si quieres aportar información, escríbenos desde Ayuda.",
+    "open": "Ver detalles",
+    "clean": "Todo en orden",
+    "cleanBody": "No tienes advertencias ni decisiones de moderación.",
+    "decisions": "Decisiones sobre tu cuenta",
+    "actions": {
+      "DISMISS": "Denuncia archivada",
+      "WARN": "Advertencia",
+      "HIDE_CONTENT": "Contenido ocultado",
+      "HIDE_MESSAGE": "Mensaje ocultado",
+      "SUSPEND": "Suspensión",
+      "BAN": "Cierre de la cuenta",
+      "RESTORE": "Restablecimiento",
+      "RELEASE_HOLD": "Revisión cerrada"
+    },
+    "facts": "Hechos",
+    "ground": "Motivo",
+    "scope": "Alcance",
+    "duration": "Duración",
+    "redress": "Cómo recurrir",
+    "appeal": "Recurrir esta decisión",
+    "appealLabel": "¿Por qué no estás de acuerdo?",
+    "appealHint": "Al menos {{min}} caracteres. Lo revisará, si es posible, otra persona del equipo.",
+    "appealSend": "Enviar recurso",
+    "appealSent": "Hemos recibido tu recurso. Te contaremos el resultado.",
+    "appealStatus": {
+      "OPEN": "Recurso en revisión",
+      "UPHELD": "Recurso aceptado",
+      "REJECTED": "Recurso rechazado"
     }
   }
 }

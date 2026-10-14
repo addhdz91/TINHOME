@@ -59,6 +59,7 @@ export async function seedEligible(
       availability: { windowIds: ['ss27'], ranges: [] },
       travelers: { count: 2, withPet: false },
       moderationHold: null,
+      locationCheck: { status: 'PASS' },
       publishedAt: Timestamp.now(),
     });
 }

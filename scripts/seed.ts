@@ -115,8 +115,18 @@ async function seedFaqs(): Promise<void> {
 }
 
 async function seedUsers(): Promise<void> {
-  // Rate-limit windows of earlier runs (e.g. 5 location readings a day, E2E-04) start clean.
-  await db.recursiveDelete(db.collection('rateLimits'));
+  // Rate-limit windows of earlier runs (e.g. 5 location readings a day, E2E-04) start clean,
+  // and so does moderation (M9: reports, alerts, decisions, strikes and appeals of earlier runs).
+  for (const collection of [
+    'rateLimits',
+    'reports',
+    'adminAlerts',
+    'moderationActions',
+    'strikes',
+    'appeals',
+  ]) {
+    await db.recursiveDelete(db.collection(collection));
+  }
   for (const demo of DEMO_USERS) {
     await auth.deleteUser(demo.uid).catch(() => undefined);
     // Premium state from earlier runs (M7: subscriptions and their entitlements) starts clean.
@@ -144,7 +154,10 @@ async function seedUsers(): Promise<void> {
           }
         : {}),
     });
-    if (demo.role) await auth.setCustomUserClaims(demo.uid, { role: demo.role });
+    if (demo.role) {
+      await auth.setCustomUserClaims(demo.uid, { role: demo.role });
+      await db.doc(`adminDirectory/${demo.uid}`).set({ email: demo.email, role: demo.role });
+    }
 
     const premiumUntil =
       demo.premiumMonths > 0

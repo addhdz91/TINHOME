@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   CalendarPlus,
   FileDown,
+  Flag,
   Info,
   MessageCircle,
   MoreVertical,
@@ -25,6 +26,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
 import { ProposeExchangeSheet } from '@/features/exchange';
 import { usePushPrompt } from '@/features/notifications';
+import { ReportButton, ReportDialog } from '@/features/safety';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import {
   blockUser,
@@ -80,6 +82,7 @@ export function ConversationPage() {
   const online = useOnline();
   const [pending, setPending] = useState<PendingMessage[]>([]);
   const [confirm, setConfirm] = useState<'phone' | 'unmatch' | 'block' | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
   const [safetyOpen, setSafetyOpen] = useState(() => !seenSafety());
   const [nextStepOpen, setNextStepOpen] = useState(true);
   const [exchangeOpen, setExchangeOpen] = useState(false);
@@ -259,6 +262,13 @@ export function ConversationPage() {
                 <Ban aria-hidden="true" className="size-4" />
                 {t('chat.block')}
               </DropdownMenu.Item>
+              <DropdownMenu.Item
+                className="flex min-h-11 cursor-pointer items-center gap-2 rounded px-3 text-danger outline-none data-[highlighted]:bg-surface-muted"
+                onSelect={() => setReportOpen(true)}
+              >
+                <Flag aria-hidden="true" className="size-4" />
+                {t('chat.report')}
+              </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
@@ -344,6 +354,15 @@ export function ConversationPage() {
             pending={pending}
             otherReadAt={data.lastReadAt[otherUid] ?? null}
             onRetry={(message) => send(message.text, message.id)}
+            renderReport={(message) => (
+              <ReportButton
+                targetType="MESSAGE"
+                targetId={`${matchId}/${message.id}`}
+                targetName={other.displayName}
+                canBlock
+                compact
+              />
+            )}
           />
         )}
       </div>
@@ -353,6 +372,14 @@ export function ConversationPage() {
         disabled={false}
       />
 
+      <ReportDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="USER"
+        targetId={otherUid}
+        targetName={other.displayName}
+        canBlock
+      />
       <ProposeExchangeSheet
         open={exchangeOpen}
         onOpenChange={setExchangeOpen}

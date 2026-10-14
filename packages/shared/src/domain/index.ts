@@ -18,3 +18,4 @@ export * from './chat.js';
 export * from './exchange.js';
 export * from './reviews.js';
 export * from './notifications.js';
+export * from './moderation.js';

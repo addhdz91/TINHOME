@@ -218,15 +218,21 @@ Slugs: `aviso-legal`, `terminos`, `privacidad`, `cookies`, `normas-comunidad`, `
 ### 2.23 `partners/{id}` y `partnerClicks/{id}`
 Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTHER`, `title`, `text` (≤ 140), `logoUrl`, `targetUrl`, `cityIds | null`, `placements: ('MATCH'|'EXCHANGE'|'DECK')[]`, `active`, `startsAt?`, `endsAt?`. Click: `partnerId`, `placement`, `uidHash?`, `createdAt`.
 
+### 2.23b Moderación en documentos existentes (M9)
+- `homes.hiddenByModeration: bool` — contenido ocultado por moderación (cuenta como `ON_HOLD` en la visibilidad).
+- `homes.moderationHold` / `users.moderationHold`: `{ active, reason: PHOTO_DUPLICATE|PHOTO_CHANGES|CITY_CHANGE|REPORT|REPORTS_THRESHOLD, since, dueAt, escalatedAt? }`. Una retención de cuenta oculta su casa y bloquea me gusta y chat.
+- Expulsión: `users.status = BANNED`, cuenta de Auth deshabilitada y sesiones revocadas, matches cerrados.
+
 ### 2.24 Moderación
-- `reports/{id}`: `reporterUid?` (null si pública), `reporterName?`, `reporterEmail?`, `targetType: HOME|USER|REVIEW|MESSAGE`, `targetId` (para `MESSAGE`: `matchId/messageId`), `targetUid`, `targetSnapshot` (S, copia del contenido; para mensajes, el denunciado y los 10 anteriores), `reason: PHOTOS_NOT_OWN|RUDE|HARASSMENT|INAPPROPRIATE_MESSAGES|FRAUD|HIDDEN_RENTAL|ILLEGAL|PERSONAL_DATA|OTHER`, `reporterVerified: bool` (S), `dueAt` (S, 24/72 h), `description`, `attachments: string[]`, `status`, `priority: HIGH|NORMAL`, `assignedTo?`, `createdAt`, `resolvedAt?`.
-- `moderationActions/{id}`: `targetUid`, `targetType`, `targetId`, `action: WARN|HIDE_CONTENT|SUSPEND|BAN|RESTORE`, `suspendedUntil?`, `statementOfReasons: { facts, ground: 'LAW'|'TERMS', groundDetail, scope, duration, redress }`, `reportId?`, `adminUid`, `createdAt`, `notifiedAt`.
-- `appeals/{id}`: `actionId`, `uid`, `text`, `status: OPEN|UPHELD|REJECTED`, `reviewerUid?`, `decisionText?`, `createdAt`, `decidedAt?`.
+- `reports/{id}`: `reporterUid?` (null si pública), `reporterName?`, `reporterEmail?`, `public: bool`, `targetUrl?` (pública), `targetType: HOME|USER|REVIEW|MESSAGE`, `targetId` (para `MESSAGE`: `matchId/messageId`), `targetUid`, `targetSnapshot` (S, copia del contenido; para mensajes, el denunciado y los 10 anteriores), `reason: PHOTOS_NOT_OWN|RUDE|HARASSMENT|INAPPROPRIATE_MESSAGES|FRAUD|HIDDEN_RENTAL|ILLEGAL|PERSONAL_DATA|OTHER`, `reporterVerified: bool` (S), `dueAt` (S, 24/72 h), `description`, `attachments: string[]`, `status: OPEN|RESOLVED|DISMISSED`, `priority: HIGH|NORMAL`, `assignedTo?`, `actionId?`, `dueAlertedAt?`, `escalatedAt?` (J-12), `createdAt`, `resolvedAt?`.
+- `moderationActions/{id}`: `targetUid`, `targetType`, `targetId`, `action: DISMISS|WARN|HIDE_CONTENT|HIDE_MESSAGE|SUSPEND|BAN|RESTORE|RELEASE_HOLD`, `suspendedUntil?`, `statementOfReasons: { templateId, facts, ground: 'LAW'|'TERMS', groundDetail, scope, duration, redress } | null` (obligatoria en las restrictivas), `reportId?`, `adminUid`, `createdAt`, `notifiedAt`.
+- `appeals/{actionId}` (uno por decisión, M9): `actionId`, `uid`, `text`, `status: OPEN|UPHELD|REJECTED`, `decidedBy?`, `decisionText?`, `createdAt`, `decidedAt?`.
+- `adminDirectory/{uid}` (M9, solo servidor): `email`, `role` — destinatarios de N-26 (los roles viven en los custom claims de Auth).
 
 ### 2.24b Seguridad, ayuda y atención
 - `locationChecks/{id}`: `uid`, `homeId`, `cityId`, `latRounded`, `lngRounded` (2 decimales), `accuracyM`, `distanceKm` (entero), `result: PASS|FAIL|INACCURATE`, `userAgentMobile: bool`, `createdAt`, `purgeAt` (coordenadas borradas a P-13 días por J-10, que deja `coordinatesPurgedAt`; el resto se conserva). Intentos diarios (5) en `rateLimits/location_{hash(uid)}_{fecha}`.
 - `photoHashIndex/{band}_{value}`: `entries: { homeId, photoId, dhash }[]` — índice por bandas de 8 bits del `dhash` de 64 bits (8 bandas) para buscar candidatos a duplicado (FR-64).
-- `strikes/{id}`: `uid`, `actionId`, `reason`, `severity: 'MINOR'|'SERIOUS'`, `createdAt`, `expiresAt` (P-31), `revokedAt?` (si prospera un recurso).
+- `strikes/{id}`: `uid`, `actionId`, `reason`, `severity: 'MINOR'|'SERIOUS'`, `createdAt`, `expiresAt` (P-31), `active` (J-11 lo pasa a `false` al caducar), `revokedAt?` (si prospera un recurso). `users.strikesActive` se recalcula en cada cambio.
 - `supportTickets/{id}`: `number` (`TH-AAAA-NNNNNN`, contador atómico), `uid?` (null si visitante), `email`, `category: ACCOUNT|VERIFICATION|PREMIUM_BILLING|MODERATION_DECISION|TECHNICAL|OTHER`, `subject`, `description`, `attachments`, `status: RECEIVED|IN_REVIEW|WAITING_USER|RESOLVED|CLOSED`, `assignedTo?`, `dueAt` (P-38), `createdAt`, `resolvedAt?`. Subcolección `messages`: `authorType: USER|ADMIN`, `authorUid?`, `text`, `createdAt`.
 - `faqs/{slug}`: `category`, `question`, `answerMarkdown`, `order`, `published`, `tags[]`, `helpfulYes`, `helpfulNo` (S), `updatedAt`.
 - `users/{uid}/pushTokens/{sha256(token)}`: `token`, `platform: 'web'`, `userAgent`, `createdAt`, `lastSeenAt`. Se borran si FCM responde «no registrado».

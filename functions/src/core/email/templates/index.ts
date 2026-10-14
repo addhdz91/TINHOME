@@ -10,10 +10,14 @@ import { reviewInvite } from './n10-review.js';
 import { reviewsPublished } from './n11-reviews-published.js';
 import { billing } from './n12-billing.js';
 import { referral } from './n13-referral.js';
+import { reportAck } from './n14-report-ack.js';
+import { statement } from './n15-statement.js';
+import { result } from './n16-result.js';
 import { waitlistConfirmation } from './n19-waitlist-confirmation.js';
 import { unreadDigest } from './n20-unread.js';
 import { messageLike } from './n21-message-like.js';
 import { hold } from './n23-hold.js';
+import { adminAlert } from './n26-admin-alert.js';
 import { security } from './n27-security.js';
 
 /** Renders a queued e-mail. Adding a template id makes this switch non-exhaustive (type error). */
@@ -31,6 +35,16 @@ export function renderEmail(item: MailQueueItem): RenderedEmail {
       return billing(item.data);
     case 'N-13':
       return referral(item.data);
+    case 'N-14':
+      return reportAck(item.data);
+    case 'N-15':
+      return statement(item.data);
+    case 'N-16':
+      return result(item.data);
+    case 'N-24':
+      return statement(item.data);
+    case 'N-26':
+      return adminAlert(item.data);
     case 'N-19':
       return waitlistConfirmation(item.data);
     case 'N-06':

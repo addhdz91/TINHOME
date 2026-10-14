@@ -3,8 +3,13 @@ import { APP_ERROR_CODES } from '@tinhome/shared/constants';
 import es from './es.json';
 
 const FORBIDDEN = [/alquil/i, /precio por noche/i, /tinder/i, /alojamiento gratis/i];
-// Contract text (05 §3) that mentions renting only to say TinHome is not a rental.
-const ALLOWED = new Set([es.errors.E_TEXT_VIOLATION]);
+// Texts that mention renting only to say TinHome is not a rental: the contract error (05 §3)
+// and the FR-42 report reason «alquiler encubierto» (and its moderation template).
+const ALLOWED = new Set([
+  es.errors.E_TEXT_VIOLATION,
+  es.report.reasons.HIDDEN_RENTAL,
+  es.admin.moderation.templates.HIDDEN_RENTAL.name,
+]);
 
 function collectStrings(value: unknown): string[] {
   if (typeof value === 'string') return [value];

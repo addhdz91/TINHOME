@@ -164,9 +164,7 @@ export async function processHomePhoto(
 
   if (duplicate) {
     await holdHome(db, uid, 'PHOTO_DUPLICATE', params, now, {
-      photoId,
-      matchHomeId: duplicate.homeId,
-      matchPhotoId: duplicate.photoId,
+      meta: { photoId, matchHomeId: duplicate.homeId, matchPhotoId: duplicate.photoId },
     });
     return {
       status: 'PROCESSED',

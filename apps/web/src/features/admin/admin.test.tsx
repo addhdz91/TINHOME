@@ -7,7 +7,15 @@ import { renderRoutesWithAuth } from '@/test/render';
 import { signedIn } from '@/test/session';
 import { adminRoutes } from './routes';
 
-vi.mock('@/lib/firebase', () => ({ firebase: () => ({ auth: {} }) }));
+vi.mock('@/lib/firebase', () => ({ firebase: () => ({ auth: {}, db: {} }) }));
+vi.mock('firebase/firestore', () => ({
+  collection: vi.fn(),
+  query: vi.fn(),
+  where: vi.fn(),
+  orderBy: vi.fn(),
+  limit: vi.fn(),
+  onSnapshot: vi.fn(() => () => undefined),
+}));
 vi.mock('firebase/auth', () => ({ multiFactor: () => ({ enrolledFactors: [] }) }));
 const callables = vi.hoisted(() => ({
   adminGetDashboard: vi.fn(),

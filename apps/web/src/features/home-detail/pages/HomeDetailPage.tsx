@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useActiveWindows, useCities } from '@/features/cities';
 import { useLikeFlow } from '@/features/match';
+import { ReportButton } from '@/features/safety';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { getHomeDetail, passHome } from '@/lib/callables';
 import { formatIsoDate } from '@/lib/format';
@@ -149,6 +150,14 @@ export function HomeDetailPage() {
       <header className="flex flex-col gap-2">
         <h1 className="text-h1">{home.title}</h1>
         <p className="text-muted">{`${home.cityName} · ${home.zone}`}</p>
+        {own ? null : (
+          <ReportButton
+            targetType="HOME"
+            targetId={home.homeId}
+            targetName={home.title}
+            className="self-start"
+          />
+        )}
         <TrustBadges
           verified={host.identityVerified}
           top={home.isTop}
@@ -276,6 +285,15 @@ export function HomeDetailPage() {
             })}
           </p>
         ) : null}
+        {own ? null : (
+          <ReportButton
+            targetType="USER"
+            targetId={home.ownerUid}
+            targetName={host.displayName}
+            canBlock
+            className="self-start"
+          />
+        )}
       </section>
 
       <section aria-labelledby="reviews" className="flex flex-col gap-2">
@@ -292,6 +310,12 @@ export function HomeDetailPage() {
                   {t('detail.reviewBy', { name: review.authorDisplayName, score: review.overall })}
                 </p>
                 {review.comment ? <p>{review.comment}</p> : null}
+                <ReportButton
+                  targetType="REVIEW"
+                  targetId={review.id}
+                  targetName={review.authorDisplayName}
+                  compact
+                />
               </li>
             ))}
           </ul>

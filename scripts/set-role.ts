@@ -29,6 +29,10 @@ async function main(target: string): Promise<void> {
   const user = await getAuth().getUserByEmail(target);
   const before = (user.customClaims?.role as string | undefined) ?? null;
   await getAuth().setCustomUserClaims(user.uid, { ...user.customClaims, role });
+  // N-26 recipients (10_DECISIONS §5, M9): roles live in Auth, alerts need an address.
+  const directory = getFirestore().doc(`adminDirectory/${user.uid}`);
+  if (role && user.email) await directory.set({ email: user.email, role });
+  else await directory.delete();
   await getFirestore()
     .collection('auditLog')
     .add({

@@ -10,10 +10,14 @@ import type { ReviewInviteData } from './templates/n10-review.js';
 import type { ReviewsPublishedData } from './templates/n11-reviews-published.js';
 import type { BillingData } from './templates/n12-billing.js';
 import type { ReferralData } from './templates/n13-referral.js';
+import type { ReportAckData } from './templates/n14-report-ack.js';
+import type { StatementData } from './templates/n15-statement.js';
+import type { ResultData } from './templates/n16-result.js';
 import type { WaitlistConfirmationData } from './templates/n19-waitlist-confirmation.js';
 import type { UnreadDigestData } from './templates/n20-unread.js';
 import type { MessageLikeData } from './templates/n21-message-like.js';
 import type { HoldData } from './templates/n23-hold.js';
+import type { AdminAlertData } from './templates/n26-admin-alert.js';
 import type { SecurityData } from './templates/n27-security.js';
 
 export interface RenderedEmail {
@@ -31,6 +35,11 @@ export interface EmailTemplateData {
   'N-07': MatchData;
   'N-12': BillingData;
   'N-13': ReferralData;
+  'N-14': ReportAckData;
+  'N-15': StatementData;
+  'N-16': ResultData;
+  'N-24': StatementData;
+  'N-26': AdminAlertData;
   'N-19': WaitlistConfirmationData;
   'N-06': LikesDigestData;
   'N-08': ExchangeData;

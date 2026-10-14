@@ -19,6 +19,7 @@ import { onboardingRoutes } from '@/features/onboarding/routes';
 import { premiumRoutes } from '@/features/premium/routes';
 import { pricingRoutes } from '@/features/pricing/routes';
 import { profileRoutes } from '@/features/profile/routes';
+import { safetyRoutes } from '@/features/safety/routes';
 import { verificationRoutes } from '@/features/verification/routes';
 import { waitlistRoutes } from '@/features/waitlist/routes';
 import { PublicLayout } from './layouts/PublicLayout';
@@ -80,6 +81,7 @@ export function buildRoutes(): RouteObject[] {
                 ...premiumRoutes,
                 ...exchangeRoutes,
                 ...notificationRoutes,
+                ...safetyRoutes,
                 ...discoverRoutes,
                 ...exploreRoutes,
                 ...homeDetailRoutes,

@@ -23,4 +23,24 @@ export const adminRoutes: RouteObject[] = [
       Component: (await import('./pages/LocationReviewsPage')).LocationReviewsPage,
     }),
   },
+  {
+    path: 'alertas',
+    lazy: async () => ({ Component: (await import('./pages/AlertsPage')).AlertsPage }),
+  },
+  {
+    path: 'denuncias',
+    lazy: async () => ({ Component: (await import('./pages/ReportsPage')).ReportsPage }),
+  },
+  {
+    path: 'denuncias/:id',
+    lazy: async () => ({ Component: (await import('./pages/ReportDetailPage')).ReportDetailPage }),
+  },
+  {
+    path: 'retenciones',
+    lazy: async () => ({ Component: (await import('./pages/HoldsPage')).HoldsPage }),
+  },
+  {
+    path: 'recursos',
+    lazy: async () => ({ Component: (await import('./pages/AppealsPage')).AppealsPage }),
+  },
 ];

@@ -11,7 +11,7 @@
 | M6 — Me gusta, match y chat | ✅ Hecho | 10/10/2026 | Me gusta con límites, match recíproco con celebración, me gusta recibidos, chat de texto en tiempo real (BR-22/36), bloquear, deshacer match, kit de acuerdo en PDF, N-07, E2E-06 (< 1 s). Rama `feat/m6-match`. |
 | M7 — Premium y crecimiento | ✅ Hecho | 14/10/2026 | Checkout/Portal de Stripe (simulados en el emulador), webhook idempotente con firma, J-09, derechos encadenados, desistimiento con reautenticación y reembolso P-07, N-12, `/app/premium`, `/app/invita`, me gusta con mensaje, E2E-07. Rama `feat/m7-premium`. |
 | M8 — Intercambios, valoraciones y notificaciones | ✅ Hecho (push real pendiente de staging) | 14/10/2026 | Declarar/confirmar/cancelar intercambio desde el chat, ficha con línea de tiempo y cuenta atrás, J-01/J-02/J-03/J-06/J-13, valoraciones de doble ciego con Casa Top, centro de avisos en tiempo real, preferencias por categoría y canal, `HttpEmailProvider`, 7 plantillas nuevas, web push FCM (`PushPrompt`, service worker, guía iOS), E2E-08. Rama `feat/m8-exchanges`. |
-| M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | ⏳ Siguiente | — | |
+| M9 — Moderación DSA, advertencias, ayuda, quejas, patrocinados, métricas y privacidad | ⏳ En curso | 14/10/2026 | M9a hecho: denuncias (ficha, perfil, valoraciones, mensajes), retención preventiva, moderación con declaración de motivos, advertencias con escalado propuesto, recursos, alertas en tiempo real, J-07/J-11/J-12, E2E-09. Rama `feat/m9-moderation`. Falta: quejas, FAQ admin, denuncia pública, admin de usuarios/ciudades/parámetros/textos/métricas/auditoría, patrocinados, RGPD y baja. |
 | M10 — Endurecimiento y lanzamiento | Pendiente | — | |
 
 ## M8 — Detalle de la DoD
