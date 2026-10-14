@@ -170,7 +170,12 @@ export async function confirmWaitlist(
       const count = Number(counters[index]?.get('count') ?? 0) + 1;
       const counterRef = counterRefs[index];
       if (!counterRef) return;
-      tx.set(counterRef, { ...pair, count, updatedAt: FieldValue.serverTimestamp() });
+      // merge: J-08 keeps `homeCount` (demand from visible homes) in the same document.
+      tx.set(
+        counterRef,
+        { ...pair, count, updatedAt: FieldValue.serverTimestamp() },
+        { merge: true },
+      );
       // FR-18 — the public projection only exists once the pair reaches P-18.
       if (count >= params.demandCounterMin) {
         const { id, ...stat } = pair;

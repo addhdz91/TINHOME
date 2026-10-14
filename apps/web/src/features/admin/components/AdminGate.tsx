@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { Button } from '@/components/ui/button';
 import { useAdminClaims } from '../lib/claims';
+import { AdminRoleProvider } from '../lib/role';
 import { AdminShell } from './AdminShell';
 import { MfaSetup } from './MfaSetup';
 
@@ -40,5 +41,9 @@ export function AdminGate({ user, onSignOut }: { user: User; onSignOut: () => Pr
       </main>
     );
   }
-  return <AdminShell onSignOut={onSignOut} />;
+  return (
+    <AdminRoleProvider adminRole={claims.data.role}>
+      <AdminShell onSignOut={onSignOut} />
+    </AdminRoleProvider>
+  );
 }

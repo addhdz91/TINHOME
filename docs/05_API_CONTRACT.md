@@ -213,7 +213,9 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `adminListAudit` | SADM | `{ targetType?, targetId?, actorUid?, cursor? }` | `{ items, nextCursor }` |
 | `adminListGdprRequests` / `adminCloseGdprRequest` | ADM | — / `{ id, status, note }` | — |
 
-Todas las `admin*` escriben en `auditLog`.
+Todas las `admin*` que cambian algo escriben en `auditLog`.
+
+> M9: lectura del catálogo con `adminGetCatalog` (ADM) y de parámetros/textos con `adminGetParams` / `adminGetLegalDoc` (SADM). `adminSetUserStatus` reutiliza `adminModerate` (declaración de motivos obligatoria al suspender o expulsar). `adminUpdateParams` rechaza activar P-26 (seguros) hasta la validación legal. `adminPublishLegalDoc` crea versiones inmutables (`0.1-provisional` → `0.2`) y, para términos y privacidad, envía N-17 a los usuarios activos; si exige reaceptación aparece en `Me.legalPending`. `adminExportCsv` devuelve `{ url, expiresAt }` (URL firmada 15 min; CSV sin datos personales, con BOM y protección contra inyección de fórmulas). J-08 (04:00) recalcula `demandCounters.homeCount` con las casas visibles y publica `demandStats` = lista de espera + casas cuando alcanza P-18.
 
 ### 2.15 HTTP (no callables)
 

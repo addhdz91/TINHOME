@@ -26,6 +26,8 @@ export const NOTIFICATION_CATEGORY_OF: Record<NotificationType, NotificationCate
   'N-16': 'SERVICE',
   'N-24': 'SERVICE',
   'N-25': 'SERVICE',
+  'N-05': 'SERVICE',
+  'N-17': 'LEGAL',
   'N-28': 'MATCHES',
 };
 

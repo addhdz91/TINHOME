@@ -2,6 +2,7 @@ import type { MailQueueItem, RenderedEmail } from '../types.js';
 import { welcome } from './n02-welcome.js';
 import { identity } from './n03-identity.js';
 import { founder } from './n04-founder.js';
+import { cityOpen } from './n05-city-open.js';
 import { likesDigest } from './n06-likes-digest.js';
 import { match } from './n07-match.js';
 import { exchange } from './n08-exchange.js';
@@ -13,6 +14,7 @@ import { referral } from './n13-referral.js';
 import { reportAck } from './n14-report-ack.js';
 import { statement } from './n15-statement.js';
 import { result } from './n16-result.js';
+import { legalUpdate } from './n17-legal.js';
 import { waitlistConfirmation } from './n19-waitlist-confirmation.js';
 import { unreadDigest } from './n20-unread.js';
 import { messageLike } from './n21-message-like.js';
@@ -48,8 +50,12 @@ export function renderEmail(item: MailQueueItem): RenderedEmail {
       return complaint(item.data);
     case 'N-26':
       return adminAlert(item.data);
+    case 'N-17':
+      return legalUpdate(item.data);
     case 'N-19':
       return waitlistConfirmation(item.data);
+    case 'N-05':
+      return cityOpen(item.data);
     case 'N-06':
       return likesDigest(item.data);
     case 'N-08':

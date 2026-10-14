@@ -96,6 +96,7 @@ describe('complaints (FR-67, BR-43)', () => {
         admin,
       ),
     );
+    setClock(fixedClock('2027-03-02T10:00:00+01:00'));
     await addComplaintMessage.run(authedRequest({ ticketId, text: 'Adjunto el extracto.' }, laura));
     let detail = await getComplaint.run(authedRequest({ ticketId }, laura));
     expect(detail.ticket.status).toBe('IN_REVIEW');

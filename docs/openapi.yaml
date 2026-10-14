@@ -5765,8 +5765,8 @@ paths:
       operationId: adminSearchUsers
       tags:
       - Admin
-      summary: Buscar usuarios
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Buscar usuarios por email, teléfono o nombre (FR-50)
+      description: 'Callable de Firebase. Guardas: ADM. Nombre: prefijo tal cual y con mayúscula inicial (sin índice de texto completo). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -5777,11 +5777,19 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    q: *id001
-                    cursor: *id001
-                    limit: &id007 {default: 20, maximum: 50, minimum: 1, type: integer}
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                    q:
+                      type: string
+                      minLength: 2
+                      maxLength: 120
                   required:
                   - q
               required:
@@ -5797,19 +5805,89 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
+                          properties:
+                            uid:
+                              type: string
+                            displayName:
+                              type: string
+                            email:
+                              type:
+                              - string
+                              - 'null'
+                            phoneE164:
+                              type:
+                              - string
+                              - 'null'
+                            cityId:
+                              type:
+                              - string
+                              - 'null'
+                            status:
+                              type: string
+                              enum:
+                              - ACTIVE
+                              - SUSPENDED
+                              - BANNED
+                              - DELETION_PENDING
+                              - DELETED
+                            identity:
+                              type: string
+                              enum:
+                              - NONE
+                              - PENDING
+                              - INFO_REQUESTED
+                              - APPROVED
+                              - REJECTED
+                            premiumUntil:
+                              type:
+                              - string
+                              - 'null'
+                            premiumSource:
+                              anyOf:
+                              - type: string
+                                enum:
+                                - STRIPE
+                                - FOUNDER
+                                - REFERRAL
+                                - ADMIN
+                              - type: 'null'
+                            role:
+                              anyOf:
+                              - type: string
+                                enum:
+                                - admin
+                                - superadmin
+                              - type: 'null'
+                            createdAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - uid
+                          - displayName
+                          - email
+                          - phoneE164
+                          - cityId
+                          - status
+                          - identity
+                          - premiumUntil
+                          - premiumSource
+                          - role
+                          - createdAt
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - items
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5826,7 +5904,7 @@ paths:
       operationId: adminGetUser
       tags:
       - Admin
-      summary: Ficha completa de usuario
+      summary: Ficha completa de un usuario
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -5838,9 +5916,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    uid: *id001
+                    uid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                   required:
                   - uid
               required:
@@ -5856,6 +5936,361 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          uid:
+                            type: string
+                          displayName:
+                            type: string
+                          email:
+                            type:
+                            - string
+                            - 'null'
+                          phoneE164:
+                            type:
+                            - string
+                            - 'null'
+                          cityId:
+                            type:
+                            - string
+                            - 'null'
+                          status:
+                            type: string
+                            enum:
+                            - ACTIVE
+                            - SUSPENDED
+                            - BANNED
+                            - DELETION_PENDING
+                            - DELETED
+                          identity:
+                            type: string
+                            enum:
+                            - NONE
+                            - PENDING
+                            - INFO_REQUESTED
+                            - APPROVED
+                            - REJECTED
+                          premiumUntil:
+                            type:
+                            - string
+                            - 'null'
+                          premiumSource:
+                            anyOf:
+                            - type: string
+                              enum:
+                              - STRIPE
+                              - FOUNDER
+                              - REFERRAL
+                              - ADMIN
+                            - type: 'null'
+                          role:
+                            anyOf:
+                            - type: string
+                              enum:
+                              - admin
+                              - superadmin
+                            - type: 'null'
+                          createdAt:
+                            type:
+                            - string
+                            - 'null'
+                          strikesActive:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          suspendedUntil:
+                            type:
+                            - string
+                            - 'null'
+                          onboardingStep:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                        required:
+                        - uid
+                        - displayName
+                        - email
+                        - phoneE164
+                        - cityId
+                        - status
+                        - identity
+                        - premiumUntil
+                        - premiumSource
+                        - role
+                        - createdAt
+                        - strikesActive
+                        - suspendedUntil
+                        - onboardingStep
+                        additionalProperties: false
+                      home:
+                        anyOf:
+                        - type: object
+                          properties:
+                            title:
+                              type: string
+                            status:
+                              type: string
+                            visible:
+                              type: boolean
+                            hold:
+                              type:
+                              - string
+                              - 'null'
+                            hiddenByModeration:
+                              type: boolean
+                          required:
+                          - title
+                          - status
+                          - visible
+                          - hold
+                          - hiddenByModeration
+                          additionalProperties: false
+                        - type: 'null'
+                      matchesCount:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      reports:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            reason:
+                              type: string
+                            status:
+                              type: string
+                            createdAt:
+                              type: string
+                          required:
+                          - id
+                          - reason
+                          - status
+                          - createdAt
+                          additionalProperties: false
+                      actions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            action:
+                              type: string
+                              enum:
+                              - DISMISS
+                              - WARN
+                              - HIDE_CONTENT
+                              - HIDE_MESSAGE
+                              - SUSPEND
+                              - BAN
+                              - RESTORE
+                              - RELEASE_HOLD
+                            targetType:
+                              type: string
+                              enum:
+                              - HOME
+                              - USER
+                              - REVIEW
+                              - MESSAGE
+                            targetId:
+                              type: string
+                            statement:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  templateId:
+                                    type: string
+                                    enum:
+                                    - PHOTOS_NOT_OWN
+                                    - RUDE
+                                    - HARASSMENT
+                                    - SPAM
+                                    - FRAUD
+                                    - HIDDEN_RENTAL
+                                    - ILLEGAL
+                                    - PERSONAL_DATA
+                                    - OTHER
+                                  facts:
+                                    type: string
+                                    minLength: 20
+                                    maxLength: 2000
+                                  ground:
+                                    type: string
+                                    enum:
+                                    - LAW
+                                    - TERMS
+                                  groundDetail:
+                                    type: string
+                                    minLength: 5
+                                    maxLength: 500
+                                  scope:
+                                    type: string
+                                  duration:
+                                    type: string
+                                  redress:
+                                    type: string
+                                required:
+                                - templateId
+                                - facts
+                                - ground
+                                - groundDetail
+                                - scope
+                                - duration
+                                - redress
+                                additionalProperties: false
+                              - type: 'null'
+                            suspendedUntil:
+                              type:
+                              - string
+                              - 'null'
+                            adminUid:
+                              type:
+                              - string
+                              - 'null'
+                            createdAt:
+                              type: string
+                            appeal:
+                              anyOf:
+                              - type: object
+                                properties:
+                                  id:
+                                    type: string
+                                  status:
+                                    type: string
+                                    enum:
+                                    - OPEN
+                                    - UPHELD
+                                    - REJECTED
+                                  decisionText:
+                                    type:
+                                    - string
+                                    - 'null'
+                                required:
+                                - id
+                                - status
+                                - decisionText
+                                additionalProperties: false
+                              - type: 'null'
+                            appealable:
+                              type: boolean
+                          required:
+                          - id
+                          - action
+                          - targetType
+                          - targetId
+                          - statement
+                          - suspendedUntil
+                          - adminUid
+                          - createdAt
+                          - appeal
+                          - appealable
+                          additionalProperties: false
+                      strikes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            reason:
+                              type: string
+                            severity:
+                              type: string
+                              enum:
+                              - MINOR
+                              - SERIOUS
+                            createdAt:
+                              type: string
+                            expiresAt:
+                              type: string
+                          required:
+                          - id
+                          - reason
+                          - severity
+                          - createdAt
+                          - expiresAt
+                          additionalProperties: false
+                      entitlements:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            source:
+                              type: string
+                              enum:
+                              - STRIPE
+                              - FOUNDER
+                              - REFERRAL
+                              - ADMIN
+                            startsAt:
+                              type: string
+                            endsAt:
+                              type: string
+                            revoked:
+                              type: boolean
+                            reason:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - id
+                          - source
+                          - startsAt
+                          - endsAt
+                          - revoked
+                          - reason
+                          additionalProperties: false
+                      audit:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            actorUid:
+                              type: string
+                            actorRole:
+                              type: string
+                            action:
+                              type: string
+                            targetType:
+                              type: string
+                            targetId:
+                              type: string
+                            reason:
+                              type:
+                              - string
+                              - 'null'
+                            createdAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - id
+                          - actorUid
+                          - actorRole
+                          - action
+                          - targetType
+                          - targetId
+                          - reason
+                          - createdAt
+                          additionalProperties: false
+                    required:
+                    - user
+                    - home
+                    - matchesCount
+                    - reports
+                    - actions
+                    - strikes
+                    - entitlements
+                    - audit
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5872,7 +6307,7 @@ paths:
       operationId: adminGrantPremium
       tags:
       - Admin
-      summary: Conceder Premium
+      summary: Concede días de Premium (desde el final del actual)
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -5884,14 +6319,19 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    uid: *id001
+                    uid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     days:
                       type: integer
                       minimum: 1
                       maximum: 365
-                    reason: *id001
+                    reason:
+                      type: string
+                      minLength: 5
+                      maxLength: 300
                   required:
                   - uid
                   - days
@@ -5909,11 +6349,14 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      premiumUntil: *id008
+                      premiumUntil:
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - premiumUntil
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5931,7 +6374,7 @@ paths:
       tags:
       - Admin
       summary: Suspender, expulsar o reactivar
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: ADM. Usa adminModerate: SUSPENDED/BANNED exigen statement. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -5942,18 +6385,54 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    uid: *id001
+                    uid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     status:
                       type: string
                       enum:
                       - ACTIVE
                       - SUSPENDED
                       - BANNED
-                    suspendedUntil: *id008
+                    suspendedUntil:
+                      type: string
+                      format: date-time
+                      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
                     statement:
-                      $ref: '#/components/schemas/StatementOfReasons'
+                      type: object
+                      properties:
+                        templateId:
+                          type: string
+                          enum:
+                          - PHOTOS_NOT_OWN
+                          - RUDE
+                          - HARASSMENT
+                          - SPAM
+                          - FRAUD
+                          - HIDDEN_RENTAL
+                          - ILLEGAL
+                          - PERSONAL_DATA
+                          - OTHER
+                        facts:
+                          type: string
+                          minLength: 20
+                          maxLength: 2000
+                        ground:
+                          type: string
+                          enum:
+                          - LAW
+                          - TERMS
+                        groundDetail:
+                          type: string
+                          minLength: 5
+                          maxLength: 500
+                      required:
+                      - templateId
+                      - facts
+                      - ground
+                      - groundDetail
                   required:
                   - uid
                   - status
@@ -5970,6 +6449,13 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -5986,8 +6472,8 @@ paths:
       operationId: adminSetRole
       tags:
       - Admin
-      summary: Asignar rol (superadmin)
-      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      summary: Cambia el rol (custom claim)
+      description: 'Callable de Firebase. Guardas: SADM. Mantiene adminDirectory (N-26). No se puede cambiar el propio rol. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -5998,11 +6484,13 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    uid: *id001
+                    uid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     role:
-                      oneOf:
+                      anyOf:
                       - type: string
                         enum:
                         - admin
@@ -6022,7 +6510,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6039,8 +6535,8 @@ paths:
       operationId: adminUpsertCity
       tags:
       - Admin
-      summary: Crear/editar ciudad (superadmin)
-      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      summary: Crea o edita una ciudad (FR-51)
+      description: 'Callable de Firebase. Guardas: SADM. Al pasar a OPEN avisa a sus usuarios y a la lista de espera confirmada (N-05). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -6051,32 +6547,72 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
-                    name: *id001
-                    province: *id001
-                    region: *id001
+                    id:
+                      type: string
+                      minLength: 2
+                      maxLength: 60
+                      pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+                    name:
+                      type: string
+                      minLength: 2
+                      maxLength: 80
+                    province:
+                      type: string
+                      minLength: 2
+                      maxLength: 80
+                    region:
+                      type: string
+                      minLength: 2
+                      maxLength: 80
                     timezone:
                       type: string
                       enum:
                       - Europe/Madrid
                       - Atlantic/Canary
+                    center:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                          minimum: 27
+                          maximum: 44
+                        lng:
+                          type: number
+                          minimum: -19
+                          maximum: 5
+                      required:
+                      - lat
+                      - lng
+                    radiusKm:
+                      type: number
+                      minimum: 1
+                      maximum: 100
                     status:
                       type: string
                       enum:
                       - WAITLIST
                       - OPEN
                       - CLOSED
-                    openThreshold: *id005
-                    order: *id005
+                    openThreshold:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    order:
+                      type: integer
+                      minimum: 0
+                      maximum: 1000
                   required:
                   - id
                   - name
                   - province
                   - region
                   - timezone
+                  - center
+                  - radiusKm
                   - status
+                  - openThreshold
+                  - order
               required:
               - data
       responses:
@@ -6090,6 +6626,13 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6106,7 +6649,7 @@ paths:
       operationId: adminUpsertWindow
       tags:
       - Admin
-      summary: Crear/editar ventana (superadmin)
+      summary: Crea o edita una ventana
       description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -6118,24 +6661,43 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    id: *id001
-                    name: *id001
-                    startDate: *id006
-                    endDate: *id006
-                    active: *id004
+                    id:
+                      type: string
+                      minLength: 2
+                      maxLength: 60
+                      pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+                    name:
+                      type: string
+                      minLength: 2
+                      maxLength: 80
+                    startDate:
+                      type: string
+                    endDate:
+                      type: string
+                    active:
+                      type: boolean
                     cityIds:
-                      oneOf:
+                      anyOf:
                       - type: array
-                        items: *id001
+                        items:
+                          type: string
+                          minLength: 2
+                          maxLength: 60
+                          pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
                       - type: 'null'
-                    order: *id005
+                    order:
+                      type: integer
+                      minimum: 0
+                      maximum: 1000
                   required:
+                  - id
                   - name
                   - startDate
                   - endDate
                   - active
+                  - cityIds
+                  - order
               required:
               - data
       responses:
@@ -6149,6 +6711,13 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6165,8 +6734,8 @@ paths:
       operationId: adminUpdateParams
       tags:
       - Admin
-      summary: Actualizar parámetros (superadmin)
-      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      summary: Edita parámetros (FR-52)
+      description: 'Callable de Firebase. Guardas: SADM. Valida el conjunto, sincroniza config/public, audita antes/después. P-26 no se puede activar. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -6177,6 +6746,189 @@ paths:
               properties:
                 data:
                   type: object
+                  properties:
+                    freeDailyLikes:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    premiumHourlyLikeCap:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    passHideDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    topMinRating:
+                      type: number
+                      minimum: 1
+                      maximum: 5
+                    topMinReviews:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    exchangeMaxNights:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    withdrawalRefundMode:
+                      type: string
+                      enum:
+                      - FULL
+                      - PRORATED
+                    withdrawalDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    foundersPerCity:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    founderPremiumMonths:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    referralRewardDays:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    referralMaxRewardsPerYear:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    cityOpenThreshold:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    verificationDocsRetentionDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    rankingWeights:
+                      minItems: 7
+                      maxItems: 7
+                      type: array
+                      items:
+                        type: number
+                        minimum: 0
+                    appealWindowMonths:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    sponsoredEveryNCards:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    accountPurgeDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    gdprResponseDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    moderationRetentionYears:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    demandCounterMin:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    exchangeProposalExpiryDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    reviewWindowDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    premiumMonthlyPriceCents:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    premiumYearlyPriceCents:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    maxDestinations:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    maxFlexibleRanges:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    photosMin:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    photosMax:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    sponsoredInsuranceEnabled:
+                      type: boolean
+                    premiumMessageLikesPerDay:
+                      type: integer
+                      minimum: 0
+                      maximum: 9007199254740991
+                    chatMessageMaxLength:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    chatMessagesPerMinute:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    locationDefaultRadiusKm:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    strikeExpiryMonths:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    strikeSuspensionDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    strikesForBan:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    preventiveHoldReportsThreshold:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    preventiveHoldReviewHours:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    preventiveHoldReviewHoursHighPriority:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    photoDuplicateMaxHamming:
+                      type: integer
+                      minimum: 0
+                      maximum: 7
+                    photoChangeReviewRatio:
+                      type: number
+                      minimum: 0
+                      maximum: 1
+                    complaintResponseDays:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    chatRetentionMonthsAfterClose:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
+                    premiumMessageMaxLength:
+                      type: integer
+                      exclusiveMinimum: 0
+                      maximum: 9007199254740991
               required:
               - data
       responses:
@@ -6190,6 +6942,242 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      params:
+                        type: object
+                        properties:
+                          freeDailyLikes:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          premiumHourlyLikeCap:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          passHideDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          topMinRating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          topMinReviews:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          exchangeMaxNights:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          withdrawalRefundMode:
+                            type: string
+                            enum:
+                            - FULL
+                            - PRORATED
+                          withdrawalDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          foundersPerCity:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          founderPremiumMonths:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          referralRewardDays:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          referralMaxRewardsPerYear:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          cityOpenThreshold:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          verificationDocsRetentionDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          rankingWeights:
+                            minItems: 7
+                            maxItems: 7
+                            type: array
+                            items:
+                              type: number
+                              minimum: 0
+                          appealWindowMonths:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          sponsoredEveryNCards:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          accountPurgeDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          gdprResponseDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          moderationRetentionYears:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          demandCounterMin:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          exchangeProposalExpiryDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          reviewWindowDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          premiumMonthlyPriceCents:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          premiumYearlyPriceCents:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          maxDestinations:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          maxFlexibleRanges:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          photosMin:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          photosMax:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          sponsoredInsuranceEnabled:
+                            type: boolean
+                          premiumMessageLikesPerDay:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          chatMessageMaxLength:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          chatMessagesPerMinute:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          locationDefaultRadiusKm:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          strikeExpiryMonths:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          strikeSuspensionDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          strikesForBan:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          preventiveHoldReportsThreshold:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          preventiveHoldReviewHours:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          preventiveHoldReviewHoursHighPriority:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          photoDuplicateMaxHamming:
+                            type: integer
+                            minimum: 0
+                            maximum: 7
+                          photoChangeReviewRatio:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          complaintResponseDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          chatRetentionMonthsAfterClose:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          premiumMessageMaxLength:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                        required:
+                        - freeDailyLikes
+                        - premiumHourlyLikeCap
+                        - passHideDays
+                        - topMinRating
+                        - topMinReviews
+                        - exchangeMaxNights
+                        - withdrawalRefundMode
+                        - withdrawalDays
+                        - foundersPerCity
+                        - founderPremiumMonths
+                        - referralRewardDays
+                        - referralMaxRewardsPerYear
+                        - cityOpenThreshold
+                        - verificationDocsRetentionDays
+                        - rankingWeights
+                        - appealWindowMonths
+                        - sponsoredEveryNCards
+                        - accountPurgeDays
+                        - gdprResponseDays
+                        - moderationRetentionYears
+                        - demandCounterMin
+                        - exchangeProposalExpiryDays
+                        - reviewWindowDays
+                        - premiumMonthlyPriceCents
+                        - premiumYearlyPriceCents
+                        - maxDestinations
+                        - maxFlexibleRanges
+                        - photosMin
+                        - photosMax
+                        - sponsoredInsuranceEnabled
+                        - premiumMessageLikesPerDay
+                        - chatMessageMaxLength
+                        - chatMessagesPerMinute
+                        - locationDefaultRadiusKm
+                        - strikeExpiryMonths
+                        - strikeSuspensionDays
+                        - strikesForBan
+                        - preventiveHoldReportsThreshold
+                        - preventiveHoldReviewHours
+                        - preventiveHoldReviewHoursHighPriority
+                        - photoDuplicateMaxHamming
+                        - photoChangeReviewRatio
+                        - complaintResponseDays
+                        - chatRetentionMonthsAfterClose
+                        - premiumMessageMaxLength
+                        additionalProperties: false
+                    required:
+                    - params
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6291,8 +7279,8 @@ paths:
       operationId: adminPublishLegalDoc
       tags:
       - Admin
-      summary: Publicar nueva versión de un texto legal (superadmin)
-      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      summary: Publica una versión nueva (FR-56)
+      description: 'Callable de Firebase. Guardas: SADM. Versiones inmutables; términos/privacidad envían N-17 a los usuarios activos. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -6303,12 +7291,29 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    slug: *id001
-                    markdown: *id001
-                    requiresReacceptance: *id004
-                    changeSummary: *id001
+                    slug:
+                      type: string
+                      enum:
+                      - aviso-legal
+                      - terminos
+                      - privacidad
+                      - cookies
+                      - normas-comunidad
+                      - info-dsa
+                      - declaracion-responsable
+                      - autorizacion-arrendador
+                      - acuerdo-intercambio
+                    markdown:
+                      type: string
+                      minLength: 50
+                      maxLength: 200000
+                    requiresReacceptance:
+                      type: boolean
+                    changeSummary:
+                      type: string
+                      minLength: 5
+                      maxLength: 500
                   required:
                   - slug
                   - markdown
@@ -6327,11 +7332,12 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      version: *id001
+                      version:
+                        type: string
                     required:
                     - version
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6348,8 +7354,8 @@ paths:
       operationId: adminGetMetrics
       tags:
       - Admin
-      summary: Métricas de negocio
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Embudo, Premium, demanda y clics (FR-54)
+      description: 'Callable de Firebase. Guardas: ADM. Embudo de hasta 2 000 registros del periodo (truncated). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -6360,11 +7366,16 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    from: *id006
-                    to: *id006
-                    cityId: *id001
+                    from:
+                      type: string
+                    to:
+                      type: string
+                    cityId:
+                      type: string
+                      minLength: 2
+                      maxLength: 60
+                      pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
                   required:
                   - from
                   - to
@@ -6381,6 +7392,101 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      funnel:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            step:
+                              type: string
+                              enum:
+                              - registered
+                              - phoneVerified
+                              - homePublished
+                              - identityApproved
+                              - firstLike
+                              - matched
+                              - exchangeConfirmed
+                              - reviewed
+                            count:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - step
+                          - count
+                          additionalProperties: false
+                      premium:
+                        type: object
+                        properties:
+                          active:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          bySource:
+                            type: object
+                            propertyNames:
+                              type: string
+                            additionalProperties:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          conversionPercent:
+                            type: number
+                        required:
+                        - active
+                        - bySource
+                        - conversionPercent
+                        additionalProperties: false
+                      demand:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            fromCityId:
+                              type: string
+                            toCityId:
+                              type: string
+                            windowId:
+                              type: string
+                            count:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - fromCityId
+                          - toCityId
+                          - windowId
+                          - count
+                          additionalProperties: false
+                      sponsored:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            partnerId:
+                              type: string
+                            name:
+                              type: string
+                            clicks:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - partnerId
+                          - name
+                          - clicks
+                          additionalProperties: false
+                      truncated:
+                        type: boolean
+                    required:
+                    - funnel
+                    - premium
+                    - demand
+                    - sponsored
+                    - truncated
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6397,8 +7503,8 @@ paths:
       operationId: adminExportCsv
       tags:
       - Admin
-      summary: Exportar CSV
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Exportación CSV sin datos personales
+      description: 'Callable de Firebase. Guardas: ADM. URL firmada 15 min (emulador: data:). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -6409,7 +7515,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     report:
                       type: string
@@ -6417,8 +7522,10 @@ paths:
                       - FUNNEL
                       - DEMAND
                       - USERS
-                    from: *id006
-                    to: *id006
+                    from:
+                      type: string
+                    to:
+                      type: string
                   required:
                   - report
                   - from
@@ -6436,11 +7543,15 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      url: *id001
+                      url:
+                        type: string
+                      expiresAt:
+                        type: string
                     required:
                     - url
+                    - expiresAt
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -6457,7 +7568,7 @@ paths:
       operationId: adminListAudit
       tags:
       - Admin
-      summary: Auditoría (superadmin)
+      summary: Auditoría con filtros (FR-55)
       description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -6469,13 +7580,27 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    targetType: *id001
-                    targetId: *id001
-                    actorUid: *id001
-                    cursor: *id001
-                    limit: *id007
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                    targetType:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
+                    targetId:
+                      type: string
+                      minLength: 1
+                      maxLength: 256
+                    actorUid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
               required:
               - data
       responses:
@@ -6489,19 +7614,50 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
+                          properties:
+                            id:
+                              type: string
+                            actorUid:
+                              type: string
+                            actorRole:
+                              type: string
+                            action:
+                              type: string
+                            targetType:
+                              type: string
+                            targetId:
+                              type: string
+                            reason:
+                              type:
+                              - string
+                              - 'null'
+                            createdAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - id
+                          - actorUid
+                          - actorRole
+                          - action
+                          - targetType
+                          - targetId
+                          - reason
+                          - createdAt
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - items
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -9203,6 +10359,565 @@ paths:
                           additionalProperties: false
                     required:
                     - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetCatalog:
+    post:
+      operationId: adminGetCatalog
+      tags:
+      - Admin
+      summary: Ciudades (con contadores) y ventanas
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      cities:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              minLength: 2
+                              maxLength: 60
+                              pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+                            name:
+                              type: string
+                              minLength: 2
+                              maxLength: 80
+                            province:
+                              type: string
+                              minLength: 2
+                              maxLength: 80
+                            region:
+                              type: string
+                              minLength: 2
+                              maxLength: 80
+                            timezone:
+                              type: string
+                              enum:
+                              - Europe/Madrid
+                              - Atlantic/Canary
+                            center:
+                              type: object
+                              properties:
+                                lat:
+                                  type: number
+                                  minimum: 27
+                                  maximum: 44
+                                lng:
+                                  type: number
+                                  minimum: -19
+                                  maximum: 5
+                              required:
+                              - lat
+                              - lng
+                              additionalProperties: false
+                            radiusKm:
+                              type: number
+                              minimum: 1
+                              maximum: 100
+                            status:
+                              type: string
+                              enum:
+                              - WAITLIST
+                              - OPEN
+                              - CLOSED
+                            openThreshold:
+                              type: integer
+                              exclusiveMinimum: 0
+                              maximum: 9007199254740991
+                            order:
+                              type: integer
+                              minimum: 0
+                              maximum: 1000
+                            counters:
+                              type: object
+                              properties:
+                                visibleCandidates:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                waitlist:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                foundersAwarded:
+                                  type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                              required:
+                              - visibleCandidates
+                              - waitlist
+                              - foundersAwarded
+                              additionalProperties: false
+                          required:
+                          - id
+                          - name
+                          - province
+                          - region
+                          - timezone
+                          - center
+                          - radiusKm
+                          - status
+                          - openThreshold
+                          - order
+                          - counters
+                          additionalProperties: false
+                      windows:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            startDate:
+                              type: string
+                            endDate:
+                              type: string
+                            active:
+                              type: boolean
+                            cityIds:
+                              anyOf:
+                              - type: array
+                                items:
+                                  type: string
+                              - type: 'null'
+                            order:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - id
+                          - name
+                          - startDate
+                          - endDate
+                          - active
+                          - cityIds
+                          - order
+                          additionalProperties: false
+                    required:
+                    - cities
+                    - windows
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetParams:
+    post:
+      operationId: adminGetParams
+      tags:
+      - Admin
+      summary: Parámetros P-xx
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      params:
+                        type: object
+                        properties:
+                          freeDailyLikes:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          premiumHourlyLikeCap:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          passHideDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          topMinRating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          topMinReviews:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          exchangeMaxNights:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          withdrawalRefundMode:
+                            type: string
+                            enum:
+                            - FULL
+                            - PRORATED
+                          withdrawalDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          foundersPerCity:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          founderPremiumMonths:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          referralRewardDays:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          referralMaxRewardsPerYear:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          cityOpenThreshold:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          verificationDocsRetentionDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          rankingWeights:
+                            minItems: 7
+                            maxItems: 7
+                            type: array
+                            items:
+                              type: number
+                              minimum: 0
+                          appealWindowMonths:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          sponsoredEveryNCards:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          accountPurgeDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          gdprResponseDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          moderationRetentionYears:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          demandCounterMin:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          exchangeProposalExpiryDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          reviewWindowDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          premiumMonthlyPriceCents:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          premiumYearlyPriceCents:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          maxDestinations:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          maxFlexibleRanges:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          photosMin:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          photosMax:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          sponsoredInsuranceEnabled:
+                            type: boolean
+                          premiumMessageLikesPerDay:
+                            type: integer
+                            minimum: 0
+                            maximum: 9007199254740991
+                          chatMessageMaxLength:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          chatMessagesPerMinute:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          locationDefaultRadiusKm:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          strikeExpiryMonths:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          strikeSuspensionDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          strikesForBan:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          preventiveHoldReportsThreshold:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          preventiveHoldReviewHours:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          preventiveHoldReviewHoursHighPriority:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          photoDuplicateMaxHamming:
+                            type: integer
+                            minimum: 0
+                            maximum: 7
+                          photoChangeReviewRatio:
+                            type: number
+                            minimum: 0
+                            maximum: 1
+                          complaintResponseDays:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          chatRetentionMonthsAfterClose:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                          premiumMessageMaxLength:
+                            type: integer
+                            exclusiveMinimum: 0
+                            maximum: 9007199254740991
+                        required:
+                        - freeDailyLikes
+                        - premiumHourlyLikeCap
+                        - passHideDays
+                        - topMinRating
+                        - topMinReviews
+                        - exchangeMaxNights
+                        - withdrawalRefundMode
+                        - withdrawalDays
+                        - foundersPerCity
+                        - founderPremiumMonths
+                        - referralRewardDays
+                        - referralMaxRewardsPerYear
+                        - cityOpenThreshold
+                        - verificationDocsRetentionDays
+                        - rankingWeights
+                        - appealWindowMonths
+                        - sponsoredEveryNCards
+                        - accountPurgeDays
+                        - gdprResponseDays
+                        - moderationRetentionYears
+                        - demandCounterMin
+                        - exchangeProposalExpiryDays
+                        - reviewWindowDays
+                        - premiumMonthlyPriceCents
+                        - premiumYearlyPriceCents
+                        - maxDestinations
+                        - maxFlexibleRanges
+                        - photosMin
+                        - photosMax
+                        - sponsoredInsuranceEnabled
+                        - premiumMessageLikesPerDay
+                        - chatMessageMaxLength
+                        - chatMessagesPerMinute
+                        - locationDefaultRadiusKm
+                        - strikeExpiryMonths
+                        - strikeSuspensionDays
+                        - strikesForBan
+                        - preventiveHoldReportsThreshold
+                        - preventiveHoldReviewHours
+                        - preventiveHoldReviewHoursHighPriority
+                        - photoDuplicateMaxHamming
+                        - photoChangeReviewRatio
+                        - complaintResponseDays
+                        - chatRetentionMonthsAfterClose
+                        - premiumMessageMaxLength
+                        additionalProperties: false
+                    required:
+                    - params
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetLegalDoc:
+    post:
+      operationId: adminGetLegalDoc
+      tags:
+      - Admin
+      summary: Texto legal vigente y versiones
+      description: 'Callable de Firebase. Guardas: SADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      enum:
+                      - aviso-legal
+                      - terminos
+                      - privacidad
+                      - cookies
+                      - normas-comunidad
+                      - info-dsa
+                      - declaracion-responsable
+                      - autorizacion-arrendador
+                      - acuerdo-intercambio
+                  required:
+                  - slug
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      slug:
+                        type: string
+                        enum:
+                        - aviso-legal
+                        - terminos
+                        - privacidad
+                        - cookies
+                        - normas-comunidad
+                        - info-dsa
+                        - declaracion-responsable
+                        - autorizacion-arrendador
+                        - acuerdo-intercambio
+                      title:
+                        type: string
+                      currentVersion:
+                        type:
+                        - string
+                        - 'null'
+                      markdown:
+                        type: string
+                      versions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            version:
+                              type: string
+                            publishedAt:
+                              type:
+                              - string
+                              - 'null'
+                            requiresReacceptance:
+                              type: boolean
+                            changeSummary:
+                              type: string
+                          required:
+                          - version
+                          - publishedAt
+                          - requiresReacceptance
+                          - changeSummary
+                          additionalProperties: false
+                    required:
+                    - slug
+                    - title
+                    - currentVersion
+                    - markdown
+                    - versions
                     additionalProperties: false
                 required:
                 - result

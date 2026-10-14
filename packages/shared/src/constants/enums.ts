@@ -72,6 +72,7 @@ export const EMAIL_TEMPLATES = [
   'N-02',
   'N-03',
   'N-04',
+  'N-05',
   'N-06',
   'N-07',
   'N-08',
@@ -83,6 +84,7 @@ export const EMAIL_TEMPLATES = [
   'N-14',
   'N-15',
   'N-16',
+  'N-17',
   'N-19',
   'N-20',
   'N-21',
@@ -348,6 +350,8 @@ export const NOTIFICATION_TYPES = [
   'N-16',
   'N-24',
   'N-25',
+  'N-05',
+  'N-17',
   'N-28',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

@@ -28,7 +28,25 @@ export {
   upsertHome,
 } from './modules/home/callables.js';
 export { onHomePhotoUploaded } from './modules/home/triggers.js';
-export { adminGetDashboard } from './modules/admin/callables.js';
+export {
+  adminExportCsv,
+  adminGetCatalog,
+  adminGetDashboard,
+  adminGetLegalDoc,
+  adminGetMetrics,
+  adminGetParams,
+  adminGetUser,
+  adminGrantPremium,
+  adminListAudit,
+  adminPublishLegalDoc,
+  adminSearchUsers,
+  adminSetRole,
+  adminSetUserStatus,
+  adminUpdateParams,
+  adminUpsertCity,
+  adminUpsertWindow,
+  jobRecomputeDemand,
+} from './modules/admin/callables.js';
 export {
   adminDecideLocationReview,
   adminDecideVerification,

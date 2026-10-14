@@ -57,4 +57,32 @@ export const adminRoutes: RouteObject[] = [
     path: 'ayuda',
     lazy: async () => ({ Component: (await import('./pages/FaqsPage')).FaqsPage }),
   },
+  {
+    path: 'usuarios',
+    lazy: async () => ({ Component: (await import('./pages/UsersPage')).UsersPage }),
+  },
+  {
+    path: 'usuarios/:uid',
+    lazy: async () => ({ Component: (await import('./pages/UserDetailPage')).UserDetailPage }),
+  },
+  {
+    path: 'ciudades',
+    lazy: async () => ({ Component: (await import('./pages/CatalogPage')).CatalogPage }),
+  },
+  {
+    path: 'parametros',
+    lazy: async () => ({ Component: (await import('./pages/ParamsPage')).ParamsPage }),
+  },
+  {
+    path: 'textos',
+    lazy: async () => ({ Component: (await import('./pages/LegalDocsPage')).LegalDocsPage }),
+  },
+  {
+    path: 'metricas',
+    lazy: async () => ({ Component: (await import('./pages/MetricsPage')).MetricsPage }),
+  },
+  {
+    path: 'auditoria',
+    lazy: async () => ({ Component: (await import('./pages/AuditPage')).AuditPage }),
+  },
 ];

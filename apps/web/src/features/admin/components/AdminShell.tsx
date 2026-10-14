@@ -1,6 +1,12 @@
 import {
   BadgeCheck,
+  BarChart3,
   BellRing,
+  FileText,
+  Map,
+  ScrollText,
+  SlidersHorizontal,
+  Users,
   BookOpen,
   LifeBuoy,
   Flag,
@@ -20,23 +26,27 @@ import { NavigationProgress } from '@/components/NavigationProgress';
 import { TinHomeLogo } from '@/components/TinHomeLogo';
 import { cn } from '@/lib/utils';
 import { useAdminAlerts } from '../api/use-alerts';
+import { useIsSuperadmin } from '../lib/role';
 import { useIdleSignOut } from '../lib/use-idle-sign-out';
 
-const NAV: {
-  key:
-    | 'home'
-    | 'alerts'
-    | 'verifications'
-    | 'locations'
-    | 'reports'
-    | 'holds'
-    | 'appeals'
-    | 'complaints'
-    | 'faqs';
-  to: string;
-  icon: LucideIcon;
-  end?: boolean;
-}[] = [
+type NavKey =
+  | 'home'
+  | 'alerts'
+  | 'verifications'
+  | 'locations'
+  | 'reports'
+  | 'holds'
+  | 'appeals'
+  | 'complaints'
+  | 'users'
+  | 'faqs'
+  | 'catalog'
+  | 'params'
+  | 'legal'
+  | 'metrics'
+  | 'audit';
+
+const NAV: { key: NavKey; to: string; icon: LucideIcon; end?: boolean; superOnly?: boolean }[] = [
   { key: 'home', to: '/admin', icon: Home, end: true },
   { key: 'alerts', to: '/admin/alertas', icon: BellRing },
   { key: 'verifications', to: '/admin/verificaciones', icon: BadgeCheck },
@@ -45,7 +55,13 @@ const NAV: {
   { key: 'holds', to: '/admin/retenciones', icon: PauseCircle },
   { key: 'appeals', to: '/admin/recursos', icon: Scale },
   { key: 'complaints', to: '/admin/quejas', icon: LifeBuoy },
+  { key: 'users', to: '/admin/usuarios', icon: Users },
   { key: 'faqs', to: '/admin/ayuda', icon: BookOpen },
+  { key: 'catalog', to: '/admin/ciudades', icon: Map },
+  { key: 'metrics', to: '/admin/metricas', icon: BarChart3 },
+  { key: 'params', to: '/admin/parametros', icon: SlidersHorizontal, superOnly: true },
+  { key: 'legal', to: '/admin/textos', icon: FileText, superOnly: true },
+  { key: 'audit', to: '/admin/auditoria', icon: ScrollText, superOnly: true },
 ];
 
 /** Real-time badge on «Alertas» (N-26). */
@@ -65,6 +81,7 @@ function AlertsBadge() {
 /** UX §9 — desktop-first admin shell with a sidebar; items of later milestones appear with them. */
 export function AdminShell({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const { t } = useTranslation();
+  const superadmin = useIsSuperadmin();
   const navigate = useNavigate();
   const idle = useCallback(() => {
     void onSignOut().then(() => {
@@ -91,23 +108,25 @@ export function AdminShell({ onSignOut }: { onSignOut: () => Promise<void> }) {
           aria-label={t('admin.nav.label')}
           className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col"
         >
-          {NAV.map(({ key, to, icon: Icon, end }) => (
-            <NavLink
-              key={key}
-              to={to}
-              end={end ?? false}
-              className={({ isActive }) =>
-                cn(
-                  'flex min-h-11 shrink-0 items-center gap-3 rounded-md px-3 font-semibold hover:bg-surface-muted',
-                  isActive && 'bg-brand-soft text-brand-text',
-                )
-              }
-            >
-              <Icon aria-hidden="true" className="size-5" />
-              {t(`admin.nav.${key}`)}
-              {key === 'alerts' ? <AlertsBadge /> : null}
-            </NavLink>
-          ))}
+          {NAV.filter((item) => !item.superOnly || superadmin).map(
+            ({ key, to, icon: Icon, end }) => (
+              <NavLink
+                key={key}
+                to={to}
+                end={end ?? false}
+                className={({ isActive }) =>
+                  cn(
+                    'flex min-h-11 shrink-0 items-center gap-3 rounded-md px-3 font-semibold hover:bg-surface-muted',
+                    isActive && 'bg-brand-soft text-brand-text',
+                  )
+                }
+              >
+                <Icon aria-hidden="true" className="size-5" />
+                {t(`admin.nav.${key}`)}
+                {key === 'alerts' ? <AlertsBadge /> : null}
+              </NavLink>
+            ),
+          )}
           <Link
             to="/app"
             className="flex min-h-11 shrink-0 items-center gap-3 rounded-md px-3 text-muted hover:bg-surface-muted"

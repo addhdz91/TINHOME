@@ -74,3 +74,10 @@ export function requireAdmin(request: GuardRequest): { uid: string; role: AdminR
   requireRole(auth, 'admin');
   return { uid: auth.uid, role: auth.role ?? 'admin' };
 }
+
+/** Guard `SADM`. Returns the actor for the audit log. */
+export function requireSuperadmin(request: GuardRequest): { uid: string; role: AdminRole } {
+  const auth = requireAuth(request);
+  requireRole(auth, 'superadmin');
+  return { uid: auth.uid, role: 'superadmin' };
+}
