@@ -11,7 +11,7 @@ async function signIn(page: Page, email: string) {
 /** M9 DoD — FR-59: download my data (re-authenticated) and a GDPR request; BR-29: deletion. */
 test('Privacy: data download, GDPR request and account deletion', async ({ page }) => {
   test.setTimeout(90_000);
-  await signIn(page, 'laura@demo.tinhome');
+  await signIn(page, 'javier@demo.tinhome');
   await page.goto('/app/privacidad');
   await expect(
     page.getByRole('heading', { level: 1, name: 'Privacidad y mis datos' }),
@@ -48,8 +48,8 @@ test('Privacy: data download, GDPR request and account deletion', async ({ page 
   const reauth = page.getByRole('dialog', { name: 'Confirma que eres tú' });
   await reauth.getByLabel('Contraseña', { exact: true }).fill('Demo1234!');
   await reauth.getByRole('button', { name: 'Dar de baja mi cuenta' }).click();
-  await expect(
-    page.getByText(/Hemos recibido tu solicitud\. Tus datos se borrarán el/),
-  ).toBeVisible();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { name: 'Solicitud de baja recibida' })).toBeVisible();
+  await expect(page.getByText(/Tus datos personales y fotos se borrarán el/)).toBeVisible();
+  await page.getByRole('button', { name: 'Salir' }).click();
+  await expect(page).toHaveURL(/localhost:5173\/$/);
 });

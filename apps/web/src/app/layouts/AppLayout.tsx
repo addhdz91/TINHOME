@@ -6,6 +6,9 @@ import { RouteFallback } from '@/app/RouteFallback';
 import { ErrorState } from '@/components/ErrorState';
 import { ReacceptanceModal } from '@/features/legal';
 
+/** Reachable before finishing onboarding: GDPR rights and deletion (FR-59, BR-29). */
+const ONBOARDING_EXEMPT = ['/app/onboarding', '/app/privacidad', '/app/baja'];
+
 /**
  * Signed-in area with the route guards of 02_UX_UI_SPEC.md §2.3, in order:
  * 1. no session → /entrar?next=… · 2. e-mail not verified → /verifica-email ·
@@ -34,7 +37,7 @@ export function AppLayout() {
   if (!me.verification.emailVerified) return <Navigate to="/verifica-email" replace />;
 
   const step = mandatoryOnboardingStep(me.onboarding.step, me.onboarding.completed);
-  if (step !== null && !location.pathname.startsWith('/app/onboarding')) {
+  if (step !== null && !ONBOARDING_EXEMPT.some((prefix) => location.pathname.startsWith(prefix))) {
     return <Navigate to={`/app/onboarding/${String(step)}`} replace />;
   }
 

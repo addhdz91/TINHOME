@@ -2242,7 +2242,9 @@
     "reauthTitle": "Confirma que eres tú",
     "reauthBody": "Para dar de baja la cuenta necesitamos que vuelvas a identificarte.",
     "confirm": "Dar de baja mi cuenta",
-    "done": "Hemos recibido tu solicitud. Tus datos se borrarán el {{date}}.",
-    "provisional": "Texto PROVISIONAL pendiente de revisión legal."
+    "done": "Tus datos personales y fotos se borrarán el {{date}}. Te hemos enviado un email de confirmación.",
+    "provisional": "Texto PROVISIONAL pendiente de revisión legal.",
+    "doneTitle": "Solicitud de baja recibida",
+    "leave": "Salir"
   }
 }
