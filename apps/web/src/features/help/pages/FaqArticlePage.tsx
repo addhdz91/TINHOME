@@ -1,4 +1,6 @@
+import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { EmptyState } from '@/components/EmptyState';
@@ -7,12 +9,44 @@ import { Seo } from '@/components/Seo';
 import { Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui/button';
 import { SafeMarkdown } from '@/features/legal';
+import { rateFaq } from '@/lib/callables';
 import { useFaqs } from '../api/use-faqs';
 
-/**
- * `/ayuda/:slug` — one FAQ article. «¿Te ha servido?» (rateFaq) and «Contactar con TinHome»
- * (complaints) arrive in M9.
- */
+/** «¿Te ha servido?» (FR-66): one vote per article and device. */
+function RateArticle({ slug }: { slug: string }) {
+  const { t } = useTranslation();
+  const [voted, setVoted] = useState(false);
+  const rate = useMutation({
+    mutationFn: (helpful: boolean) => rateFaq({ slug, helpful }),
+    onSuccess: () => setVoted(true),
+  });
+  if (voted) return <p role="status">{t('help.thanks')}</p>;
+  return (
+    <div role="group" aria-labelledby="faq-rate" className="flex flex-wrap items-center gap-2">
+      <span id="faq-rate" className="font-semibold">
+        {t('help.helpful')}
+      </span>
+      <Button
+        variant="secondary"
+        size="sm"
+        disabled={rate.isPending}
+        onClick={() => rate.mutate(true)}
+      >
+        {t('help.yes')}
+      </Button>
+      <Button
+        variant="secondary"
+        size="sm"
+        disabled={rate.isPending}
+        onClick={() => rate.mutate(false)}
+      >
+        {t('help.no')}
+      </Button>
+    </div>
+  );
+}
+
+/** `/ayuda/:slug` — one FAQ article, «¿Te ha servido?» and «Contactar con TinHome» (FR-66). */
 export function FaqArticlePage() {
   const { t } = useTranslation();
   const { slug } = useParams();
@@ -51,6 +85,10 @@ export function FaqArticlePage() {
           <p className="text-sm font-semibold text-muted">{t(`help.categories.${faq.category}`)}</p>
           <h1 className="text-h1">{faq.question}</h1>
           <SafeMarkdown markdown={faq.answerMarkdown} />
+          <RateArticle slug={faq.slug} />
+          <Link to="/reclamaciones" className="font-semibold text-link underline">
+            {t('help.contact')}
+          </Link>
         </>
       )}
     </article>

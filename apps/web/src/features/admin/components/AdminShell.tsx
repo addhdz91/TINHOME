@@ -1,6 +1,8 @@
 import {
   BadgeCheck,
   BellRing,
+  BookOpen,
+  LifeBuoy,
   Flag,
   Home,
   LogOut,
@@ -21,7 +23,16 @@ import { useAdminAlerts } from '../api/use-alerts';
 import { useIdleSignOut } from '../lib/use-idle-sign-out';
 
 const NAV: {
-  key: 'home' | 'alerts' | 'verifications' | 'locations' | 'reports' | 'holds' | 'appeals';
+  key:
+    | 'home'
+    | 'alerts'
+    | 'verifications'
+    | 'locations'
+    | 'reports'
+    | 'holds'
+    | 'appeals'
+    | 'complaints'
+    | 'faqs';
   to: string;
   icon: LucideIcon;
   end?: boolean;
@@ -33,6 +44,8 @@ const NAV: {
   { key: 'reports', to: '/admin/denuncias', icon: Flag },
   { key: 'holds', to: '/admin/retenciones', icon: PauseCircle },
   { key: 'appeals', to: '/admin/recursos', icon: Scale },
+  { key: 'complaints', to: '/admin/quejas', icon: LifeBuoy },
+  { key: 'faqs', to: '/admin/ayuda', icon: BookOpen },
 ];
 
 /** Real-time badge on «Alertas» (N-26). */

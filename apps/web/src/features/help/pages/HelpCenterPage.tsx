@@ -127,6 +127,20 @@ export function HelpCenterPage() {
         />
       </div>
       {content}
+      <section
+        aria-labelledby="help-contact"
+        className="flex flex-col gap-2 rounded-lg border border-border p-4"
+      >
+        <h2 id="help-contact" className="text-h3">
+          {t('help.notFoundTitle')}
+        </h2>
+        <Link to="/reclamaciones" className="font-semibold text-link underline">
+          {t('support.title')}
+        </Link>
+        <Link to="/denunciar" className="font-semibold text-link underline">
+          {t('publicReport.title')}
+        </Link>
+      </section>
     </article>
   );
 }

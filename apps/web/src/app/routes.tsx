@@ -20,6 +20,7 @@ import { premiumRoutes } from '@/features/premium/routes';
 import { pricingRoutes } from '@/features/pricing/routes';
 import { profileRoutes } from '@/features/profile/routes';
 import { safetyRoutes } from '@/features/safety/routes';
+import { publicSupportRoutes, supportRoutes } from '@/features/support/routes';
 import { verificationRoutes } from '@/features/verification/routes';
 import { waitlistRoutes } from '@/features/waitlist/routes';
 import { PublicLayout } from './layouts/PublicLayout';
@@ -46,6 +47,7 @@ export function buildRoutes(): RouteObject[] {
         ...waitlistRoutes,
         ...legalRoutes,
         ...helpRoutes,
+        ...publicSupportRoutes,
         // `/dev/*` only exists in development builds (dead code in production).
         ...(import.meta.env.DEV ? devRoutes : []),
         { path: '*', element: <NotFoundPage /> },
@@ -82,6 +84,7 @@ export function buildRoutes(): RouteObject[] {
                 ...exchangeRoutes,
                 ...notificationRoutes,
                 ...safetyRoutes,
+                ...supportRoutes,
                 ...discoverRoutes,
                 ...exploreRoutes,
                 ...homeDetailRoutes,

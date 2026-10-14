@@ -3941,8 +3941,8 @@ paths:
       operationId: submitPublicReport
       tags:
       - Seguridad
-      summary: Denuncia pública (DSA, sin cuenta)
-      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      summary: Denuncia pública sin cuenta (FR-43)
+      description: 'Callable de Firebase. Guardas: PUB. App Check + 3 por hora por IP. Sin retención preventiva (denunciante no verificado). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -3953,18 +3953,38 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    name: *id001
+                    name:
+                      type: string
+                      minLength: 2
+                      maxLength: 80
                     email:
                       type: string
+                      maxLength: 254
                       format: email
-                    targetUrl: *id001
+                      pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                    targetUrl:
+                      type: string
+                      minLength: 5
+                      maxLength: 500
+                    reason:
+                      type: string
+                      enum:
+                      - PHOTOS_NOT_OWN
+                      - RUDE
+                      - HARASSMENT
+                      - INAPPROPRIATE_MESSAGES
+                      - FRAUD
+                      - HIDDEN_RENTAL
+                      - ILLEGAL
+                      - PERSONAL_DATA
+                      - OTHER
                     description:
                       type: string
                       minLength: 20
                       maxLength: 4000
                     goodFaith:
+                      type: boolean
                       const: true
                   required:
                   - name
@@ -3985,11 +4005,12 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      reportId: *id001
+                      reportId:
+                        type: string
                     required:
                     - reportId
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7136,8 +7157,8 @@ paths:
       operationId: submitComplaint
       tags:
       - Ayuda
-      summary: Queja o reclamación (usuario o visitante con email)
-      description: 'Callable de Firebase. Guardas: A|PUB. Ver 05_API_CONTRACT.md.'
+      summary: Queja o reclamación con número de seguimiento (FR-67, BR-43)
+      description: 'Callable de Firebase. Guardas: A|PUB. Visitantes: email obligatorio. 5 por hora (uid o IP). Acuse N-25 con número y plazo P-38. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -7148,7 +7169,6 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     category:
                       type: string
@@ -7161,18 +7181,27 @@ paths:
                       - OTHER
                     subject:
                       type: string
+                      minLength: 5
                       maxLength: 120
                     description:
                       type: string
                       minLength: 20
                       maxLength: 4000
                     attachmentPaths:
-                      type: array
-                      items: *id001
                       maxItems: 5
+                      type: array
+                      items:
+                        type: string
+                        maxLength: 300
                     email:
                       type: string
+                      maxLength: 254
                       format: email
+                      pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+                    name:
+                      type: string
+                      minLength: 2
+                      maxLength: 80
                   required:
                   - category
                   - subject
@@ -7190,15 +7219,18 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
-                      ticketId: *id001
-                      number: *id001
-                      dueAt: *id008
+                      ticketId:
+                        type: string
+                      number:
+                        type: string
+                      dueAt:
+                        type: string
                     required:
                     - ticketId
                     - number
                     - dueAt
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7210,14 +7242,13 @@ paths:
       security:
       - FirebaseIdToken: []
         AppCheck: []
-      - AppCheck: []
   /addComplaintMessage:
     post:
       operationId: addComplaintMessage
       tags:
       - Ayuda
-      summary: Responde en una queja abierta
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      summary: Responder en el hilo
+      description: 'Callable de Firebase. Guardas: A. E_TICKET_CLOSED si está resuelta o cerrada. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -7228,11 +7259,14 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    ticketId: *id001
+                    ticketId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
                     text:
                       type: string
+                      minLength: 1
                       maxLength: 4000
                   required:
                   - ticketId
@@ -7248,7 +7282,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7265,8 +7307,8 @@ paths:
       operationId: rateFaq
       tags:
       - Ayuda
-      summary: Valora si un artículo de ayuda sirvió
-      description: 'Callable de Firebase. Guardas: PUB. Ver 05_API_CONTRACT.md.'
+      summary: ¿Te ha servido? (FR-66)
+      description: 'Callable de Firebase. Guardas: PUB. 30 votos por hora por IP; solo artículos publicados. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -7277,10 +7319,13 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    slug: *id001
-                    helpful: *id004
+                    slug:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                    helpful:
+                      type: boolean
                   required:
                   - slug
                   - helpful
@@ -7295,7 +7340,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7625,7 +7678,7 @@ paths:
       operationId: adminListComplaints
       tags:
       - Admin
-      summary: Cola de quejas
+      summary: Cola de quejas por plazo
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -7637,11 +7690,23 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    status: *id001
-                    cursor: *id001
-                    limit: *id007
+                    cursor:
+                      type: string
+                      minLength: 1
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                    status:
+                      type: string
+                      enum:
+                      - RECEIVED
+                      - IN_REVIEW
+                      - WAITING_USER
+                      - RESOLVED
+                      - CLOSED
               required:
               - data
       responses:
@@ -7655,19 +7720,59 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       items:
                         type: array
                         items:
                           type: object
+                          properties:
+                            id:
+                              type: string
+                            number:
+                              type: string
+                            category:
+                              type: string
+                              enum:
+                              - ACCOUNT
+                              - VERIFICATION
+                              - PREMIUM_BILLING
+                              - MODERATION_DECISION
+                              - TECHNICAL
+                              - OTHER
+                            subject:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - RECEIVED
+                              - IN_REVIEW
+                              - WAITING_USER
+                              - RESOLVED
+                              - CLOSED
+                            dueAt:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                          - id
+                          - number
+                          - category
+                          - subject
+                          - status
+                          - dueAt
+                          - createdAt
+                          - updatedAt
+                          additionalProperties: false
                       nextCursor:
-                        oneOf:
-                        - *id001
-                        - type: 'null'
+                        type:
+                        - string
+                        - 'null'
                     required:
                     - items
                     - nextCursor
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7684,8 +7789,8 @@ paths:
       operationId: adminReplyComplaint
       tags:
       - Admin
-      summary: Responder una queja
-      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      summary: Responde y cambia el estado
+      description: 'Callable de Firebase. Guardas: ADM. N-25 al usuario (o por email al visitante). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -7696,13 +7801,19 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    ticketId: *id001
-                    text: *id001
+                    ticketId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                    text:
+                      type: string
+                      minLength: 1
+                      maxLength: 4000
                     status:
                       type: string
                       enum:
+                      - RECEIVED
                       - IN_REVIEW
                       - WAITING_USER
                       - RESOLVED
@@ -7722,7 +7833,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -7739,7 +7858,7 @@ paths:
       operationId: adminUpsertFaq
       tags:
       - Admin
-      summary: Crear/editar artículo de ayuda
+      summary: Crea o edita un artículo de ayuda
       description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
@@ -7751,23 +7870,52 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    slug: *id001
-                    category: *id001
-                    question: *id001
-                    answerMarkdown: *id001
-                    order: *id005
-                    published: *id004
+                    slug:
+                      type: string
+                      minLength: 3
+                      maxLength: 100
+                      pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+                    category:
+                      type: string
+                      enum:
+                      - START
+                      - VERIFICATION
+                      - LIKES_MATCH
+                      - CHAT_SAFETY
+                      - EXCHANGES
+                      - PREMIUM_PAYMENTS
+                      - PRIVACY
+                      - REPORTS
+                    question:
+                      type: string
+                      minLength: 5
+                      maxLength: 200
+                    answerMarkdown:
+                      type: string
+                      minLength: 10
+                      maxLength: 20000
+                    order:
+                      type: integer
+                      minimum: 0
+                      maximum: 1000
+                    published:
+                      type: boolean
                     tags:
+                      maxItems: 20
                       type: array
-                      items: *id001
+                      items:
+                        type: string
+                        minLength: 1
+                        maxLength: 40
                   required:
                   - slug
                   - category
                   - question
                   - answerMarkdown
+                  - order
                   - published
+                  - tags
               required:
               - data
       responses:
@@ -7781,6 +7929,59 @@ paths:
                 properties:
                   result:
                     type: object
+                    properties:
+                      faq:
+                        type: object
+                        properties:
+                          slug:
+                            type: string
+                          category:
+                            type: string
+                            enum:
+                            - START
+                            - VERIFICATION
+                            - LIKES_MATCH
+                            - CHAT_SAFETY
+                            - EXCHANGES
+                            - PREMIUM_PAYMENTS
+                            - PRIVACY
+                            - REPORTS
+                          question:
+                            type: string
+                          answerMarkdown:
+                            type: string
+                          order:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          published:
+                            type: boolean
+                          tags:
+                            type: array
+                            items:
+                              type: string
+                          helpfulYes:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          helpfulNo:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                        required:
+                        - slug
+                        - category
+                        - question
+                        - answerMarkdown
+                        - order
+                        - published
+                        - tags
+                        - helpfulYes
+                        - helpfulNo
+                        additionalProperties: false
+                    required:
+                    - faq
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -8560,6 +8761,445 @@ paths:
                           - reason
                           - since
                           - dueAt
+                          additionalProperties: false
+                    required:
+                    - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /listMyComplaints:
+    post:
+      operationId: listMyComplaints
+      tags:
+      - Ayuda
+      summary: Mis solicitudes
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            number:
+                              type: string
+                            category:
+                              type: string
+                              enum:
+                              - ACCOUNT
+                              - VERIFICATION
+                              - PREMIUM_BILLING
+                              - MODERATION_DECISION
+                              - TECHNICAL
+                              - OTHER
+                            subject:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - RECEIVED
+                              - IN_REVIEW
+                              - WAITING_USER
+                              - RESOLVED
+                              - CLOSED
+                            dueAt:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                          - id
+                          - number
+                          - category
+                          - subject
+                          - status
+                          - dueAt
+                          - createdAt
+                          - updatedAt
+                          additionalProperties: false
+                    required:
+                    - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /getComplaint:
+    post:
+      operationId: getComplaint
+      tags:
+      - Ayuda
+      summary: Detalle e hilo de una solicitud propia
+      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    ticketId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                  required:
+                  - ticketId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      ticket:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          number:
+                            type: string
+                          category:
+                            type: string
+                            enum:
+                            - ACCOUNT
+                            - VERIFICATION
+                            - PREMIUM_BILLING
+                            - MODERATION_DECISION
+                            - TECHNICAL
+                            - OTHER
+                          subject:
+                            type: string
+                          status:
+                            type: string
+                            enum:
+                            - RECEIVED
+                            - IN_REVIEW
+                            - WAITING_USER
+                            - RESOLVED
+                            - CLOSED
+                          dueAt:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                          description:
+                            type: string
+                          email:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - number
+                        - category
+                        - subject
+                        - status
+                        - dueAt
+                        - createdAt
+                        - updatedAt
+                        - description
+                        - email
+                        additionalProperties: false
+                      messages:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            authorType:
+                              type: string
+                              enum:
+                              - USER
+                              - ADMIN
+                            text:
+                              type: string
+                            createdAt:
+                              type: string
+                          required:
+                          - id
+                          - authorType
+                          - text
+                          - createdAt
+                          additionalProperties: false
+                    required:
+                    - ticket
+                    - messages
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminGetComplaint:
+    post:
+      operationId: adminGetComplaint
+      tags:
+      - Admin
+      summary: Detalle de una queja
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    ticketId:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                  required:
+                  - ticketId
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      ticket:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          number:
+                            type: string
+                          category:
+                            type: string
+                            enum:
+                            - ACCOUNT
+                            - VERIFICATION
+                            - PREMIUM_BILLING
+                            - MODERATION_DECISION
+                            - TECHNICAL
+                            - OTHER
+                          subject:
+                            type: string
+                          status:
+                            type: string
+                            enum:
+                            - RECEIVED
+                            - IN_REVIEW
+                            - WAITING_USER
+                            - RESOLVED
+                            - CLOSED
+                          dueAt:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                          description:
+                            type: string
+                          email:
+                            type:
+                            - string
+                            - 'null'
+                        required:
+                        - id
+                        - number
+                        - category
+                        - subject
+                        - status
+                        - dueAt
+                        - createdAt
+                        - updatedAt
+                        - description
+                        - email
+                        additionalProperties: false
+                      messages:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            authorType:
+                              type: string
+                              enum:
+                              - USER
+                              - ADMIN
+                            text:
+                              type: string
+                            createdAt:
+                              type: string
+                          required:
+                          - id
+                          - authorType
+                          - text
+                          - createdAt
+                          additionalProperties: false
+                    required:
+                    - ticket
+                    - messages
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListFaqs:
+    post:
+      operationId: adminListFaqs
+      tags:
+      - Admin
+      summary: Artículos de ayuda con estadísticas
+      description: 'Callable de Firebase. Guardas: ADM. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties: {}
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            slug:
+                              type: string
+                            category:
+                              type: string
+                              enum:
+                              - START
+                              - VERIFICATION
+                              - LIKES_MATCH
+                              - CHAT_SAFETY
+                              - EXCHANGES
+                              - PREMIUM_PAYMENTS
+                              - PRIVACY
+                              - REPORTS
+                            question:
+                              type: string
+                            answerMarkdown:
+                              type: string
+                            order:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            published:
+                              type: boolean
+                            tags:
+                              type: array
+                              items:
+                                type: string
+                            helpfulYes:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            helpfulNo:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - slug
+                          - category
+                          - question
+                          - answerMarkdown
+                          - order
+                          - published
+                          - tags
+                          - helpfulYes
+                          - helpfulNo
                           additionalProperties: false
                     required:
                     - items

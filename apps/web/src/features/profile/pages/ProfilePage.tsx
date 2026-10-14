@@ -4,6 +4,7 @@ import {
   Crown,
   Gift,
   HelpCircle,
+  LifeBuoy,
   LogOut,
   ShieldCheck,
 } from 'lucide-react';
@@ -124,6 +125,16 @@ export function ProfilePage() {
           className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
         >
           {t('blocked.title')}
+        </Link>
+        <Link
+          to="/app/soporte"
+          className="flex min-h-11 items-center justify-between rounded-md border border-border bg-surface px-4 font-semibold hover:bg-surface-muted"
+        >
+          <span className="flex items-center gap-3">
+            <LifeBuoy aria-hidden="true" className="size-5" />
+            {t('support.title')}
+          </span>
+          <ChevronRight aria-hidden="true" className="size-5 text-muted" />
         </Link>
         <Link
           to="/ayuda"

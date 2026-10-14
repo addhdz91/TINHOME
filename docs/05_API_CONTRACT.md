@@ -154,7 +154,7 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `unblockUser` | A | `{ targetUid }` | `{ ok: true }` | `E_NOT_FOUND` |
 | `listBlocked` | A | `{}` | `{ items: { uid, displayName, blockedAt }[] }` | — |
 | `submitReport` | A, EV | `{ targetType: 'HOME'\|'USER'\|'REVIEW'\|'MESSAGE', targetId (MESSAGE: `matchId/messageId`), reason: 'PHOTOS_NOT_OWN'\|'RUDE'\|'HARASSMENT'\|'INAPPROPRIATE_MESSAGES'\|'FRAUD'\|'HIDDEN_RENTAL'\|'ILLEGAL'\|'PERSONAL_DATA'\|'OTHER', description (20–2000), attachmentPaths? (≤ 5, `private/reports/{uid}/…`), alsoBlock?: boolean }` | `{ reportId, priority, preventiveHold: boolean }` | `E_RATE_LIMIT` (10/día), `E_VALIDATION` (incluye denunciarse a uno mismo), `E_NOT_FOUND` (contenido inexistente; mensaje de un chat ajeno) | Instantánea (`targetSnapshot`; mensajes: el denunciado y los 10 anteriores); alerta `REPORT_HIGH` + N-26 por email si prioridad alta; retención preventiva si BR-42 (casa si es HOME o fotos ajenas, cuenta en otro caso); acuse N-14 |
-| `submitPublicReport` | PUB | `{ name, email, targetUrl, description, goodFaith: true }` | `{ reportId }` | `E_RATE_LIMIT`, `E_VALIDATION` |
+| `submitPublicReport` | PUB (App Check, 3/h por IP) | `{ name, email, targetUrl, reason?, description (20–4000), goodFaith: true }` | `{ reportId }` | `E_RATE_LIMIT`, `E_VALIDATION`. Una URL `/casa/{id}` se enlaza a la casa; sin retención preventiva (denunciante no verificado); acuse N-14 |
 | `submitAppeal` | A | `{ actionId, text (20–2000) }` | `{ appealId }` (= `actionId`) | `E_APPEAL_WINDOW_CLOSED`, `E_APPEAL_EXISTS`, `E_NOT_FOUND`, `E_STATE` (acción no restrictiva) |
 | `getMyStanding` | A | `{}` | `{ strikes: StrikeView[], actions: ModerationActionView[] (con `statement`, `appeal`, `appealable`), hold: { scope, reason, dueAt } \| null }` | — |
 | `adminListReports` | ADM | `{ status?, priority?, cursor?, limit? }` | `{ items, nextCursor }` | — |
@@ -176,11 +176,12 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `adminDecideLocationReview` | ADM | `{ homeId, decision: 'APPROVE'\|'REJECT', reason }` | `{ home }` | `E_STATE` |
 | `adminResolveHold` | ADM | `{ uid, scope: 'HOME'\|'USER', decision: 'RELEASE'\|'CONFIRM', statement? }` | `{ ok: true }` | `E_STATE` (sin retención), `E_STATEMENT_REQUIRED` (CONFIRM: oculta la casa o suspende la cuenta P-32 días) |
 | `adminListAlerts` / `adminHandleAlert` | ADM | `{}` / `{ alertId }` | `{ items: AdminAlertView[] }` / `{ ok: true }` | `E_NOT_FOUND`. El panel lee `adminAlerts` en tiempo real (regla: admin con 2FA) |
-| `submitComplaint` | A o PUB (con `email`) | `{ category, subject, description, attachmentPaths?, email? }` | `{ ticketId, number, dueAt }` | `E_RATE_LIMIT`, `E_VALIDATION` |
+| `submitComplaint` | A o PUB (con `email`; 5/h por uid o IP) | `{ category, subject (5–120), description (20–4000), attachmentPaths?, email?, name? }` | `{ ticketId, number (`TH-AAAA-NNNNNN`), dueAt }` | `E_RATE_LIMIT`, `E_VALIDATION` (visitante sin email) |
+| `listMyComplaints` / `getComplaint` | A | `{}` / `{ ticketId }` | `{ items: TicketSummary[] }` / `TicketDetail` | `E_NOT_FOUND` (solicitud ajena) |
 | `addComplaintMessage` | A | `{ ticketId, text }` | `{ ok: true }` | `E_TICKET_CLOSED`, `E_NOT_FOUND` |
-| `adminListComplaints` / `adminReplyComplaint` | ADM | `{ status?, cursor? }` / `{ ticketId, text, status }` | — | — |
-| `rateFaq` | PUB | `{ slug, helpful: boolean }` | `{ ok: true }` | `E_RATE_LIMIT` |
-| `adminUpsertFaq` | ADM | `{ slug, category, question, answerMarkdown, order, published, tags }` | `{ faq }` | `E_VALIDATION` |
+| `adminListComplaints` / `adminGetComplaint` / `adminReplyComplaint` | ADM | `{ status?, cursor?, limit? }` / `{ ticketId }` / `{ ticketId, text, status }` | lista / `TicketDetail` / `{ ok: true }` | `E_NOT_FOUND`. La respuesta envía N-25 (centro + email; visitantes solo email) |
+| `rateFaq` | PUB (30/h por IP) | `{ slug, helpful: boolean }` | `{ ok: true }` | `E_RATE_LIMIT`, `E_NOT_FOUND` (no publicado) |
+| `adminUpsertFaq` / `adminListFaqs` | ADM | `{ slug (kebab-case), category, question, answerMarkdown, order, published, tags }` / `{}` | `{ faq }` / `{ items: FaqAdminView[] }` (con `helpfulYes/No`) | `E_VALIDATION` |
 
 ### 2.13 Notificaciones, patrocinados, analítica, privacidad
 

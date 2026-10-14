@@ -43,4 +43,18 @@ export const adminRoutes: RouteObject[] = [
     path: 'recursos',
     lazy: async () => ({ Component: (await import('./pages/AppealsPage')).AppealsPage }),
   },
+  {
+    path: 'quejas',
+    lazy: async () => ({ Component: (await import('./pages/ComplaintsPage')).ComplaintsPage }),
+  },
+  {
+    path: 'quejas/:ticketId',
+    lazy: async () => ({
+      Component: (await import('./pages/ComplaintDetailPage')).ComplaintDetailPage,
+    }),
+  },
+  {
+    path: 'ayuda',
+    lazy: async () => ({ Component: (await import('./pages/FaqsPage')).FaqsPage }),
+  },
 ];

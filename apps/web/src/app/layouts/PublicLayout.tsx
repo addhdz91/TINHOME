@@ -89,12 +89,11 @@ export function PublicLayout() {
             <Link to="/ayuda" className="inline-flex min-h-11 items-center hover:underline">
               {t('footer.help')}
             </Link>
-            {/* TODO(M9): point to /denunciar (FR-43); until then the DSA page holds the contact point. */}
-            <Link
-              to="/legal/info-dsa"
-              className="inline-flex min-h-11 items-center hover:underline"
-            >
+            <Link to="/denunciar" className="inline-flex min-h-11 items-center hover:underline">
               {t('footer.report')}
+            </Link>
+            <Link to="/reclamaciones" className="inline-flex min-h-11 items-center hover:underline">
+              {t('footer.complaints')}
             </Link>
           </nav>
           <nav aria-labelledby="footer-legal" className="flex flex-col gap-1">

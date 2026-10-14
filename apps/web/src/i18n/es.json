@@ -135,7 +135,8 @@
     "legalTitle": "Legal",
     "productTitle": "TinHome",
     "report": "Denunciar contenido",
-    "help": "Ayuda"
+    "help": "Ayuda",
+    "complaints": "Quejas y reclamaciones"
   },
   "notFound": {
     "title": "No encontramos esta página",
@@ -161,7 +162,9 @@
       "alerts": "Alertas",
       "reports": "Denuncias",
       "holds": "Retenciones",
-      "appeals": "Recursos"
+      "appeals": "Recursos",
+      "complaints": "Quejas",
+      "faqs": "Ayuda (FAQ)"
     },
     "denied": {
       "title": "No tienes acceso",
@@ -442,6 +445,47 @@
         "REPORT_DUE": "Denuncia a punto de vencer",
         "HOLD_OVERDUE": "Retención vencida"
       }
+    },
+    "complaints": {
+      "title": "Quejas y reclamaciones",
+      "open": "Abiertas",
+      "empty": "No hay quejas en esta cola",
+      "answer": "Respuesta",
+      "newStatus": "Nuevo estado",
+      "send": "Enviar respuesta",
+      "sent": "Respuesta enviada",
+      "templates": "Plantillas de respuesta (PROVISIONAL)",
+      "templateName": {
+        "ask": "Pedir información",
+        "refund": "Devolución",
+        "explain": "Explicar decisión",
+        "resolved": "Cierre"
+      },
+      "template": {
+        "ask": "Hola: para revisar tu solicitud necesitamos que nos envíes más información sobre lo ocurrido (fechas y capturas si las tienes). Gracias.",
+        "refund": "Hola: hemos revisado el cobro y hemos solicitado la devolución al mismo medio de pago. Puede tardar unos días en aparecer.",
+        "explain": "Hola: hemos revisado tu caso. La decisión se tomó por los motivos indicados en la declaración que recibiste. Puedes recurrirla desde Perfil › Mi cuenta.",
+        "resolved": "Hola: damos por resuelta tu solicitud. Si necesitas algo más, puedes escribirnos de nuevo."
+      }
+    },
+    "faqs": {
+      "title": "Ayuda (FAQ)",
+      "new": "Nuevo artículo",
+      "edit": "Editar",
+      "draft": "borrador",
+      "stats": "¿Te ha servido?",
+      "votes": "Sí {{yes}} · No {{no}}",
+      "slug": "Identificador",
+      "slugHint": "En minúsculas y con guiones, p. ej. como-cancelar-premium. No se puede cambiar.",
+      "category": "Categoría",
+      "question": "Pregunta",
+      "answer": "Respuesta (Markdown)",
+      "order": "Orden",
+      "tags": "Etiquetas (separadas por comas)",
+      "published": "Publicado",
+      "save": "Guardar",
+      "saved": "Artículo guardado",
+      "preview": "Vista previa"
     }
   },
   "appShell": {
@@ -950,7 +994,13 @@
       "PREMIUM_PAYMENTS": "Premium y pagos",
       "PRIVACY": "Privacidad",
       "REPORTS": "Denuncias"
-    }
+    },
+    "notFoundTitle": "¿No encuentras lo que buscas?",
+    "helpful": "¿Te ha servido?",
+    "yes": "Sí",
+    "no": "No",
+    "thanks": "¡Gracias por tu opinión!",
+    "contact": "Contactar con TinHome"
   },
   "home": {
     "types": {
@@ -1829,5 +1879,70 @@
       "UPHELD": "Recurso aceptado",
       "REJECTED": "Recurso rechazado"
     }
+  },
+  "support": {
+    "title": "Quejas y reclamaciones",
+    "intro": "Cuéntanos qué ha pasado. Te daremos un número de seguimiento y te responderemos en el plazo indicado.",
+    "haveAccount": "¿Tienes cuenta?",
+    "signIn": "Entra para seguir tu solicitud en «Mis solicitudes».",
+    "official": "Si no quedas satisfecho con nuestra respuesta, puedes acudir a las hojas de reclamaciones y vías oficiales de consumo de tu comunidad autónoma. (Texto PROVISIONAL pendiente de revisión legal.)",
+    "categories": {
+      "ACCOUNT": "Cuenta y acceso",
+      "VERIFICATION": "Verificación",
+      "PREMIUM_BILLING": "Premium y cobros",
+      "MODERATION_DECISION": "Una decisión de moderación",
+      "TECHNICAL": "Error técnico",
+      "OTHER": "Otra"
+    },
+    "status": {
+      "RECEIVED": "Recibida",
+      "IN_REVIEW": "En revisión",
+      "WAITING_USER": "Esperando tu respuesta",
+      "RESOLVED": "Resuelta",
+      "CLOSED": "Cerrada"
+    },
+    "form": {
+      "category": "Tipo de solicitud",
+      "name": "Nombre",
+      "email": "Email",
+      "subject": "Asunto",
+      "description": "Descripción",
+      "descriptionHint": "Incluye fechas y lo que esperas que hagamos. No incluyas datos bancarios ni documentos de identidad.",
+      "subjectError": "Escribe un asunto de al menos 5 caracteres.",
+      "descriptionError": "Cuéntanoslo con al menos {{min}} caracteres.",
+      "emailError": "Escribe un email válido para poder responderte.",
+      "submit": "Enviar solicitud"
+    },
+    "sent": {
+      "title": "Hemos recibido tu solicitud",
+      "number": "Número de seguimiento: {{number}}",
+      "due": "Te responderemos como tarde el {{date}}.",
+      "visitor": "Te hemos enviado un email con el número. Te responderemos por email.",
+      "open": "Ver en Mis solicitudes"
+    },
+    "mine": {
+      "title": "Mis solicitudes",
+      "empty": "No tienes solicitudes",
+      "new": "Nueva solicitud",
+      "due": "respuesta antes del {{date}}"
+    },
+    "thread": "Historial de la solicitud",
+    "you": "Tú",
+    "team": "Equipo de TinHome",
+    "reply": "Responder",
+    "send": "Enviar respuesta",
+    "closed": "Esta solicitud está cerrada. Si necesitas algo más, abre una nueva."
+  },
+  "publicReport": {
+    "title": "Denunciar contenido",
+    "intro": "Cualquier persona puede avisarnos de contenido que incumpla la ley o nuestras normas, aunque no tenga cuenta. Lo revisaremos y te informaremos.",
+    "url": "Enlace o identificador del contenido",
+    "urlHint": "Por ejemplo, el enlace a la casa en TinHome.",
+    "urlError": "Indica el enlace o el identificador del contenido.",
+    "nameError": "Escribe tu nombre.",
+    "description": "Explica por qué es ilegal o incumple las normas",
+    "descriptionHint": "Cuanto más concreta sea la explicación, antes podremos actuar.",
+    "goodFaith": "Declaro de buena fe que la información de esta denuncia es correcta y completa.",
+    "goodFaithError": "Debes confirmar que denuncias de buena fe."
   }
 }

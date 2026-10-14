@@ -88,6 +88,7 @@ export const EMAIL_TEMPLATES = [
   'N-21',
   'N-23',
   'N-24',
+  'N-25',
   'N-26',
   'N-27',
 ] as const;
@@ -423,3 +424,22 @@ export const APPEAL_DECISIONS = ['UPHOLD', 'REJECT'] as const;
 export type AppealDecision = (typeof APPEAL_DECISIONS)[number];
 export const HOLD_DECISIONS = ['RELEASE', 'CONFIRM'] as const;
 export type HoldDecision = (typeof HOLD_DECISIONS)[number];
+
+/** FR-67 — complaints and claims. */
+export const COMPLAINT_CATEGORIES = [
+  'ACCOUNT',
+  'VERIFICATION',
+  'PREMIUM_BILLING',
+  'MODERATION_DECISION',
+  'TECHNICAL',
+  'OTHER',
+] as const;
+export type ComplaintCategory = (typeof COMPLAINT_CATEGORIES)[number];
+export const TICKET_STATUS = [
+  'RECEIVED',
+  'IN_REVIEW',
+  'WAITING_USER',
+  'RESOLVED',
+  'CLOSED',
+] as const;
+export type TicketStatus = (typeof TICKET_STATUS)[number];

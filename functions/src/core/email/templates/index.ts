@@ -17,6 +17,7 @@ import { waitlistConfirmation } from './n19-waitlist-confirmation.js';
 import { unreadDigest } from './n20-unread.js';
 import { messageLike } from './n21-message-like.js';
 import { hold } from './n23-hold.js';
+import { complaint } from './n25-complaint.js';
 import { adminAlert } from './n26-admin-alert.js';
 import { security } from './n27-security.js';
 
@@ -43,6 +44,8 @@ export function renderEmail(item: MailQueueItem): RenderedEmail {
       return result(item.data);
     case 'N-24':
       return statement(item.data);
+    case 'N-25':
+      return complaint(item.data);
     case 'N-26':
       return adminAlert(item.data);
     case 'N-19':

@@ -100,3 +100,16 @@ export {
   submitAppeal,
   submitReport,
 } from './modules/moderation/callables.js';
+export {
+  addComplaintMessage,
+  adminGetComplaint,
+  adminListComplaints,
+  adminListFaqs,
+  adminReplyComplaint,
+  adminUpsertFaq,
+  getComplaint,
+  listMyComplaints,
+  rateFaq,
+  submitComplaint,
+  submitPublicReport,
+} from './modules/support/callables.js';

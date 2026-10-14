@@ -250,3 +250,84 @@ export async function submitReport(
   if (input.alsoBlock) await blockUser(db, reporterUid, targetUid).catch(() => undefined);
   return { reportId: ref.id, priority, preventiveHold: hold !== null };
 }
+
+const PUBLIC_REPORTS_PER_HOUR = 3;
+
+/**
+ * FR-43 — a visitor reports content without an account (App Check + 3 per hour per IP). The
+ * URL is matched to a home when possible; otherwise the team triages it. No preventive hold:
+ * the reporter is not verified (BR-42).
+ */
+export async function submitPublicReport(
+  db: Firestore,
+  input: {
+    name: string;
+    email: string;
+    targetUrl: string;
+    reason?: ReportReason | undefined;
+    description: string;
+  },
+  ip: string,
+  now: Date,
+): Promise<{ reportId: string }> {
+  await consumeRateLimit(db, {
+    scope: 'publicReport',
+    key: ip,
+    limit: PUBLIC_REPORTS_PER_HOUR,
+    windowMs: 3_600_000,
+    now,
+  });
+  const reason = input.reason ?? 'OTHER';
+  const homeId = /\/casa\/([\w-]{1,128})/.exec(input.targetUrl)?.[1] ?? null;
+  const home = homeId ? await db.doc(`homes/${homeId}`).get() : null;
+  const target = home?.exists
+    ? await resolveTarget(db, 'HOME', home.id, null)
+    : { targetUid: '', snapshot: { title: null, text: null, photoUrls: [], messages: [] } };
+  const priority = reportPriority(reason);
+  const ref = db.collection('reports').doc();
+  await ref.set({
+    reporterUid: null,
+    reporterName: input.name,
+    reporterEmail: input.email,
+    public: true,
+    targetUrl: input.targetUrl,
+    targetType: home?.exists ? 'HOME' : 'USER',
+    targetId: home?.exists ? home.id : '',
+    targetUid: target.targetUid,
+    targetSnapshot: target.snapshot,
+    reason,
+    reporterVerified: false,
+    description: input.description,
+    attachments: [],
+    status: 'OPEN',
+    priority,
+    dueAt: Timestamp.fromDate(reportDueAt(priority, now)),
+    createdAt: Timestamp.fromDate(now),
+    resolvedAt: null,
+  });
+  if (priority === 'HIGH') {
+    await db.collection('adminAlerts').add({
+      type: 'REPORT_HIGH',
+      refType: 'report',
+      refId: ref.id,
+      priority,
+      createdAt: FieldValue.serverTimestamp(),
+      handledAt: null,
+    });
+    await emailAdmins(
+      db,
+      {
+        kind: 'REPORT_HIGH',
+        summary: `Denuncia pública de prioridad alta: ${reasonLabel(reason)}.`,
+        path: `/admin/denuncias/${ref.id}`,
+      },
+      now,
+    );
+  }
+  await enqueueMailNow(
+    db,
+    { to: input.email, templateId: 'N-14', data: { reference: ref.id.slice(0, 8).toUpperCase() } },
+    now,
+  );
+  return { reportId: ref.id };
+}

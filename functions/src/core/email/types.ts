@@ -17,6 +17,7 @@ import type { WaitlistConfirmationData } from './templates/n19-waitlist-confirma
 import type { UnreadDigestData } from './templates/n20-unread.js';
 import type { MessageLikeData } from './templates/n21-message-like.js';
 import type { HoldData } from './templates/n23-hold.js';
+import type { ComplaintData } from './templates/n25-complaint.js';
 import type { AdminAlertData } from './templates/n26-admin-alert.js';
 import type { SecurityData } from './templates/n27-security.js';
 
@@ -39,6 +40,7 @@ export interface EmailTemplateData {
   'N-15': StatementData;
   'N-16': ResultData;
   'N-24': StatementData;
+  'N-25': ComplaintData;
   'N-26': AdminAlertData;
   'N-19': WaitlistConfirmationData;
   'N-06': LikesDigestData;
