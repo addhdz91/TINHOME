@@ -3,8 +3,8 @@ import { onIdTokenChanged, signOut as firebaseSignOut, type User } from 'firebas
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTheme } from '@/app/theme-context';
 import { toAppError } from '@/lib/app-error';
-import { getMe, updateSettings } from '@/lib/callables';
 import { firebaseAuth } from '@/lib/firebase-auth';
+import { getMe, updateSettings } from '@/lib/session-api';
 import { AuthContext, meKey, type AuthContextValue, type AuthState } from './auth-context';
 
 /**

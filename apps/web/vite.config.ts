@@ -18,7 +18,8 @@ export default defineConfig({
   },
   server: { port: 5173, strictPort: true, proxy: partnerRedirectProxy },
   preview: { proxy: partnerRedirectProxy },
-  build: { sourcemap: 'hidden' },
+  // The manifest lets scripts/prerender.ts preload the session chunks (not deployed: dotfile).
+  build: { sourcemap: 'hidden', manifest: true },
   test: {
     environment: 'jsdom',
     globals: true,

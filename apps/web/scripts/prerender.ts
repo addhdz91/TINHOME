@@ -16,7 +16,32 @@ const shell = await readFile(resolve(dist, 'index.html'), 'utf8');
 const marker = '<div id="root"></div>';
 if (!shell.includes(marker)) throw new Error('index.html has no empty #root');
 
-await writeFile(resolve(dist, 'app.html'), shell);
+// NFR-02 — every route served by app.html goes through the session layout (auth gate, Auth
+// SDK, callables). Preloading that chunk and its static imports removes one network round of
+// the cold start; the landing (index.html) does not need them.
+interface ManifestChunk {
+  file: string;
+  imports?: string[];
+}
+const manifest = JSON.parse(await readFile(resolve(dist, '.vite/manifest.json'), 'utf8')) as Record<
+  string,
+  ManifestChunk
+>;
+const SESSION_ENTRY = 'src/app/auth/SessionLayout.tsx';
+const preload = new Set<string>();
+const visit = (key: string) => {
+  const chunk = manifest[key];
+  if (!chunk || preload.has(chunk.file)) return;
+  preload.add(chunk.file);
+  for (const child of chunk.imports ?? []) visit(child);
+};
+visit(SESSION_ENTRY);
+if (preload.size === 0) throw new Error(`manifest has no ${SESSION_ENTRY}`);
+const links = [...preload]
+  .filter((file) => !shell.includes(`/${file}"`))
+  .map((file) => `<link rel="modulepreload" crossorigin href="/${file}">`)
+  .join('');
+await writeFile(resolve(dist, 'app.html'), shell.replace('</head>', `${links}</head>`));
 
 // NFR-02 — the landing's LCP is its <h1>: inline the stylesheet so the first paint only needs
 // the HTML (on 4G it otherwise waits behind the preloaded JS). CSP allows inline styles.
