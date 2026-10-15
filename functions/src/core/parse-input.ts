@@ -1,11 +1,11 @@
-import type { z } from 'zod';
+import type { z } from 'zod/mini';
 import { appError } from './app-error.js';
 
 /**
  * Step 3 of the callable template: validate `request.data` with the shared zod schema.
  * Throws `E_VALIDATION` with one entry per invalid field (`path.to.field` → zod issue code).
  */
-export function parseInput<S extends z.ZodType>(schema: S, data: unknown): z.output<S> {
+export function parseInput<S extends z.ZodMiniType>(schema: S, data: unknown): z.output<S> {
   const result = schema.safeParse(data);
   if (result.success) return result.data;
   const fields: Record<string, string> = {};

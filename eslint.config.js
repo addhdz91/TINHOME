@@ -79,6 +79,17 @@ export default tseslint.config(
     files: ['scripts/**/*.ts', 'apps/web/scripts/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
+  // NFR-02 — schemas reach the browser: zod/mini only (classic zod adds ~15 KB gzip). The web
+  // block below repeats the `zod` path next to its own restriction.
+  {
+    files: ['packages/shared/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { paths: [{ name: 'zod', message: "Use 'zod/mini' (10_DECISIONS §5, M10)." }] },
+      ],
+    },
+  },
   // Web app: React, accessibility and no literal strings in JSX.
   {
     files: ['apps/web/**/*.{ts,tsx}'],
@@ -106,6 +117,7 @@ export default tseslint.config(
       'no-restricted-imports': [
         'error',
         {
+          paths: [{ name: 'zod', message: "Use 'zod/mini' (10_DECISIONS §5, M10)." }],
           patterns: [
             {
               // The route table only holds lazy imports, so it does not pull admin code in.

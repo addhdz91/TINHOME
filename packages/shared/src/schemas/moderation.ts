@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import {
   ADMIN_ALERT_TYPES,
   APPEAL_DECISIONS,
@@ -15,16 +15,16 @@ import {
 } from '../constants/enums.js';
 import { PaginationInput } from './common.js';
 
-const Id = z.string().min(1).max(256);
+const Id = z.string().check(z.minLength(1), z.maxLength(256));
 
 /** FR-42 — `submitReport`. MESSAGE targets are `matchId/messageId`. */
 export const SubmitReportInput = z.object({
   targetType: z.enum(REPORT_TARGETS),
   targetId: Id,
   reason: z.enum(REPORT_REASONS),
-  description: z.string().trim().min(20).max(2000),
-  attachmentPaths: z.array(z.string().max(300)).max(5).optional(),
-  alsoBlock: z.boolean().optional(),
+  description: z.string().check(z.trim(), z.minLength(20), z.maxLength(2000)),
+  attachmentPaths: z.optional(z.array(z.string().check(z.maxLength(300))).check(z.maxLength(5))),
+  alsoBlock: z.optional(z.boolean()),
 });
 export type SubmitReportInput = z.infer<typeof SubmitReportInput>;
 export const SubmitReportOutput = z.object({
@@ -36,12 +36,12 @@ export const SubmitReportOutput = z.object({
 /** FR-44 / BR-27 — statement of reasons chosen by the admin (scope, duration and redress are added by the server). */
 export const StatementInput = z.object({
   templateId: z.enum(STATEMENT_TEMPLATES),
-  facts: z.string().trim().min(20).max(2000),
+  facts: z.string().check(z.trim(), z.minLength(20), z.maxLength(2000)),
   ground: z.enum(STATEMENT_GROUNDS),
-  groundDetail: z.string().trim().min(5).max(500),
+  groundDetail: z.string().check(z.trim(), z.minLength(5), z.maxLength(500)),
 });
 export type StatementInput = z.infer<typeof StatementInput>;
-export const StatementOfReasons = StatementInput.extend({
+export const StatementOfReasons = z.extend(StatementInput, {
   scope: z.string(),
   duration: z.string(),
   redress: z.string(),
@@ -63,20 +63,20 @@ export const ReportSummary = z.object({
 });
 export type ReportSummary = z.infer<typeof ReportSummary>;
 
-export const AdminListReportsInput = PaginationInput.extend({
-  status: z.enum(REPORT_STATUS).optional(),
-  priority: z.enum(REPORT_PRIORITIES).optional(),
+export const AdminListReportsInput = z.extend(PaginationInput, {
+  status: z.optional(z.enum(REPORT_STATUS)),
+  priority: z.optional(z.enum(REPORT_PRIORITIES)),
 });
 export const AdminListReportsOutput = z.object({
   items: z.array(ReportSummary),
-  nextCursor: z.string().nullable(),
+  nextCursor: z.nullable(z.string()),
 });
 
 const SnapshotMessage = z.object({
   id: z.string(),
-  senderUid: z.string().nullable(),
+  senderUid: z.nullable(z.string()),
   text: z.string(),
-  createdAt: z.string().nullable(),
+  createdAt: z.nullable(z.string()),
   reported: z.boolean(),
 });
 export const ModerationActionView = z.object({
@@ -84,13 +84,17 @@ export const ModerationActionView = z.object({
   action: z.enum(MODERATION_ACTIONS),
   targetType: z.enum(REPORT_TARGETS),
   targetId: z.string(),
-  statement: StatementOfReasons.nullable(),
-  suspendedUntil: z.string().nullable(),
-  adminUid: z.string().nullable(),
+  statement: z.nullable(StatementOfReasons),
+  suspendedUntil: z.nullable(z.string()),
+  adminUid: z.nullable(z.string()),
   createdAt: z.string(),
-  appeal: z
-    .object({ id: z.string(), status: z.enum(APPEAL_STATUS), decisionText: z.string().nullable() })
-    .nullable(),
+  appeal: z.nullable(
+    z.object({
+      id: z.string(),
+      status: z.enum(APPEAL_STATUS),
+      decisionText: z.nullable(z.string()),
+    }),
+  ),
   appealable: z.boolean(),
 });
 export type ModerationActionView = z.infer<typeof ModerationActionView>;
@@ -104,58 +108,58 @@ export const StrikeView = z.object({
 
 export const AdminGetReportInput = z.object({ id: Id });
 export const AdminGetReportOutput = z.object({
-  report: ReportSummary.extend({
+  report: z.extend(ReportSummary, {
     description: z.string(),
-    reporterName: z.string().nullable(),
-    targetUrl: z.string().nullable(),
+    reporterName: z.nullable(z.string()),
+    targetUrl: z.nullable(z.string()),
     snapshot: z.object({
-      title: z.string().nullable(),
-      text: z.string().nullable(),
+      title: z.nullable(z.string()),
+      text: z.nullable(z.string()),
       photoUrls: z.array(z.string()),
       messages: z.array(SnapshotMessage),
     }),
-    attachmentCount: z.number().int(),
+    attachmentCount: z.int(),
   }),
   targetUserHistory: z.object({
     displayName: z.string(),
     status: z.string(),
-    strikesActive: z.number().int(),
+    strikesActive: z.int(),
     strikes: z.array(StrikeView),
     actions: z.array(ModerationActionView),
-    openReports: z.number().int(),
-    hold: z.object({ reason: z.string(), dueAt: z.string().nullable() }).nullable(),
+    openReports: z.int(),
+    hold: z.nullable(z.object({ reason: z.string(), dueAt: z.nullable(z.string()) })),
   }),
 });
 export type AdminGetReportOutput = z.infer<typeof AdminGetReportOutput>;
 
 /** FR-44 — `adminModerate`. */
 export const AdminModerateInput = z.object({
-  reportId: Id.optional(),
+  reportId: z.optional(Id),
   targetType: z.enum(REPORT_TARGETS),
   targetId: Id,
   targetUid: Id,
   action: z.enum(MODERATION_ACTIONS),
-  recordStrike: z.boolean().optional(),
-  suspendedUntil: z.iso.datetime().optional(),
-  statement: StatementInput.optional(),
+  recordStrike: z.optional(z.boolean()),
+  suspendedUntil: z.optional(z.iso.datetime()),
+  statement: z.optional(StatementInput),
 });
 export type AdminModerateInput = z.infer<typeof AdminModerateInput>;
 export const AdminModerateOutput = z.object({
   actionId: z.string(),
-  strikesActive: z.number().int(),
+  strikesActive: z.int(),
   suggestedNext: z.enum(SANCTION_SUGGESTIONS),
 });
 
 /** FR-45 — appeals. */
 export const SubmitAppealInput = z.object({
   actionId: Id,
-  text: z.string().trim().min(20).max(2000),
+  text: z.string().check(z.trim(), z.minLength(20), z.maxLength(2000)),
 });
 export const SubmitAppealOutput = z.object({ appealId: z.string() });
 export const AdminDecideAppealInput = z.object({
   appealId: Id,
   decision: z.enum(APPEAL_DECISIONS),
-  text: z.string().trim().min(10).max(2000),
+  text: z.string().check(z.trim(), z.minLength(10), z.maxLength(2000)),
 });
 export const AdminDecideAppealOutput = z.object({
   appeal: z.object({ id: z.string(), status: z.enum(APPEAL_STATUS) }),
@@ -177,7 +181,7 @@ export const AdminResolveHoldInput = z.object({
   uid: Id,
   scope: z.enum(['HOME', 'USER']),
   decision: z.enum(HOLD_DECISIONS),
-  statement: StatementInput.optional(),
+  statement: z.optional(StatementInput),
 });
 
 export const AdminAlertView = z.object({
@@ -195,9 +199,13 @@ export const AdminHandleAlertInput = z.object({ alertId: Id });
 export const GetMyStandingOutput = z.object({
   strikes: z.array(StrikeView),
   actions: z.array(ModerationActionView),
-  hold: z
-    .object({ scope: z.enum(['HOME', 'USER']), reason: z.string(), dueAt: z.string().nullable() })
-    .nullable(),
+  hold: z.nullable(
+    z.object({
+      scope: z.enum(['HOME', 'USER']),
+      reason: z.string(),
+      dueAt: z.nullable(z.string()),
+    }),
+  ),
 });
 export type GetMyStandingOutput = z.infer<typeof GetMyStandingOutput>;
 
@@ -209,8 +217,8 @@ export const AdminListHoldsOutput = z.object({
       scope: z.enum(['HOME', 'USER']),
       displayName: z.string(),
       reason: z.string(),
-      since: z.string().nullable(),
-      dueAt: z.string().nullable(),
+      since: z.nullable(z.string()),
+      dueAt: z.nullable(z.string()),
     }),
   ),
 });

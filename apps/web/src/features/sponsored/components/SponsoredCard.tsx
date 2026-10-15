@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { z } from 'zod';
+import type { z } from 'zod/mini';
 import type { SponsoredCard as SponsoredCardSchema } from '@tinhome/shared/schemas';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/utils';

@@ -1,15 +1,15 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
-const positiveInt = z.number().int().positive();
-const nonNegativeInt = z.number().int().nonnegative();
-const cents = z.number().int().nonnegative();
+const positiveInt = z.int().check(z.positive());
+const nonNegativeInt = z.int().check(z.nonnegative());
+const cents = z.int().check(z.nonnegative());
 
 /** Validates `config/params` (01_PRD.md §9). */
 export const ParamsSchema = z.object({
   freeDailyLikes: positiveInt,
   premiumHourlyLikeCap: positiveInt,
   passHideDays: positiveInt,
-  topMinRating: z.number().min(1).max(5),
+  topMinRating: z.number().check(z.gte(1), z.lte(5)),
   topMinReviews: positiveInt,
   exchangeMaxNights: positiveInt,
   withdrawalRefundMode: z.enum(['FULL', 'PRORATED']),
@@ -20,7 +20,7 @@ export const ParamsSchema = z.object({
   referralMaxRewardsPerYear: nonNegativeInt,
   cityOpenThreshold: positiveInt,
   verificationDocsRetentionDays: positiveInt,
-  rankingWeights: z.array(z.number().nonnegative()).length(7),
+  rankingWeights: z.array(z.number().check(z.nonnegative())).check(z.length(7)),
   appealWindowMonths: positiveInt,
   sponsoredEveryNCards: positiveInt,
   accountPurgeDays: positiveInt,
@@ -46,15 +46,15 @@ export const ParamsSchema = z.object({
   preventiveHoldReportsThreshold: positiveInt,
   preventiveHoldReviewHours: positiveInt,
   preventiveHoldReviewHoursHighPriority: positiveInt,
-  photoDuplicateMaxHamming: z.number().int().min(0).max(7),
-  photoChangeReviewRatio: z.number().min(0).max(1),
+  photoDuplicateMaxHamming: z.int().check(z.gte(0), z.lte(7)),
+  photoChangeReviewRatio: z.number().check(z.gte(0), z.lte(1)),
   complaintResponseDays: positiveInt,
   chatRetentionMonthsAfterClose: positiveInt,
   premiumMessageMaxLength: positiveInt,
 });
 
 /** Validates `config/public`. */
-export const PublicConfigSchema = ParamsSchema.pick({
+export const PublicConfigSchema = z.pick(ParamsSchema, {
   freeDailyLikes: true,
   premiumMonthlyPriceCents: true,
   premiumYearlyPriceCents: true,

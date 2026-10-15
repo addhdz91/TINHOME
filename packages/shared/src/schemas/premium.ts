@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { PREMIUM_PLANS, REFERRAL_STATUS } from '../constants/enums.js';
 
 /** FR-35 — Checkout; the immediate start (and the withdrawal info) must be accepted. */
@@ -11,7 +11,7 @@ export const UrlOutput = z.object({ url: z.string() });
 /** FR-37 — withdrawal (needs a sign-in in the last 5 minutes). */
 export const WithdrawSubscriptionInput = z.object({ confirm: z.literal(true) });
 export const WithdrawSubscriptionOutput = z.object({
-  refundedCents: z.number().int(),
+  refundedCents: z.int(),
   endedAt: z.string(),
 });
 
@@ -23,12 +23,12 @@ export const GetReferralSummaryOutput = z.object({
     z.object({
       displayName: z.string(),
       status: z.enum(REFERRAL_STATUS),
-      createdAt: z.string().nullable(),
+      createdAt: z.nullable(z.string()),
     }),
   ),
-  rewardsThisYear: z.number().int(),
-  maxRewards: z.number().int(),
-  rewardDays: z.number().int(),
+  rewardsThisYear: z.int(),
+  maxRewards: z.int(),
+  rewardDays: z.int(),
 });
 export type GetReferralSummaryOutput = z.infer<typeof GetReferralSummaryOutput>;
 

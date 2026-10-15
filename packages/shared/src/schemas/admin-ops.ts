@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import {
   ADMIN_ROLES,
   CITY_STATUS,
@@ -11,49 +11,49 @@ import { IsoDateSchema, PaginationInput } from './common.js';
 import { ParamsSchema } from './config.js';
 import { ModerationActionView, StatementInput, StrikeView } from './moderation.js';
 
-const Uid = z.string().min(1).max(128);
+const Uid = z.string().check(z.minLength(1), z.maxLength(128));
 
 /** FR-50 — users. */
 export const UserAdminSummary = z.object({
   uid: z.string(),
   displayName: z.string(),
-  email: z.string().nullable(),
-  phoneE164: z.string().nullable(),
-  cityId: z.string().nullable(),
+  email: z.nullable(z.string()),
+  phoneE164: z.nullable(z.string()),
+  cityId: z.nullable(z.string()),
   status: z.enum(USER_STATUS),
   identity: z.enum(IDENTITY_STATUS),
-  premiumUntil: z.string().nullable(),
-  premiumSource: z.enum(PREMIUM_SOURCE).nullable(),
-  role: z.enum(ADMIN_ROLES).nullable(),
-  createdAt: z.string().nullable(),
+  premiumUntil: z.nullable(z.string()),
+  premiumSource: z.nullable(z.enum(PREMIUM_SOURCE)),
+  role: z.nullable(z.enum(ADMIN_ROLES)),
+  createdAt: z.nullable(z.string()),
 });
 export type UserAdminSummary = z.infer<typeof UserAdminSummary>;
 
-export const AdminSearchUsersInput = PaginationInput.extend({
-  q: z.string().trim().min(2).max(120),
+export const AdminSearchUsersInput = z.extend(PaginationInput, {
+  q: z.string().check(z.trim(), z.minLength(2), z.maxLength(120)),
 });
 export const AdminSearchUsersOutput = z.object({
   items: z.array(UserAdminSummary),
-  nextCursor: z.string().nullable(),
+  nextCursor: z.nullable(z.string()),
 });
 
 export const AdminGetUserInput = z.object({ uid: Uid });
 export const AdminGetUserOutput = z.object({
-  user: UserAdminSummary.extend({
-    strikesActive: z.number().int(),
-    suspendedUntil: z.string().nullable(),
-    onboardingStep: z.number().int(),
+  user: z.extend(UserAdminSummary, {
+    strikesActive: z.int(),
+    suspendedUntil: z.nullable(z.string()),
+    onboardingStep: z.int(),
   }),
-  home: z
-    .object({
+  home: z.nullable(
+    z.object({
       title: z.string(),
       status: z.string(),
       visible: z.boolean(),
-      hold: z.string().nullable(),
+      hold: z.nullable(z.string()),
       hiddenByModeration: z.boolean(),
-    })
-    .nullable(),
-  matchesCount: z.number().int(),
+    }),
+  ),
+  matchesCount: z.int(),
   reports: z.array(
     z.object({ id: z.string(), reason: z.string(), status: z.string(), createdAt: z.string() }),
   ),
@@ -66,7 +66,7 @@ export const AdminGetUserOutput = z.object({
       startsAt: z.string(),
       endsAt: z.string(),
       revoked: z.boolean(),
-      reason: z.string().nullable(),
+      reason: z.nullable(z.string()),
     }),
   ),
   audit: z.array(AuditView()),
@@ -75,61 +75,64 @@ export type AdminGetUserOutput = z.infer<typeof AdminGetUserOutput>;
 
 export const AdminGrantPremiumInput = z.object({
   uid: Uid,
-  days: z.number().int().min(1).max(365),
-  reason: z.string().trim().min(5).max(300),
+  days: z.int().check(z.gte(1), z.lte(365)),
+  reason: z.string().check(z.trim(), z.minLength(5), z.maxLength(300)),
 });
-export const AdminGrantPremiumOutput = z.object({ premiumUntil: z.string().nullable() });
+export const AdminGrantPremiumOutput = z.object({ premiumUntil: z.nullable(z.string()) });
 
 /** FR-50 — suspend, ban or reactivate (restrictive changes need a statement, BR-27). */
 export const AdminSetUserStatusInput = z.object({
   uid: Uid,
   status: z.enum(['ACTIVE', 'SUSPENDED', 'BANNED']),
-  suspendedUntil: z.iso.datetime().optional(),
-  statement: StatementInput.optional(),
+  suspendedUntil: z.optional(z.iso.datetime()),
+  statement: z.optional(StatementInput),
 });
-export const AdminSetRoleInput = z.object({ uid: Uid, role: z.enum(ADMIN_ROLES).nullable() });
+export const AdminSetRoleInput = z.object({ uid: Uid, role: z.nullable(z.enum(ADMIN_ROLES)) });
 
 /** FR-51 — cities and windows (counters are server-maintained and never edited here). */
 const Slug = z
   .string()
-  .min(2)
-  .max(60)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  .check(z.minLength(2), z.maxLength(60), z.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/));
 export const AdminUpsertCityInput = z.object({
   id: Slug,
-  name: z.string().trim().min(2).max(80),
-  province: z.string().trim().min(2).max(80),
-  region: z.string().trim().min(2).max(80),
+  name: z.string().check(z.trim(), z.minLength(2), z.maxLength(80)),
+  province: z.string().check(z.trim(), z.minLength(2), z.maxLength(80)),
+  region: z.string().check(z.trim(), z.minLength(2), z.maxLength(80)),
   timezone: z.enum(['Europe/Madrid', 'Atlantic/Canary']),
-  center: z.object({ lat: z.number().min(27).max(44), lng: z.number().min(-19).max(5) }),
-  radiusKm: z.number().min(1).max(100),
+  center: z.object({
+    lat: z.number().check(z.gte(27), z.lte(44)),
+    lng: z.number().check(z.gte(-19), z.lte(5)),
+  }),
+  radiusKm: z.number().check(z.gte(1), z.lte(100)),
   status: z.enum(CITY_STATUS),
-  openThreshold: z.number().int().positive(),
-  order: z.number().int().min(0).max(1000),
+  openThreshold: z.int().check(z.positive()),
+  order: z.int().check(z.gte(0), z.lte(1000)),
 });
 export type AdminUpsertCityInput = z.infer<typeof AdminUpsertCityInput>;
 export const AdminUpsertWindowInput = z
   .object({
     id: Slug,
-    name: z.string().trim().min(2).max(80),
+    name: z.string().check(z.trim(), z.minLength(2), z.maxLength(80)),
     startDate: IsoDateSchema,
     endDate: IsoDateSchema,
     active: z.boolean(),
-    cityIds: z.array(Slug).nullable(),
-    order: z.number().int().min(0).max(1000),
+    cityIds: z.nullable(z.array(Slug)),
+    order: z.int().check(z.gte(0), z.lte(1000)),
   })
-  .refine((window) => window.startDate < window.endDate, {
-    path: ['endDate'],
-    message: 'before_start',
-  });
+  .check(
+    z.refine((window) => window.startDate < window.endDate, {
+      path: ['endDate'],
+      message: 'before_start',
+    }),
+  );
 export type AdminUpsertWindowInput = z.infer<typeof AdminUpsertWindowInput>;
 export const AdminCatalogOutput = z.object({
   cities: z.array(
-    AdminUpsertCityInput.extend({
+    z.extend(AdminUpsertCityInput, {
       counters: z.object({
-        visibleCandidates: z.number().int(),
-        waitlist: z.number().int(),
-        foundersAwarded: z.number().int(),
+        visibleCandidates: z.int(),
+        waitlist: z.int(),
+        foundersAwarded: z.int(),
       }),
     }),
   ),
@@ -140,27 +143,27 @@ export const AdminCatalogOutput = z.object({
       startDate: z.string(),
       endDate: z.string(),
       active: z.boolean(),
-      cityIds: z.array(z.string()).nullable(),
-      order: z.number().int(),
+      cityIds: z.nullable(z.array(z.string())),
+      order: z.int(),
     }),
   ),
 });
 
 /** FR-52 — parameters (SADM). */
 export const AdminParamsOutput = z.object({ params: ParamsSchema });
-export const AdminUpdateParamsInput = ParamsSchema.partial();
+export const AdminUpdateParamsInput = z.partial(ParamsSchema);
 
 /** FR-56 — legal texts with versions (SADM). */
 export const AdminGetLegalDocInput = z.object({ slug: z.enum(LEGAL_DOC_SLUGS) });
 export const AdminGetLegalDocOutput = z.object({
   slug: z.enum(LEGAL_DOC_SLUGS),
   title: z.string(),
-  currentVersion: z.string().nullable(),
+  currentVersion: z.nullable(z.string()),
   markdown: z.string(),
   versions: z.array(
     z.object({
       version: z.string(),
-      publishedAt: z.string().nullable(),
+      publishedAt: z.nullable(z.string()),
       requiresReacceptance: z.boolean(),
       changeSummary: z.string(),
     }),
@@ -168,9 +171,9 @@ export const AdminGetLegalDocOutput = z.object({
 });
 export const AdminPublishLegalDocInput = z.object({
   slug: z.enum(LEGAL_DOC_SLUGS),
-  markdown: z.string().trim().min(50).max(200_000),
+  markdown: z.string().check(z.trim(), z.minLength(50), z.maxLength(200_000)),
   requiresReacceptance: z.boolean(),
-  changeSummary: z.string().trim().min(5).max(500),
+  changeSummary: z.string().check(z.trim(), z.minLength(5), z.maxLength(500)),
 });
 export const AdminPublishLegalDocOutput = z.object({ version: z.string() });
 
@@ -178,7 +181,7 @@ export const AdminPublishLegalDocOutput = z.object({ version: z.string() });
 export const AdminGetMetricsInput = z.object({
   from: IsoDateSchema,
   to: IsoDateSchema,
-  cityId: Slug.optional(),
+  cityId: z.optional(Slug),
 });
 export const FUNNEL_STEPS = [
   'registered',
@@ -191,10 +194,10 @@ export const FUNNEL_STEPS = [
   'reviewed',
 ] as const;
 export const AdminGetMetricsOutput = z.object({
-  funnel: z.array(z.object({ step: z.enum(FUNNEL_STEPS), count: z.number().int() })),
+  funnel: z.array(z.object({ step: z.enum(FUNNEL_STEPS), count: z.int() })),
   premium: z.object({
-    active: z.number().int(),
-    bySource: z.record(z.string(), z.number().int()),
+    active: z.int(),
+    bySource: z.record(z.string(), z.int()),
     conversionPercent: z.number(),
   }),
   demand: z.array(
@@ -202,12 +205,10 @@ export const AdminGetMetricsOutput = z.object({
       fromCityId: z.string(),
       toCityId: z.string(),
       windowId: z.string(),
-      count: z.number().int(),
+      count: z.int(),
     }),
   ),
-  sponsored: z.array(
-    z.object({ partnerId: z.string(), name: z.string(), clicks: z.number().int() }),
-  ),
+  sponsored: z.array(z.object({ partnerId: z.string(), name: z.string(), clicks: z.int() })),
   truncated: z.boolean(),
 });
 export type AdminGetMetricsOutput = z.infer<typeof AdminGetMetricsOutput>;
@@ -227,17 +228,17 @@ function AuditView() {
     action: z.string(),
     targetType: z.string(),
     targetId: z.string(),
-    reason: z.string().nullable(),
-    createdAt: z.string().nullable(),
+    reason: z.nullable(z.string()),
+    createdAt: z.nullable(z.string()),
   });
 }
 export const AuditEntryView = AuditView();
-export const AdminListAuditInput = PaginationInput.extend({
-  targetType: z.string().min(1).max(40).optional(),
-  targetId: z.string().min(1).max(256).optional(),
-  actorUid: z.string().min(1).max(128).optional(),
+export const AdminListAuditInput = z.extend(PaginationInput, {
+  targetType: z.optional(z.string().check(z.minLength(1), z.maxLength(40))),
+  targetId: z.optional(z.string().check(z.minLength(1), z.maxLength(256))),
+  actorUid: z.optional(z.string().check(z.minLength(1), z.maxLength(128))),
 });
 export const AdminListAuditOutput = z.object({
   items: z.array(AuditEntryView),
-  nextCursor: z.string().nullable(),
+  nextCursor: z.nullable(z.string()),
 });

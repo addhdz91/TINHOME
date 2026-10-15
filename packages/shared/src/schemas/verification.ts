@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import {
   CITY_STATUS,
   LOCATION_CHECK_STATUS,
@@ -16,19 +16,19 @@ import { PaginationInput } from './common.js';
 /** Storage path `private/verifications/{uid}/{verificationId}/{file}` (checked by the server). */
 const StoragePath = z
   .string()
-  .regex(/^private\/verifications\/[A-Za-z0-9_-]{1,128}\/[A-Za-z0-9_-]{8,64}\/[A-Za-z]+$/);
+  .check(z.regex(/^private\/verifications\/[A-Za-z0-9_-]{1,128}\/[A-Za-z0-9_-]{8,64}\/[A-Za-z]+$/));
 
 /** FR-08 — `submitIdentityVerification`. */
 export const SubmitIdentityVerificationInput = z.object({
   tenure: z.enum(TENURES),
   propertyDocType: z.enum(PROPERTY_DOC_TYPES),
-  docNumber: z.string().trim().min(8).max(20),
+  docNumber: z.string().check(z.trim(), z.minLength(8), z.maxLength(20)),
   files: z.object({
-    idFront: StoragePath.optional(),
-    idBack: StoragePath.optional(),
-    selfie: StoragePath.optional(),
-    propertyDoc: StoragePath.optional(),
-    landlordAuthorization: StoragePath.optional(),
+    idFront: z.optional(StoragePath),
+    idBack: z.optional(StoragePath),
+    selfie: z.optional(StoragePath),
+    propertyDoc: z.optional(StoragePath),
+    landlordAuthorization: z.optional(StoragePath),
   }),
 });
 export type SubmitIdentityVerificationInput = z.infer<typeof SubmitIdentityVerificationInput>;
@@ -44,20 +44,20 @@ export const MyVerification = z.object({
   status: z.enum(VERIFICATION_STATUS),
   tenure: z.enum(TENURES),
   propertyDocType: z.enum(PROPERTY_DOC_TYPES),
-  decisionReason: z.string().nullable(),
-  infoRequest: z.string().nullable(),
+  decisionReason: z.nullable(z.string()),
+  infoRequest: z.nullable(z.string()),
   submittedAt: z.string(),
-  decidedAt: z.string().nullable(),
+  decidedAt: z.nullable(z.string()),
 });
 export type MyVerification = z.infer<typeof MyVerification>;
 
-export const GetMyVerificationOutput = z.object({ verification: MyVerification.nullable() });
+export const GetMyVerificationOutput = z.object({ verification: z.nullable(MyVerification) });
 
 export const VerificationSummary = z.object({
   id: z.string(),
   uid: z.string(),
   displayName: z.string(),
-  cityId: z.string().nullable(),
+  cityId: z.nullable(z.string()),
   tenure: z.enum(TENURES),
   status: z.enum(VERIFICATION_STATUS),
   submittedAt: z.string(),
@@ -66,24 +66,26 @@ export const VerificationSummary = z.object({
 });
 export type VerificationSummary = z.infer<typeof VerificationSummary>;
 
-export const AdminListVerificationsInput = PaginationInput.extend({
-  status: z.enum(VERIFICATION_STATUS).default('PENDING'),
+export const AdminListVerificationsInput = z.extend(PaginationInput, {
+  status: z._default(z.enum(VERIFICATION_STATUS), 'PENDING'),
 });
 export const AdminListVerificationsOutput = z.object({
   items: z.array(VerificationSummary),
-  nextCursor: z.string().nullable(),
+  nextCursor: z.nullable(z.string()),
 });
 
-export const AdminGetVerificationInput = z.object({ id: z.string().min(1).max(128) });
+export const AdminGetVerificationInput = z.object({
+  id: z.string().check(z.minLength(1), z.maxLength(128)),
+});
 
-export const VerificationAdminView = VerificationSummary.extend({
+export const VerificationAdminView = z.extend(VerificationSummary, {
   propertyDocType: z.enum(PROPERTY_DOC_TYPES),
   files: z.array(z.enum(VERIFICATION_FILES)),
   filesPurged: z.boolean(),
-  reviewerUid: z.string().nullable(),
-  decisionReason: z.string().nullable(),
-  infoRequest: z.string().nullable(),
-  decidedAt: z.string().nullable(),
+  reviewerUid: z.nullable(z.string()),
+  decisionReason: z.nullable(z.string()),
+  infoRequest: z.nullable(z.string()),
+  decidedAt: z.nullable(z.string()),
 });
 export type VerificationAdminView = z.infer<typeof VerificationAdminView>;
 
@@ -95,22 +97,22 @@ export const AdminGetVerificationOutput = z.object({
     lastName: z.string(),
     birthDate: z.string(),
     email: z.string(),
-    cityId: z.string().nullable(),
+    cityId: z.nullable(z.string()),
   }),
-  home: z
-    .object({
-      title: z.string().nullable(),
-      cityId: z.string().nullable(),
-      zone: z.string().nullable(),
-      tenure: z.enum(TENURES).nullable(),
-    })
-    .nullable(),
-  duplicateUser: z.object({ uid: z.string(), displayName: z.string() }).nullable(),
+  home: z.nullable(
+    z.object({
+      title: z.nullable(z.string()),
+      cityId: z.nullable(z.string()),
+      zone: z.nullable(z.string()),
+      tenure: z.nullable(z.enum(TENURES)),
+    }),
+  ),
+  duplicateUser: z.nullable(z.object({ uid: z.string(), displayName: z.string() })),
 });
 export type AdminGetVerificationOutput = z.infer<typeof AdminGetVerificationOutput>;
 
 export const AdminGetVerificationFileUrlInput = z.object({
-  id: z.string().min(1).max(128),
+  id: z.string().check(z.minLength(1), z.maxLength(128)),
   file: z.enum(VERIFICATION_FILES),
 });
 export const AdminGetVerificationFileUrlOutput = z.object({
@@ -120,11 +122,11 @@ export const AdminGetVerificationFileUrlOutput = z.object({
 });
 
 export const AdminDecideVerificationInput = z.object({
-  id: z.string().min(1).max(128),
+  id: z.string().check(z.minLength(1), z.maxLength(128)),
   decision: z.enum(VERIFICATION_DECISIONS),
-  reason: z.string().trim().max(1000).optional(),
-  infoRequest: z.string().trim().max(1000).optional(),
-  fraudSuspicion: z.boolean().optional(),
+  reason: z.optional(z.string().check(z.trim(), z.maxLength(1000))),
+  infoRequest: z.optional(z.string().check(z.trim(), z.maxLength(1000))),
+  fraudSuspicion: z.optional(z.boolean()),
 });
 export type AdminDecideVerificationInput = z.infer<typeof AdminDecideVerificationInput>;
 
@@ -132,18 +134,20 @@ export const AdminDecideVerificationOutput = z.object({ verification: Verificati
 
 /** FR-63 — `verifyHomeLocation`. Coordinates are rounded and purged after P-13 days. */
 export const VerifyHomeLocationInput = z.object({
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  accuracyM: z.number().min(0).max(100_000),
+  lat: z.number().check(z.gte(-90), z.lte(90)),
+  lng: z.number().check(z.gte(-180), z.lte(180)),
+  accuracyM: z.number().check(z.gte(0), z.lte(100_000)),
   isMobile: z.boolean(),
 });
 export const VerifyHomeLocationOutput = z.object({
   result: z.enum(LOCATION_RESULTS),
-  distanceKm: z.number().int(),
-  attemptsLeft: z.number().int(),
+  distanceKm: z.int(),
+  attemptsLeft: z.int(),
 });
 
-export const RequestLocationReviewInput = z.object({ note: z.string().trim().min(10).max(500) });
+export const RequestLocationReviewInput = z.object({
+  note: z.string().check(z.trim(), z.minLength(10), z.maxLength(500)),
+});
 
 export const LocationReviewSummary = z.object({
   homeId: z.string(),
@@ -151,22 +155,22 @@ export const LocationReviewSummary = z.object({
   cityId: z.string(),
   note: z.string(),
   requestedAt: z.string(),
-  lastCheck: z
-    .object({
+  lastCheck: z.nullable(
+    z.object({
       result: z.enum(LOCATION_RESULTS),
-      distanceKm: z.number().int(),
+      distanceKm: z.int(),
       accuracyM: z.number(),
-    })
-    .nullable(),
+    }),
+  ),
 });
 export type LocationReviewSummary = z.infer<typeof LocationReviewSummary>;
 
 export const AdminListLocationReviewsOutput = z.object({ items: z.array(LocationReviewSummary) });
 
 export const AdminDecideLocationReviewInput = z.object({
-  homeId: z.string().min(1).max(128),
+  homeId: z.string().check(z.minLength(1), z.maxLength(128)),
   decision: z.enum(REVIEW_DECISIONS),
-  reason: z.string().trim().min(3).max(1000),
+  reason: z.string().check(z.trim(), z.minLength(3), z.maxLength(1000)),
 });
 export const AdminDecideLocationReviewOutput = z.object({
   homeId: z.string(),
@@ -175,22 +179,22 @@ export const AdminDecideLocationReviewOutput = z.object({
 
 /** FR-49 — home dashboard KPIs (counters of later milestones are 0 until they exist). */
 export const AdminDashboardOutput = z.object({
-  pendingVerifications: z.object({ count: z.number().int(), oldestAt: z.string().nullable() }),
-  pendingLocationReviews: z.number().int(),
-  openReports: z.number().int(),
-  newUsers7d: z.number().int(),
+  pendingVerifications: z.object({ count: z.int(), oldestAt: z.nullable(z.string()) }),
+  pendingLocationReviews: z.int(),
+  openReports: z.int(),
+  newUsers7d: z.int(),
   cities: z.array(
     z.object({
       id: z.string(),
       name: z.string(),
       status: z.enum(CITY_STATUS),
-      visibleCandidates: z.number().int(),
-      threshold: z.number().int(),
-      foundersAwarded: z.number().int(),
+      visibleCandidates: z.int(),
+      threshold: z.int(),
+      foundersAwarded: z.int(),
     }),
   ),
-  matches7d: z.number().int(),
-  exchangesConfirmed30d: z.number().int(),
-  premiumBySource: z.record(z.enum(PREMIUM_SOURCE), z.number().int()),
+  matches7d: z.int(),
+  exchangesConfirmed30d: z.int(),
+  premiumBySource: z.record(z.enum(PREMIUM_SOURCE), z.int()),
 });
 export type AdminDashboardOutput = z.infer<typeof AdminDashboardOutput>;

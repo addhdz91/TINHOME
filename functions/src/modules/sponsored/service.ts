@@ -1,5 +1,5 @@
 import { Timestamp, type DocumentSnapshot, type Firestore } from 'firebase-admin/firestore';
-import type { z } from 'zod';
+import type { z } from 'zod/mini';
 import {
   SPONSORED_PLACEMENTS,
   type PartnerCategory,

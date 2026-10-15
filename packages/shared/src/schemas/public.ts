@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { CITY_STATUS, FAQ_CATEGORIES } from '../constants/enums.js';
 import { IsoDateSchema } from './common.js';
 
@@ -14,11 +14,11 @@ export const CityDocSchema = z.object({
   center: z.object({ lat: z.number(), lng: z.number() }),
   radiusKm: z.number(),
   status: z.enum(CITY_STATUS),
-  openThreshold: z.number().int().positive(),
+  openThreshold: z.int().check(z.positive()),
   counters: z.object({
-    visibleCandidates: z.number().int().nonnegative(),
-    waitlist: z.number().int().nonnegative(),
-    foundersAwarded: z.number().int().nonnegative(),
+    visibleCandidates: z.int().check(z.nonnegative()),
+    waitlist: z.int().check(z.nonnegative()),
+    foundersAwarded: z.int().check(z.nonnegative()),
   }),
   order: z.number(),
 });
@@ -28,7 +28,7 @@ export const WindowDocSchema = z.object({
   startDate: IsoDateSchema,
   endDate: IsoDateSchema,
   active: z.boolean(),
-  cityIds: z.array(z.string()).nullable(),
+  cityIds: z.nullable(z.array(z.string())),
   order: z.number(),
 });
 
@@ -36,7 +36,7 @@ export const DemandStatDocSchema = z.object({
   fromCityId: z.string(),
   toCityId: z.string(),
   windowId: z.string(),
-  count: z.number().int().nonnegative(),
+  count: z.int().check(z.nonnegative()),
 });
 
 export const LegalDocMetaSchema = z.object({
@@ -47,7 +47,7 @@ export const LegalDocMetaSchema = z.object({
 export const LegalDocVersionSchema = z.object({
   markdown: z.string(),
   requiresReacceptance: z.boolean(),
-  changeSummary: z.string().optional(),
+  changeSummary: z.optional(z.string()),
 });
 
 /** `faqs/{slug}` (04 §2.24b), FR-66. Only published articles are readable. */
@@ -57,6 +57,6 @@ export const FaqDocSchema = z.object({
   answerMarkdown: z.string(),
   order: z.number(),
   published: z.literal(true),
-  tags: z.array(z.string()).default([]),
+  tags: z._default(z.array(z.string()), []),
 });
 export type FaqDoc = z.infer<typeof FaqDocSchema>;

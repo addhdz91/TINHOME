@@ -1,31 +1,33 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { PARAM_DEFAULTS } from '../constants/params.js';
 import { PaginationInput } from './common.js';
 import { HomeCard } from './discover.js';
 
-const MatchIdInput = z.object({ matchId: z.string().min(1).max(200) });
+const MatchIdInput = z.object({ matchId: z.string().check(z.minLength(1), z.maxLength(200)) });
 
 /** FR-23 / FR-24 — `likeHome`. A message (FR-61) is Premium only. */
 export const LikeHomeInput = z.object({
-  homeId: z.string().min(1).max(128),
-  message: z.string().trim().min(1).max(PARAM_DEFAULTS.premiumMessageMaxLength).optional(),
-  clientRequestId: z.uuid().optional(),
+  homeId: z.string().check(z.minLength(1), z.maxLength(128)),
+  message: z.optional(
+    z.string().check(z.trim(), z.minLength(1), z.maxLength(PARAM_DEFAULTS.premiumMessageMaxLength)),
+  ),
+  clientRequestId: z.optional(z.uuid()),
 });
 export const LikeHomeOutput = z.object({
   matched: z.boolean(),
-  matchId: z.string().nullable(),
-  likesRemaining: z.number().int().nullable(),
+  matchId: z.nullable(z.string()),
+  likesRemaining: z.nullable(z.int()),
 });
 export type LikeHomeOutput = z.infer<typeof LikeHomeOutput>;
 
 /** FR-26 — free users see the count (and message likes); Premium the whole list. */
 export const ListLikesReceivedInput = PaginationInput;
 export const ListLikesReceivedOutput = z.object({
-  count: z.number().int(),
-  items: z.array(HomeCard).nullable(),
+  count: z.int(),
+  items: z.nullable(z.array(HomeCard)),
   /** FR-61 — likes with a message are always shown, also to free users. */
   withMessage: z.array(HomeCard),
-  nextCursor: z.string().nullable(),
+  nextCursor: z.nullable(z.string()),
 });
 export type ListLikesReceivedOutput = z.infer<typeof ListLikesReceivedOutput>;
 
@@ -43,8 +45,8 @@ export const SharePhoneInChatInput = MatchIdInput;
 
 /** FR-60 / BR-36 — `sendMessage`. The client id makes retries idempotent. */
 export const SendMessageInput = z.object({
-  matchId: z.string().min(1).max(200),
-  text: z.string().trim().min(1).max(5000),
+  matchId: z.string().check(z.minLength(1), z.maxLength(200)),
+  text: z.string().check(z.trim(), z.minLength(1), z.maxLength(5000)),
   clientRequestId: z.uuid(),
 });
 export const SendMessageOutput = z.object({
@@ -52,12 +54,14 @@ export const SendMessageOutput = z.object({
 });
 export const MarkConversationReadInput = MatchIdInput;
 export const DeleteMessageForMeInput = z.object({
-  matchId: z.string().min(1).max(200),
-  messageId: z.string().min(1).max(128),
+  matchId: z.string().check(z.minLength(1), z.maxLength(200)),
+  messageId: z.string().check(z.minLength(1), z.maxLength(128)),
 });
 
 /** FR-41 — blocks. */
-export const BlockUserInput = z.object({ targetUid: z.string().min(1).max(128) });
+export const BlockUserInput = z.object({
+  targetUid: z.string().check(z.minLength(1), z.maxLength(128)),
+});
 export const UnblockUserInput = BlockUserInput;
 export const ListBlockedOutput = z.object({
   items: z.array(z.object({ uid: z.string(), displayName: z.string(), blockedAt: z.string() })),

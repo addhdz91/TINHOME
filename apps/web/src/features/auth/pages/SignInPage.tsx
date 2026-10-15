@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useSearchParams } from 'react-router';
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { useAuth } from '@/app/auth/auth-context';
 import { safeNext } from '@/app/auth/safe-next';
 import { RouteFallback } from '@/app/RouteFallback';
@@ -19,8 +19,8 @@ import { signInWithEmail, signInWithGoogle } from '../lib/auth-actions';
 import { mfaResolver } from '../lib/mfa';
 
 const SignInSchema = z.object({
-  email: z.string().trim().pipe(z.email('email')),
-  password: z.string().min(1, 'password'),
+  email: z.pipe(z.string().check(z.trim()), z.email('email')),
+  password: z.string().check(z.minLength(1, 'password')),
 });
 type SignInValues = z.infer<typeof SignInSchema>;
 

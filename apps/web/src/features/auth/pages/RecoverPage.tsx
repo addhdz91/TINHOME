@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { Seo } from '@/components/Seo';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
 import { authErrorKey } from '@/lib/auth-errors';
 import { requestPasswordReset } from '../lib/auth-actions';
 
-const RecoverSchema = z.object({ email: z.string().trim().pipe(z.email('email')) });
+const RecoverSchema = z.object({ email: z.pipe(z.string().check(z.trim()), z.email('email')) });
 type RecoverValues = z.infer<typeof RecoverSchema>;
 
 /** FR-03 — password recovery with the same answer whether the account exists or not. */

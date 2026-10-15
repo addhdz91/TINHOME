@@ -1,6 +1,6 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { appError, toAppError } from './app-error.js';
 import { parseInput } from './parse-input.js';
 
@@ -29,7 +29,10 @@ describe('appError', () => {
 });
 
 describe('parseInput', () => {
-  const Schema = z.object({ homeId: z.string().min(1), nights: z.number().int().max(60) });
+  const Schema = z.object({
+    homeId: z.string().check(z.minLength(1)),
+    nights: z.int().check(z.lte(60)),
+  });
 
   it('returns parsed data', () => {
     expect(parseInput(Schema, { homeId: 'h1', nights: 3 })).toEqual({ homeId: 'h1', nights: 3 });

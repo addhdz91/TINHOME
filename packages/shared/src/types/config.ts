@@ -1,4 +1,4 @@
-import type { z } from 'zod';
+import type { z } from 'zod/mini';
 import type { ParamsSchema, PublicConfigSchema } from '../schemas/config.js';
 
 /** `config/params` — every P-xx parameter (01_PRD.md §9). */

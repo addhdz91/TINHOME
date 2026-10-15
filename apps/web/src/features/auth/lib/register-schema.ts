@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { MAX_AGE_YEARS, MIN_AGE_YEARS } from '@tinhome/shared/constants';
 import { ageOn, isIsoDate, normalizeReferralCode, toIsoDate } from '@tinhome/shared/domain';
 import { passwordProblem } from './password';
@@ -10,35 +10,28 @@ import { passwordProblem } from './password';
 export function registerSchema(now: Date, withCredentials: boolean) {
   const today = toIsoDate(now);
   return z.object({
-    firstName: z.string().trim().min(1, 'firstName').max(60, 'firstName'),
-    lastName: z.string().trim().min(1, 'lastName').max(60, 'lastName'),
+    firstName: z.string().check(z.trim(), z.minLength(1, 'firstName'), z.maxLength(60, 'firstName')),
+    lastName: z.string().check(z.trim(), z.minLength(1, 'lastName'), z.maxLength(60, 'lastName')),
     birthDate: z
-      .string()
-      .refine(isIsoDate, 'birthDate')
-      .refine(
-        (value) => value <= today && ageOn(value, today) <= MAX_AGE_YEARS,
-        'birthDate',
-      )
-      .refine((value) => ageOn(value, today) >= MIN_AGE_YEARS, 'underage'),
-    email: withCredentials ? z.string().trim().pipe(z.email('email')) : z.string(),
+      .string().check(z.refine(isIsoDate, 'birthDate'), z.refine(
+          (value) => !isIsoDate(value) || (value <= today && ageOn(value, today) <= MAX_AGE_YEARS),
+          'birthDate',
+        ), z.refine((value) => !isIsoDate(value) || ageOn(value, today) >= MIN_AGE_YEARS, 'underage')),
+    email: withCredentials ? z.pipe(z.string().check(z.trim()), z.email('email')) : z.string(),
     password: withCredentials
-      ? z.string().superRefine((value, ctx) => {
+      ? z.string().check(z.superRefine((value, ctx) => {
           const problem = passwordProblem(value);
           if (problem)
             ctx.addIssue({
               code: 'custom',
               message: problem === 'common' ? 'passwordCommon' : 'password',
             });
-        })
+        }))
       : z.string(),
     referralCode: z
-      .string()
-      .refine(
-        (value) => value.trim() === '' || normalizeReferralCode(value) !== null,
-        'referralCode',
-      ),
-    acceptTerms: z.boolean().refine(Boolean, 'terms'),
-    acceptPrivacy: z.boolean().refine(Boolean, 'privacy'),
+      .string().check(z.refine((value) => value.trim() === '' || normalizeReferralCode(value) !== null, 'referralCode')),
+    acceptTerms: z.boolean().check(z.refine(Boolean, 'terms')),
+    acceptPrivacy: z.boolean().check(z.refine(Boolean, 'privacy')),
   });
 }
 

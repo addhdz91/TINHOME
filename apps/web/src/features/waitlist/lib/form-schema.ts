@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { JoinWaitlistInput } from '@tinhome/shared/schemas';
 
 /**
@@ -10,18 +10,15 @@ export function waitlistFormSchema(maxDestinations: number) {
   return z
     .object({
       email: JoinWaitlistInput.shape.email,
-      cityId: z.string().min(1, 'cityId'),
+      cityId: z.string().check(z.minLength(1, 'cityId')),
       destinations: z
-        .array(z.string())
-        .min(1, 'destinations')
-        .max(maxDestinations, 'destinationsMax'),
+        .array(z.string()).check(z.minLength(1, 'destinations'), z.maxLength(maxDestinations, 'destinationsMax')),
       windowIds: z.array(z.string()),
-      acceptPrivacy: z.boolean().refine((accepted) => accepted, 'acceptPrivacy'),
-    })
-    .refine((v) => !v.destinations.includes(v.cityId), {
+      acceptPrivacy: z.boolean().check(z.refine((accepted) => accepted, 'acceptPrivacy')),
+    }).check(z.refine((v) => !v.destinations.includes(v.cityId), {
       path: ['destinations'],
       message: 'destinations',
-    });
+    }));
 }
 
 export type WaitlistFormValues = z.input<ReturnType<typeof waitlistFormSchema>>;

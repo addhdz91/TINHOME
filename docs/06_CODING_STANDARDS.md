@@ -14,6 +14,7 @@
 - `tsconfig` base en la raíz con: `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`, `noImplicitOverride: true`, `noFallthroughCasesInSwitch: true`, `verbatimModuleSyntax: true`, `module`/`moduleResolution` acordes al paquete (`Bundler` en web, `NodeNext` en functions).
 - **Prohibido** `any`. Usa `unknown` + validación (zod) o tipos genéricos. `as` solo para estrechar tras una comprobación, nunca para «callar» al compilador. `// @ts-ignore` prohibido; `// @ts-expect-error` solo en pruebas con comentario.
 - Tipos de dominio **solo** en `@tinhome/shared`. Los tipos de entrada/salida de callables se infieren de zod: `type LikeHomeInput = z.infer<typeof LikeHomeInput>`.
+- Esquemas con **`zod/mini`** (API funcional: `z.optional(x)`, `z.nullable(x)`, `z.string().check(z.trim(), z.minLength(2))`, `z.int().check(z.gte(0))`, `z.extend(base, {...})`, `z.strictObject({...})`, `z._default(x, v)`). `import … from 'zod'` está prohibido en `apps/web` y `packages/shared` (ESLint): el núcleo clásico añade ~15 KB gzip al arranque. Un `refine` con *type guard* no estrecha el tipo en mini: usa `z.pipe(z.string(), z.custom<T>(guard))`.
 - Enums como **uniones de literales** + objeto `as const` (no `enum` de TS):
   ```ts
   export const HOME_STATUS = ['DRAFT', 'PUBLISHED', 'PAUSED', 'HIDDEN_BY_ADMIN'] as const;

@@ -1,6 +1,6 @@
 import type { SecretParam } from 'firebase-functions/params';
 import { onCall, type CallableOptions, type CallableRequest } from 'firebase-functions/v2/https';
-import type { z } from 'zod';
+import type { z } from 'zod/mini';
 import { toAppError } from './app-error.js';
 import { clock } from './clock.js';
 import { logger, pseudonymize } from './logger.js';
@@ -19,7 +19,7 @@ export interface CallableContext<I> {
  * logs without PII and catalogue errors only (anything unexpected → E_INTERNAL).
  * Guards stay explicit inside each handler so they read like the contract table.
  */
-export function defineCallable<I extends z.ZodType, O extends z.ZodType>(
+export function defineCallable<I extends z.ZodMiniType, O extends z.ZodMiniType>(
   name: string,
   schemas: { input: I; output: O; secrets?: SecretParam[]; options?: Partial<CallableOptions> },
   handler: (ctx: CallableContext<z.output<I>>) => Promise<z.input<O>>,
