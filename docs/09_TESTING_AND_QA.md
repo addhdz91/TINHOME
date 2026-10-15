@@ -68,7 +68,9 @@ Reglas: reloj inyectado y fijo; datos generados con *factories* en `tests/factor
 
 - Lighthouse (móvil, landing y Descubrir): Rendimiento ≥ 85, Accesibilidad ≥ 95, Buenas prácticas ≥ 95, SEO (landing) ≥ 95.
 - LCP < 2,5 s (4G simulada); CLS < 0,1; INP < 200 ms.
-- Bundle inicial de la app (sin admin) < 250 KB gzip.
+- Bundle inicial de la app (sin admin) < 250 KB gzip: entrada (entry + imports estáticos + CSS).
+- Shell SPA (`app.html` con la precarga del layout de sesión) ≤ 300 KB gzip (confirmado 15/10/2026).
+- Ambos los comprueba `pnpm --filter @tinhome/web size` en CI tras `pnpm build`.
 - axe: 0 violaciones serias o críticas en todas las pantallas **y en los tres temas**.
 
 ## 5. Pruebas manuales antes de cada versión
