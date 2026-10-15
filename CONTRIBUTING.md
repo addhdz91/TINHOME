@@ -4,7 +4,7 @@ Válido para personas y agentes de IA. Lee también `CLAUDE.md` y `docs/06_CODIN
 
 ## 1. Preparar el entorno
 
-Requisitos: Node 22 LTS, pnpm 9+, Java 17+ (emuladores de Firebase), Stripe CLI (para pagos en local). La Firebase CLI **no** hace falta instalarla globalmente: es dependencia de desarrollo (`firebase-tools`); úsala con `pnpm exec firebase …`.
+Requisitos: Node 22, pnpm 10.28 (`corepack enable`), **Java 21** (emuladores de Firebase con `firebase-tools` 15) y, opcional, Stripe CLI (pagos con claves de prueba). Guía paso a paso: `docs/runbooks/local-setup.md`. La Firebase CLI **no** hace falta instalarla globalmente: es dependencia de desarrollo (`firebase-tools`); úsala con `pnpm exec firebase …`.
 
 ```bash
 pnpm install

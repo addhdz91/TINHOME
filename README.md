@@ -4,6 +4,18 @@
 
 Este repositorio empieza con la documentación necesaria para que un desarrollador o un agente de IA (Claude Code, Cursor, Codex…) construya el producto completo sin interpretar la intención del negocio.
 
+## Arrancar en local
+
+Necesitas Node 22, pnpm 10 (`corepack enable`) y Java 21. Ninguna cuenta: todo corre en los emuladores de Firebase.
+
+```bash
+git checkout feat/m10-hardening && pnpm install
+cp apps/web/.env.example apps/web/.env.local
+pnpm dev        # y en otra terminal: pnpm seed  → http://localhost:5173
+```
+
+Guía completa (usuarios demo, problemas frecuentes y cuentas para staging y producción): [`docs/runbooks/local-setup.md`](docs/runbooks/local-setup.md).
+
 ## Cómo usar este pack con Claude Code
 
 1. Crea un repositorio vacío y copia dentro el contenido de este pack (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, `README.md`, `docs/`, `assets/`, `.claude/`, `.cursor/`).
@@ -30,6 +42,7 @@ Este repositorio empieza con la documentación necesaria para que un desarrollad
 | `docs/09_TESTING_AND_QA.md` | Estrategia y casos de prueba |
 | `docs/10_DECISIONS_AND_OPEN_ITEMS.md` | Decisiones vigentes, pendientes y Fase 2 |
 | `docs/11_BRAND_GUIDELINES.md` | Manual de marca: logo, variantes, colores corporativos, temas claro/oscuro/negro, favicon |
+| `docs/runbooks/` | Arranque en local y cuentas, despliegue y lanzamiento, copias de seguridad y restauración |
 | `assets/brand/` | Logos (claro, oscuro, monocromo, horizontal, isotipo), favicons e iconos PWA, `tokens.css`, `site.webmanifest`, `head-snippet.html` |
 
 ## Estado
