@@ -2,8 +2,8 @@ import { PASSWORD_MIN_LENGTH } from '@tinhome/shared/constants';
 
 /**
  * FR-71 — client-side check of the Identity Platform policy (≥ 10 characters with letters and
- * numbers, common passwords rejected). The server-side policy is configured in Identity
- * Platform; the emulator does not enforce it.
+ * numbers, common passwords rejected). The server enforces length + number through Identity
+ * Platform (`pnpm ops:auth`, scripts/configure-auth.ts); the emulator does not enforce it.
  */
 const COMMON = new Set([
   '1234567890',

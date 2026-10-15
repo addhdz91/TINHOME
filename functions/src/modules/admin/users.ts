@@ -257,6 +257,8 @@ export async function setRole(
   if (!user) throw appError('E_NOT_FOUND');
   const before = (user.customClaims?.role as string | undefined) ?? null;
   await getAuth().setCustomUserClaims(input.uid, { ...user.customClaims, role: input.role });
+  // The old role lives in the person's current tokens: end those sessions (they sign in again).
+  await getAuth().revokeRefreshTokens(input.uid);
   const directory = db.doc(`adminDirectory/${input.uid}`);
   if (input.role && user.email) await directory.set({ email: user.email, role: input.role });
   else await directory.delete();

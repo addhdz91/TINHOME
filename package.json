@@ -21,7 +21,8 @@
     "test:unit": "pnpm -r --filter !@tinhome/rules-tests --filter !@tinhome/e2e test",
     "test:int": "pnpm exec firebase emulators:exec --only auth,firestore,storage --project demo-tinhome \"pnpm --filter @tinhome/functions test:int\"",
     "brand:assets": "tsx scripts/brand-web-assets.ts",
-    "set-role": "tsx scripts/set-role.ts"
+    "set-role": "tsx scripts/set-role.ts",
+    "ops:auth": "tsx scripts/configure-auth.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs,cjs}": [

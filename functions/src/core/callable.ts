@@ -6,6 +6,7 @@ import { clock } from './clock.js';
 import { logger, pseudonymize } from './logger.js';
 import { callableOptions } from './options.js';
 import { parseInput } from './parse-input.js';
+import { checkPrivilegedSession } from './privileged-session.js';
 
 export interface CallableContext<I> {
   input: I;
@@ -32,6 +33,7 @@ export function defineCallable<I extends z.ZodMiniType, O extends z.ZodMiniType>
     const requestId = `${name}-${String(startedAt)}-${Math.random().toString(36).slice(2, 8)}`;
     const uid = request.auth ? pseudonymize(request.auth.uid) : null;
     try {
+      if (request.auth) await checkPrivilegedSession(request.auth.uid, request.auth.token);
       const input = parseInput(schemas.input, request.data);
       const result = await handler({ input, request, now: clock.now() });
       const output = schemas.output.parse(result);

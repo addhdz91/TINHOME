@@ -8,6 +8,7 @@
 - [ ] Identity Platform activado con MFA (SMS y TOTP) para el panel (FR-48).
 - [ ] App Check con reCAPTCHA Enterprise. Aplicación **forzada** en Firestore, Storage y Functions una vez que las métricas muestren tráfico verificado.
 - [ ] `scripts/ops/configure-gcp.sh <proyecto>` aplicado: PITR, copias, TTL, versionado, alertas ([backups-and-restore.md](backups-and-restore.md)).
+- [ ] `GCLOUD_PROJECT=<proyecto> pnpm ops:auth` revisado y aplicado con `APPLY=1`: política de contraseñas en el servidor, protección contra enumeración de emails, MFA SMS + TOTP (`scripts/configure-auth.ts`).
 - [ ] Presupuesto y alerta de facturación (p. ej. 50/80/100 % de 100 €/mes en staging).
 
 ### Secretos (Secret Manager)
