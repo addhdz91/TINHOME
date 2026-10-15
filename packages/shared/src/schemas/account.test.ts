@@ -9,6 +9,7 @@ describe('account schemas', () => {
       birthDate: '1990-05-10',
       acceptedTerms: '0.1',
       acceptedPrivacy: '0.1',
+      acceptedCookies: '0.1',
     };
     expect(CompleteSignupInput.parse(valid).firstName).toBe('Laura');
     expect(CompleteSignupInput.safeParse({ ...valid, birthDate: '10/05/1990' }).success).toBe(

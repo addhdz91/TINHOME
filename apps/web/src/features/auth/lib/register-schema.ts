@@ -32,6 +32,7 @@ export function registerSchema(now: Date, withCredentials: boolean) {
       .string().check(z.refine((value) => value.trim() === '' || normalizeReferralCode(value) !== null, 'referralCode')),
     acceptTerms: z.boolean().check(z.refine(Boolean, 'terms')),
     acceptPrivacy: z.boolean().check(z.refine(Boolean, 'privacy')),
+    acceptCookies: z.boolean().check(z.refine(Boolean, 'cookies')),
   });
 }
 

@@ -74,6 +74,14 @@ export function UserDetailPage() {
         {t(`admin.users.identities.${user.identity}`)} ·{' '}
         {t('admin.users.strikes', { count: user.strikesActive })}
       </p>
+      {superadmin ? (
+        <Link
+          to={`/admin/consentimientos?uid=${encodeURIComponent(user.uid)}`}
+          className="self-start text-sm font-semibold text-link underline"
+        >
+          {t('admin.users.consents')}
+        </Link>
+      ) : null}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
           <Section id="user-home" title={t('admin.users.home')}>

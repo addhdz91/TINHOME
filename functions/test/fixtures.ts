@@ -22,7 +22,7 @@ export async function seedEligible(
         identity: options.identity ?? 'APPROVED',
       },
       onboarding: { step: 6, completedAt: Timestamp.now() },
-      legal: { terminos: '0.1', privacidad: '0.1' },
+      legal: { terminos: '0.1', privacidad: '0.1', cookies: '0.1' },
       moderationHold: null,
       premiumUntil: options.premium ? Timestamp.fromDate(new Date('2028-01-01')) : null,
     });

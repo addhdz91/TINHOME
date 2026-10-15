@@ -122,6 +122,7 @@ export const LEGAL_ACCEPTANCE_TYPES = [
   'DECLARATION',
   'WITHDRAWAL_START',
   'COMMUNITY_RULES',
+  'COOKIES',
 ] as const;
 export type LegalAcceptanceType = (typeof LEGAL_ACCEPTANCE_TYPES)[number];
 
@@ -129,6 +130,7 @@ export type LegalAcceptanceType = (typeof LEGAL_ACCEPTANCE_TYPES)[number];
 export const SIGNUP_LEGAL_DOCS = {
   terminos: 'TERMS',
   privacidad: 'PRIVACY',
+  cookies: 'COOKIES',
 } as const satisfies Partial<Record<LegalDocSlug, LegalAcceptanceType>>;
 export type SignupLegalSlug = keyof typeof SIGNUP_LEGAL_DOCS;
 
@@ -495,3 +497,19 @@ export const ANALYTICS_EVENTS = [
   'sponsored_clicked',
 ] as const;
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
+
+/** Where a legal acceptance was given (evidence record, `legalAcceptances.source`). */
+export const CONSENT_SOURCES = [
+  'SIGNUP',
+  'REACCEPTANCE',
+  'WAITLIST',
+  'PUBLIC_COMPLAINT',
+  'PUBLIC_REPORT',
+  'HOME_DECLARATION',
+  'PREMIUM_CHECKOUT',
+] as const;
+export type ConsentSource = (typeof CONSENT_SOURCES)[number];
+
+/** Legal texts asked as separate checkboxes in the forms (each with its own link). */
+export const CONSENT_DOCS = ['terminos', 'privacidad', 'cookies'] as const;
+export type ConsentDoc = (typeof CONSENT_DOCS)[number];

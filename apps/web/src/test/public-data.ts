@@ -47,6 +47,12 @@ export const PUBLIC_DOCS: Record<string, Record<string, unknown>> = {
   },
   'legalDocs/privacidad': { title: 'Política de privacidad', currentVersion: '0.1-provisional' },
   'legalDocs/terminos': { title: 'Términos y condiciones', currentVersion: '0.1-provisional' },
+  'legalDocs/cookies': { title: 'Política de cookies', currentVersion: '0.1-provisional' },
+  'legalDocs/cookies/versions/0.1-provisional': {
+    markdown: '# Política de cookies\n\n> **PROVISIONAL**\n\nSolo cookies técnicas.',
+    requiresReacceptance: false,
+    publishedAt: { toDate: () => new Date('2026-10-09T10:00:00Z') },
+  },
   'legalDocs/declaracion-responsable': {
     title: 'Declaración responsable',
     currentVersion: '0.1-provisional',

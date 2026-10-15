@@ -46,6 +46,7 @@ export {
   adminUpsertCity,
   adminUpsertWindow,
   jobRecomputeDemand,
+  adminListConsents,
 } from './modules/admin/callables.js';
 export {
   adminDecideLocationReview,

@@ -14,7 +14,6 @@ import {
   isAdult,
   normalizeReferralCode,
   toIsoDate,
-  truncateIp,
 } from '@tinhome/shared/domain';
 import type {
   AcceptLegalDocsInput,
@@ -22,6 +21,7 @@ import type {
   UpdateSettingsInput,
 } from '@tinhome/shared/schemas';
 import { appError } from '../../core/app-error.js';
+import { prepareConsents, writeConsents } from '../../core/consent.js';
 import { sha256Hex } from '../../core/crypto.js';
 import { enqueueMail, enqueueMailNow } from '../../core/email/queue.js';
 import { currentLegalVersions } from '../../core/legal.js';
@@ -44,6 +44,9 @@ export interface SignupSession {
   email: string;
   emailVerified: boolean;
   ip: string;
+  userAgent: string | null;
+  /** `password`, `google.com`… (ID token `firebase.sign_in_provider`). */
+  authProvider: string | null;
 }
 
 /**
@@ -68,10 +71,32 @@ export async function completeSignup(
   const versionOf = (slug: string) => current.find((doc) => doc.slug === slug)?.version;
   if (
     versionOf('terminos') !== input.acceptedTerms ||
-    versionOf('privacidad') !== input.acceptedPrivacy
+    versionOf('privacidad') !== input.acceptedPrivacy ||
+    versionOf('cookies') !== input.acceptedCookies
   ) {
     throw appError('E_LEGAL_VERSION');
   }
+  const accepted: Record<keyof typeof SIGNUP_LEGAL_DOCS, string> = {
+    terminos: input.acceptedTerms,
+    privacidad: input.acceptedPrivacy,
+    cookies: input.acceptedCookies,
+  };
+  const consents = await prepareConsents(
+    db,
+    Object.entries(SIGNUP_LEGAL_DOCS).map(([slug, type]) => ({
+      slug,
+      type,
+      version: accepted[slug as keyof typeof SIGNUP_LEGAL_DOCS],
+    })),
+    {
+      uid: session.uid,
+      email: session.email,
+      source: 'SIGNUP',
+      authProvider: session.authProvider,
+      ip: session.ip,
+      userAgent: session.userAgent,
+    },
+  );
 
   const inviteCode = input.referralCode ? normalizeReferralCode(input.referralCode) : null;
   const userRef = db.doc(`users/${session.uid}`);
@@ -95,7 +120,6 @@ export async function completeSignup(
     // AC-01.5 — a valid code is stored and never changes; an unknown code is ignored.
     const inviterUid = inviteCode && invite?.exists ? String(invite.get('uid')) : null;
     const waitlistData = waitlist?.exists ? waitlist.data() : undefined;
-    const ipTruncated = truncateIp(session.ip);
     const timestamp = FieldValue.serverTimestamp();
 
     tx.create(userRef, {
@@ -119,7 +143,7 @@ export async function completeSignup(
       referralCode: ownCode,
       ...(inviterUid ? { referredBy: inviterUid } : {}),
       withdrawalUsed: false,
-      legal: { terminos: input.acceptedTerms, privacidad: input.acceptedPrivacy },
+      legal: accepted,
       settings: { theme: 'system', notifications: {} },
       ...(waitlistData
         ? {
@@ -145,15 +169,7 @@ export async function completeSignup(
       active: true,
     });
     tx.create(db.doc(`referralCodes/${ownCode}`), { uid: session.uid, createdAt: timestamp });
-    for (const [slug, type] of Object.entries(SIGNUP_LEGAL_DOCS)) {
-      tx.create(db.collection('legalAcceptances').doc(), {
-        uid: session.uid,
-        type,
-        version: slug === 'terminos' ? input.acceptedTerms : input.acceptedPrivacy,
-        acceptedAt: timestamp,
-        ipTruncated,
-      });
-    }
+    writeConsents(db, tx, consents);
     if (inviterUid) {
       tx.create(db.doc(`referrals/${session.uid}`), {
         inviterUid,
@@ -230,6 +246,7 @@ export async function acceptLegalDocs(
   uid: string,
   input: AcceptLegalDocsInput,
   ip: string,
+  userAgent: string | null = null,
 ): Promise<void> {
   const known = new Set<string>(LEGAL_DOC_SLUGS);
   for (const item of input.items) {
@@ -246,21 +263,28 @@ export async function acceptLegalDocs(
       throw appError('E_LEGAL_VERSION');
   }
   const ref = db.doc(`users/${uid}`);
+  const user = await ref.get();
+  const consents = await prepareConsents(
+    db,
+    input.items.map((item) => ({
+      slug: item.slug,
+      version: item.version,
+      type: ACCEPTANCE_TYPES[item.slug as LegalDocSlug] ?? 'TERMS',
+    })),
+    {
+      uid,
+      email: (user.get('email') as string | undefined) ?? null,
+      source: 'REACCEPTANCE',
+      ip,
+      userAgent,
+    },
+  );
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists) throw appError('E_NOT_FOUND');
-    const timestamp = FieldValue.serverTimestamp();
-    const updates: Record<string, unknown> = { updatedAt: timestamp };
-    for (const item of input.items) {
-      updates[`legal.${item.slug}`] = item.version;
-      tx.create(db.collection('legalAcceptances').doc(), {
-        uid,
-        type: ACCEPTANCE_TYPES[item.slug as LegalDocSlug],
-        version: item.version,
-        acceptedAt: timestamp,
-        ipTruncated: truncateIp(ip),
-      });
-    }
+    const updates: Record<string, unknown> = { updatedAt: FieldValue.serverTimestamp() };
+    for (const item of input.items) updates[`legal.${item.slug}`] = item.version;
+    writeConsents(db, tx, consents);
     tx.update(ref, updates);
   });
 }

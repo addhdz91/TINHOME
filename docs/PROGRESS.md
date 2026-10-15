@@ -102,3 +102,12 @@ Pendiente de M1 para más adelante: rendimiento de páginas secundarias (M10), J
 - [x] 17 casos importantes registrados en `10_DECISIONS_AND_OPEN_ITEMS.md` §5.
 
 Pendiente fuera del código: política de contraseñas y bloqueo por intentos en Identity Platform (staging/prod); personalizar la plantilla de verificación de Firebase.
+
+## Consentimientos legales con prueba (15/10/2026)
+
+- [x] Términos, privacidad y cookies con casilla propia y enlace «Leer» en registro, lista de espera y reaceptación; privacidad y cookies en reclamaciones y denuncias públicas.
+- [x] Prueba insert-only en `legalAcceptances` (04 §2.21): versión + SHA-256 del texto, hora del servidor, formulario, frase de la casilla, método de acceso, IP /24 y navegador; también para visitantes (por `emailHash`).
+- [x] `/admin/consentimientos` (superadmin, auditado) con descarga JSON; las reglas ya no dejan al equipo leer la prueba sin auditoría.
+- [x] Pruebas: unitarias de la web, integración (`consent.int.test.ts`), reglas y E2E-01/E2E-02.
+- [ ] Validación de los textos y del mecanismo por el abogado (10 §5, LEG-03).
+

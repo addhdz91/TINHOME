@@ -23,6 +23,7 @@ test('sign-up, e-mail verification and phone take the user to step 3', async ({ 
   await expect(submit).toBeDisabled();
   await page.getByRole('checkbox', { name: /Acepto los Términos/ }).check();
   await page.getByRole('checkbox', { name: /Política de privacidad/ }).check();
+  await page.getByRole('checkbox', { name: /Política de cookies/ }).check();
   await submit.click();
 
   await expect(page.getByRole('heading', { name: 'Revisa tu email' })).toBeVisible();
@@ -51,6 +52,7 @@ test('a minor cannot create an account (AC-01.2)', async ({ page }) => {
   await page.getByLabel('Contraseña', { exact: true }).fill('casaenruzafa7');
   await page.getByRole('checkbox', { name: /Acepto los Términos/ }).check();
   await page.getByRole('checkbox', { name: /Política de privacidad/ }).check();
+  await page.getByRole('checkbox', { name: /Política de cookies/ }).check();
   await page.getByRole('button', { name: 'Crear cuenta' }).click();
   await expect(page.getByText('Debes ser mayor de edad para usar TinHome.')).toBeVisible();
   await expect(page).toHaveURL(/\/registro$/);
@@ -77,6 +79,10 @@ test('the re-acceptance modal blocks until the new Terms are accepted (FR-58)', 
   await expect(dialog).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(dialog).toBeVisible();
-  await dialog.getByRole('button', { name: 'Aceptar y continuar' }).click();
+  const accept = dialog.getByRole('button', { name: 'Aceptar y continuar' });
+  await expect(accept).toBeDisabled();
+  // Each updated text has its own box and a link to read it.
+  await dialog.getByRole('checkbox', { name: /Acepto los Términos/ }).check();
+  await accept.click();
   await expect(dialog).toBeHidden();
 });

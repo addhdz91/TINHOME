@@ -32,6 +32,9 @@ export interface TestToken {
   firebase?: Record<string, unknown>;
 }
 
+/** Browser the test requests come from (stored as consent evidence). */
+export const TEST_USER_AGENT = 'Mozilla/5.0 (vitest)';
+
 /** Signed-in callable request with the given ID-token claims. */
 export function authedRequest<T>(
   data: T,
@@ -41,7 +44,7 @@ export function authedRequest<T>(
   return {
     data,
     auth: { uid: token.uid, token: { email_verified: false, ...token }, rawToken: 'raw' },
-    rawRequest: { ip, headers: {} },
+    rawRequest: { ip, headers: { 'user-agent': TEST_USER_AGENT } },
     acceptsStreaming: false,
   } as unknown as CallableRequest<T>;
 }
@@ -50,7 +53,7 @@ export function authedRequest<T>(
 export function publicRequest<T>(data: T, ip = '203.0.113.7'): CallableRequest<T> {
   return {
     data,
-    rawRequest: { ip, headers: {} },
+    rawRequest: { ip, headers: { 'user-agent': TEST_USER_AGENT } },
     acceptsStreaming: false,
   } as unknown as CallableRequest<T>;
 }
@@ -65,10 +68,10 @@ export async function errorCode(promise: Promise<unknown>): Promise<string | und
   }
 }
 
-/** Terms and privacy texts (current version `0.1`; terms can require re-acceptance). */
+/** Terms, privacy and cookies texts (current version `0.1`; terms can require re-acceptance). */
 export async function seedLegal(termsRequiresReacceptance = false): Promise<void> {
   const firestore = db();
-  for (const slug of ['terminos', 'privacidad']) {
+  for (const slug of ['terminos', 'privacidad', 'cookies']) {
     await firestore.doc(`legalDocs/${slug}`).set({ title: slug, currentVersion: '0.1' });
     await firestore.doc(`legalDocs/${slug}/versions/0.1`).set({
       markdown: '# x',
@@ -78,7 +81,7 @@ export async function seedLegal(termsRequiresReacceptance = false): Promise<void
   }
 }
 
-/** Cities, windows and privacy text the waitlist needs. */
+/** Cities, windows and legal texts the waitlist needs. */
 export async function seedWaitlistFixtures(): Promise<void> {
   const firestore = db();
   const city = (name: string, status: string, order: number) => ({
@@ -114,8 +117,11 @@ export async function seedWaitlistFixtures(): Promise<void> {
       cityIds: null,
       order: 9,
     }),
-    firestore
-      .doc('legalDocs/privacidad')
-      .set({ title: 'Privacidad', currentVersion: '0.1-provisional' }),
+    ...['terminos', 'privacidad', 'cookies'].flatMap((slug) => [
+      firestore.doc(`legalDocs/${slug}`).set({ title: slug, currentVersion: '0.1-provisional' }),
+      firestore
+        .doc(`legalDocs/${slug}/versions/0.1-provisional`)
+        .set({ markdown: `# ${slug}`, requiresReacceptance: false, changeSummary: 'test' }),
+    ]),
   ]);
 }

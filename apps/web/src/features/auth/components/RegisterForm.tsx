@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
-import { LegalLink } from '@/features/legal/components/LegalDocDialog';
+import { ConsentCheckbox } from '@/features/legal/components/ConsentCheckbox';
 import { registerSchema, type RegisterValues } from '../lib/register-schema';
 import { PasswordField } from './PasswordField';
 
@@ -21,8 +21,9 @@ interface RegisterFormProps {
 
 /** Consents of FR-01 with the legal text each one opens. */
 const CONSENTS = [
-  { field: 'acceptTerms', slug: 'terminos', i18nKey: 'auth.register.terms' },
-  { field: 'acceptPrivacy', slug: 'privacidad', i18nKey: 'auth.register.privacy' },
+  { field: 'acceptTerms', slug: 'terminos' },
+  { field: 'acceptPrivacy', slug: 'privacidad' },
+  { field: 'acceptCookies', slug: 'cookies' },
 ] as const;
 
 const EMPTY: RegisterValues = {
@@ -34,9 +35,10 @@ const EMPTY: RegisterValues = {
   referralCode: '',
   acceptTerms: false,
   acceptPrivacy: false,
+  acceptCookies: false,
 };
 
-/** S-02 — single column, inline validation on blur, Terms/Privacy open in a sheet. */
+/** S-02 — single column, inline validation on blur; each legal text has its own checkbox and «Leer». */
 export function RegisterForm({
   withCredentials,
   defaults,
@@ -57,9 +59,9 @@ export function RegisterForm({
     mode: 'onTouched',
     defaultValues: { ...EMPTY, ...defaults },
   });
-  const [password, acceptTerms, acceptPrivacy] = useWatch({
+  const [password, acceptTerms, acceptPrivacy, acceptCookies] = useWatch({
     control,
-    name: ['password', 'acceptTerms', 'acceptPrivacy'],
+    name: ['password', 'acceptTerms', 'acceptPrivacy', 'acceptCookies'],
   });
 
   const message = (field: keyof RegisterValues): string | undefined => {
@@ -126,28 +128,16 @@ export function RegisterForm({
         {...register('referralCode')}
       />
 
-      <fieldset className="flex flex-col gap-3">
-        {CONSENTS.map(({ field, slug, i18nKey }) => {
-          return (
-            <div key={field} className="flex flex-col gap-1">
-              <div className="flex items-start gap-3">
-                <input
-                  id={`register-${field}`}
-                  type="checkbox"
-                  className="mt-1 size-5 shrink-0 accent-primary"
-                  aria-describedby={`register-${field}-error`}
-                  {...register(field)}
-                />
-                <label htmlFor={`register-${field}`}>
-                  <Trans i18nKey={i18nKey} components={{ 1: <LegalLink slug={slug} /> }} />
-                </label>
-              </div>
-              <p id={`register-${field}-error`} className="text-sm font-semibold text-danger">
-                {message(field) ?? ''}
-              </p>
-            </div>
-          );
-        })}
+      <fieldset className="flex flex-col gap-1">
+        {CONSENTS.map(({ field, slug }) => (
+          <ConsentCheckbox
+            key={field}
+            id={`register-${field}`}
+            slug={slug}
+            error={message(field)}
+            {...register(field)}
+          />
+        ))}
       </fieldset>
 
       {formError ? (
@@ -156,8 +146,12 @@ export function RegisterForm({
         </div>
       ) : null}
 
-      {/* AC-01.4 — disabled until Terms and Privacy are accepted. */}
-      <Button type="submit" size="lg" disabled={!acceptTerms || !acceptPrivacy || isSubmitting}>
+      {/* AC-01.4 — disabled until Terms, Privacy and Cookies are accepted. */}
+      <Button
+        type="submit"
+        size="lg"
+        disabled={!acceptTerms || !acceptPrivacy || !acceptCookies || isSubmitting}
+      >
         {isSubmitting ? submittingLabel : submitLabel}
       </Button>
     </form>

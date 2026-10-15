@@ -27,6 +27,7 @@ const signup = {
   birthDate: '1990-05-10',
   acceptedTerms: '0.1',
   acceptedPrivacy: '0.1',
+  acceptedCookies: '0.1',
 };
 
 async function mails(templateId: string) {
@@ -65,13 +66,17 @@ describe('completeSignup', () => {
     const user = await db().doc('users/laura').get();
     expect(user.data()).toMatchObject({
       birthDate: '1990-05-10',
-      legal: { terminos: '0.1', privacidad: '0.1' },
+      legal: { terminos: '0.1', privacidad: '0.1', cookies: '0.1' },
     });
     const profile = await db().doc('publicProfiles/laura').get();
     expect(profile.get('displayName')).toBe('Laura G.');
     expect((await db().doc(`referralCodes/${me.referralCode}`).get()).get('uid')).toBe('laura');
     const acceptances = await db().collection('legalAcceptances').where('uid', '==', 'laura').get();
-    expect(acceptances.docs.map((d) => String(d.get('type'))).sort()).toEqual(['PRIVACY', 'TERMS']);
+    expect(acceptances.docs.map((d) => String(d.get('type'))).sort()).toEqual([
+      'COOKIES',
+      'PRIVACY',
+      'TERMS',
+    ]);
     expect(acceptances.docs[0]?.get('ipTruncated')).toBe('203.0.113.0/24');
     expect(await mails('N-02')).toHaveLength(1);
   });
@@ -211,7 +216,9 @@ describe('updateSettings and acceptLegalDocs', () => {
     ).toBe('E_LEGAL_VERSION');
     expect(
       await errorCode(
-        acceptLegalDocs.run(authedRequest({ items: [{ slug: 'cookies', version: '0.1' }] }, laura)),
+        acceptLegalDocs.run(
+          authedRequest({ items: [{ slug: 'inventado', version: '0.1' }] }, laura),
+        ),
       ),
     ).toBe('E_VALIDATION');
     await acceptLegalDocs.run(

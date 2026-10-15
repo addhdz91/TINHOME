@@ -1,4 +1,6 @@
 import {
+  AdminListConsentsInput,
+  AdminListConsentsOutput,
   AdminCloseGdprRequestInput,
   AdminListGdprRequestsInput,
   AdminListGdprRequestsOutput,
@@ -379,4 +381,9 @@ export const adminCloseGdprRequest = callable(
   'adminCloseGdprRequest',
   AdminCloseGdprRequestInput,
   OkOutput,
+);
+export const adminListConsents = callable(
+  'adminListConsents',
+  AdminListConsentsInput,
+  AdminListConsentsOutput,
 );

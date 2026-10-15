@@ -18,7 +18,9 @@ test('a visitor joins the waitlist, confirms by e-mail and sees their city', asy
   await page.getByLabel('Tu ciudad').selectOption('malaga');
   await page.getByRole('checkbox', { name: 'Madrid' }).check();
   await page.getByRole('checkbox', { name: 'Semana Santa 2027' }).check();
-  await page.getByRole('checkbox', { name: /política de privacidad/ }).check();
+  await page.getByRole('checkbox', { name: /Términos y condiciones/ }).check();
+  await page.getByRole('checkbox', { name: /Política de privacidad/ }).check();
+  await page.getByRole('checkbox', { name: /Política de cookies/ }).check();
   await page.getByRole('button', { name: 'Apuntarme' }).click();
 
   await expect(page.getByRole('heading', { name: 'Revisa tu email' })).toBeVisible();

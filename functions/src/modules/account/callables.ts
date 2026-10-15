@@ -12,6 +12,7 @@ import {
 } from '@tinhome/shared/schemas';
 import { appError } from '../../core/app-error.js';
 import { defineCallable } from '../../core/callable.js';
+import { requestUserAgent } from '../../core/consent.js';
 import { adminAuth, db } from '../../core/firebase.js';
 import { requireAuth, requireEmailVerified } from '../../core/guards.js';
 import { getParams } from '../../core/params.js';
@@ -24,6 +25,13 @@ function sessionInfo(request: Parameters<typeof requireAuth>[0]): SessionInfo {
   const email = request.auth?.token.email;
   if (!email) throw appError('E_VALIDATION', { fields: { email: 'missing' } });
   return { uid: auth.uid, email, emailVerified: auth.emailVerified, role: auth.role };
+}
+
+/** `password`, `google.com`… — how the person signed in (evidence of the sign-up). */
+function signInProvider(request: Parameters<typeof requireAuth>[0]): string | null {
+  const provider = (request.auth?.token.firebase as { sign_in_provider?: unknown } | undefined)
+    ?.sign_in_provider;
+  return typeof provider === 'string' ? provider : null;
 }
 
 /** FR-01 — guards: A. */
@@ -39,6 +47,8 @@ export const completeSignup = defineCallable(
         email: session.email,
         emailVerified: session.emailVerified,
         ip: requestIp(request.rawRequest),
+        userAgent: requestUserAgent(request.rawRequest),
+        authProvider: signInProvider(request),
       },
       input,
       now,
@@ -84,7 +94,13 @@ export const acceptLegalDocs = defineCallable(
   { input: AcceptLegalDocsInput, output: OkOutput },
   async ({ input, request }) => {
     const auth = requireAuth(request);
-    await account.acceptLegalDocs(db(), auth.uid, input, requestIp(request.rawRequest));
+    await account.acceptLegalDocs(
+      db(),
+      auth.uid,
+      input,
+      requestIp(request.rawRequest),
+      requestUserAgent(request.rawRequest),
+    );
     return { ok: true as const };
   },
 );

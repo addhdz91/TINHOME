@@ -7,6 +7,8 @@ import { REPORT_REASONS, type ReportReason } from '@tinhome/shared/constants';
 import { Seo } from '@/components/Seo';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
+import { useVisitorConsentVersions } from '@/features/legal/api/use-visitor-consents';
+import { ConsentCheckbox } from '@/features/legal/components/ConsentCheckbox';
 import { toUserMessage } from '@/lib/app-error';
 import { submitPublicReport } from '@/lib/callables';
 
@@ -19,6 +21,9 @@ export function PublicReportPage() {
   const [reason, setReason] = useState<ReportReason>('OTHER');
   const [description, setDescription] = useState('');
   const [goodFaith, setGoodFaith] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptCookies, setAcceptCookies] = useState(false);
+  const legal = useVisitorConsentVersions();
   const [touched, setTouched] = useState(false);
   const send = useMutation({
     mutationFn: () =>
@@ -29,6 +34,8 @@ export function PublicReportPage() {
         reason,
         description: description.trim(),
         goodFaith: true,
+        // The button only sends once the versions are known (see `valid`).
+        consents: legal.versions ?? { privacidad: '', cookies: '' },
       }),
     onError: (error) => toast.error(toUserMessage(t, error)),
   });
@@ -39,6 +46,9 @@ export function PublicReportPage() {
     description:
       description.trim().length < 20 ? t('support.form.descriptionError', { min: 20 }) : undefined,
     goodFaith: goodFaith ? undefined : t('publicReport.goodFaithError'),
+    acceptPrivacy: acceptPrivacy ? undefined : t('legal.consentRequired.privacidad'),
+    acceptCookies: acceptCookies ? undefined : t('legal.consentRequired.cookies'),
+    legal: legal.versions ? undefined : t('errors.E_LEGAL_VERSION'),
   };
   const valid = Object.values(errors).every((error) => error === undefined);
 
@@ -138,6 +148,27 @@ export function PublicReportPage() {
               </p>
             ) : null}
           </div>
+          <fieldset className="flex flex-col gap-1">
+            <ConsentCheckbox
+              id="public-report-privacy"
+              slug="privacidad"
+              checked={acceptPrivacy}
+              onChange={(event) => setAcceptPrivacy(event.target.checked)}
+              error={touched ? errors.acceptPrivacy : undefined}
+            />
+            <ConsentCheckbox
+              id="public-report-cookies"
+              slug="cookies"
+              checked={acceptCookies}
+              onChange={(event) => setAcceptCookies(event.target.checked)}
+              error={touched ? errors.acceptCookies : undefined}
+            />
+          </fieldset>
+          {legal.isError ? (
+            <p role="alert" className="text-sm text-danger">
+              {t('errors.E_LEGAL_VERSION')}
+            </p>
+          ) : null}
           <Button type="submit" size="lg" variant="danger" disabled={send.isPending}>
             {t('report.submit')}
           </Button>

@@ -2,6 +2,7 @@ import {
   BadgeCheck,
   BarChart3,
   BellRing,
+  FileCheck,
   FileText,
   Map,
   Lock,
@@ -47,6 +48,7 @@ type NavKey =
   | 'legal'
   | 'metrics'
   | 'partners'
+  | 'consents'
   | 'gdpr'
   | 'audit';
 
@@ -67,6 +69,7 @@ const NAV: { key: NavKey; to: string; icon: LucideIcon; end?: boolean; superOnly
   { key: 'params', to: '/admin/parametros', icon: SlidersHorizontal, superOnly: true },
   { key: 'legal', to: '/admin/textos', icon: FileText, superOnly: true },
   { key: 'partners', to: '/admin/patrocinados', icon: Megaphone, superOnly: true },
+  { key: 'consents', to: '/admin/consentimientos', icon: FileCheck, superOnly: true },
   { key: 'audit', to: '/admin/auditoria', icon: ScrollText, superOnly: true },
 ];
 

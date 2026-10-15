@@ -11,6 +11,7 @@ const valid = {
   referralCode: '',
   acceptTerms: true,
   acceptPrivacy: true,
+  acceptCookies: true,
 };
 
 function messages(values: Record<string, unknown>, withCredentials = true): string[] {
@@ -33,10 +34,9 @@ describe('registerSchema', () => {
     expect(messages({ ...valid, password: 'Password123' })).toEqual(['passwordCommon']);
     expect(messages({ ...valid, email: 'nope' })).toEqual(['email']);
     expect(messages({ ...valid, referralCode: 'XX' })).toEqual(['referralCode']);
-    expect(messages({ ...valid, acceptTerms: false, acceptPrivacy: false })).toEqual([
-      'terms',
-      'privacy',
-    ]);
+    expect(
+      messages({ ...valid, acceptTerms: false, acceptPrivacy: false, acceptCookies: false }),
+    ).toEqual(['terms', 'privacy', 'cookies']);
   });
 
   it('skips credentials when completing a Google sign-up', () => {

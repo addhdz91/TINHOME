@@ -11,7 +11,9 @@ const input = {
   cityId: 'malaga',
   destinations: ['madrid', 'valencia'],
   windowIds: ['ss27'],
+  acceptTerms: '0.1-provisional',
   acceptPrivacy: '0.1-provisional',
+  acceptCookies: '0.1-provisional',
 };
 const emailId = sha256Hex('visitante@ejemplo.es');
 

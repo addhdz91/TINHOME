@@ -24,7 +24,7 @@ describe('LegalPage', () => {
   });
 
   it('shows a not-found state for a known slug without document', async () => {
-    renderRoutes(legalRoutes, '/legal/cookies');
+    renderRoutes(legalRoutes, '/legal/aviso-legal');
     expect(
       await screen.findByRole('heading', { level: 1, name: 'No encontramos este texto legal' }),
     ).toBeInTheDocument();

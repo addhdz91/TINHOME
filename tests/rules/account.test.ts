@@ -5,6 +5,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -39,6 +40,8 @@ beforeEach(async () => {
     await setDoc(doc(db, 'publicProfiles/laura'), { displayName: 'Laura G.' });
     await setDoc(doc(db, 'referralCodes/ABCDEFGH'), { uid: 'laura' });
     await setDoc(doc(db, 'legalAcceptances/a1'), { uid: 'laura', type: 'TERMS', version: '0.1' });
+    // A visitor's evidence (waitlist, public forms): no account owns it.
+    await setDoc(doc(db, 'legalAcceptances/v1'), { uid: null, type: 'PRIVACY', version: '0.1' });
     await setDoc(doc(db, 'referrals/javier'), {
       inviterUid: 'laura',
       inviteeUid: 'javier',
@@ -101,6 +104,22 @@ describe('legalAcceptances, referrals and referralCodes', () => {
     await assertFails(
       getDoc(doc(env.authenticatedContext('javier', verified).firestore(), 'legalAcceptances/a1')),
     );
+  });
+
+  it('staff read evidence only through the audited callable; no client writes it', async () => {
+    const laura = env.authenticatedContext('laura', verified).firestore();
+    const boss = env
+      .authenticatedContext('boss', { ...adminWithMfa, role: 'superadmin' })
+      .firestore();
+    await assertFails(getDoc(doc(boss, 'legalAcceptances/a1')));
+    await assertFails(getDoc(doc(boss, 'legalAcceptances/v1')));
+    await assertFails(getDoc(doc(laura, 'legalAcceptances/v1')));
+    await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(), 'legalAcceptances/v1')));
+    await assertFails(
+      setDoc(doc(laura, 'legalAcceptances/forged'), { uid: 'laura', type: 'TERMS', version: '9' }),
+    );
+    await assertFails(updateDoc(doc(laura, 'legalAcceptances/a1'), { version: '9' }));
+    await assertFails(deleteDoc(doc(laura, 'legalAcceptances/a1')));
   });
 
   it('lets the inviter read the referral, not the invitee', async () => {

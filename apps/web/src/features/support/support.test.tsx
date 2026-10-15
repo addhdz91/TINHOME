@@ -18,6 +18,12 @@ vi.mock('@/lib/callables', () => callables);
 
 beforeEach(() => vi.clearAllMocks());
 
+/** Separate boxes for each text (the visitor has no account). */
+async function acceptVisitorConsents(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await screen.findByRole('checkbox', { name: /Política de privacidad/ }));
+  await user.click(screen.getByRole('checkbox', { name: /Política de cookies/ }));
+}
+
 describe('complaints (FR-67)', () => {
   it('a visitor needs an e-mail and gets a tracking number and deadline', async () => {
     const user = userEvent.setup();
@@ -35,6 +41,7 @@ describe('complaints (FR-67)', () => {
     expect(screen.getByText('Escribe un email válido para poder responderte.')).toBeInTheDocument();
     expect(callables.submitComplaint).not.toHaveBeenCalled();
     await user.type(screen.getByRole('textbox', { name: 'Email' }), 'ana@ejemplo.es');
+    await acceptVisitorConsents(user);
     await user.click(screen.getByRole('button', { name: 'Enviar solicitud' }));
     expect(await screen.findByText('Número de seguimiento: TH-2027-000123')).toBeInTheDocument();
     expect(
@@ -45,6 +52,7 @@ describe('complaints (FR-67)', () => {
       subject: 'Cobro duplicado',
       description: 'Me habéis cobrado dos veces la cuota de marzo.',
       email: 'ana@ejemplo.es',
+      consents: { privacidad: '0.1-provisional', cookies: '0.1-provisional' },
     });
   });
 
@@ -88,8 +96,14 @@ describe('public report (FR-43)', () => {
     await user.click(screen.getByRole('button', { name: 'Enviar denuncia' }));
     expect(screen.getByText('Debes confirmar que denuncias de buena fe.')).toBeInTheDocument();
     await user.click(screen.getByRole('checkbox', { name: /Declaro de buena fe/ }));
+    await acceptVisitorConsents(user);
     await user.click(screen.getByRole('button', { name: 'Enviar denuncia' }));
     await waitFor(() => expect(callables.submitPublicReport).toHaveBeenCalled());
+    expect(callables.submitPublicReport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        consents: { privacidad: '0.1-provisional', cookies: '0.1-provisional' },
+      }),
+    );
     expect(await screen.findByText(/Hemos recibido tu denuncia/)).toBeInTheDocument();
   });
 });

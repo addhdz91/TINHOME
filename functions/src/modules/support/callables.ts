@@ -17,8 +17,16 @@ import {
   SubmitPublicReportInput,
   SubmitPublicReportOutput,
   TicketDetail,
+  type VisitorConsents,
 } from '@tinhome/shared/schemas';
+import { appError } from '../../core/app-error.js';
 import { defineCallable } from '../../core/callable.js';
+import {
+  assertCurrentVersions,
+  recordConsents,
+  requestUserAgent,
+  type ConsentItem,
+} from '../../core/consent.js';
 import { db } from '../../core/firebase.js';
 import { requireAdmin, requireAuth } from '../../core/guards.js';
 import { getParams } from '../../core/params.js';
@@ -28,6 +36,14 @@ import * as complaints from './complaints.js';
 import * as faqs from './faqs.js';
 
 const ok = { ok: true as const };
+
+/** Privacy and cookies policies accepted in a public form. */
+function visitorConsentItems(consents: VisitorConsents): ConsentItem[] {
+  return [
+    { slug: 'privacidad', version: consents.privacidad, type: 'PRIVACY' },
+    { slug: 'cookies', version: consents.cookies, type: 'COOKIES' },
+  ];
+}
 const HOUR_MS = 3_600_000;
 
 function optionalUid(request: CallableRequest): string | null {
@@ -47,7 +63,23 @@ export const submitComplaint = defineCallable(
       windowMs: HOUR_MS,
       now,
     });
-    return complaints.submitComplaint(db(), uid, input, await getParams(), now);
+    // Visitors accept the privacy and cookies policies in the form (signed-in people did at
+    // sign-up); the evidence is stored only once the complaint exists.
+    if (!uid) {
+      if (!input.consents) throw appError('E_VALIDATION', { fields: { consents: 'required' } });
+      await assertCurrentVersions(db(), input.consents);
+    }
+    const result = await complaints.submitComplaint(db(), uid, input, await getParams(), now);
+    if (!uid && input.consents) {
+      await recordConsents(db(), visitorConsentItems(input.consents), {
+        uid: null,
+        email: input.email ?? null,
+        source: 'PUBLIC_COMPLAINT',
+        ip: requestIp(request.rawRequest),
+        userAgent: requestUserAgent(request.rawRequest),
+      });
+    }
+    return result;
   },
 );
 
@@ -128,5 +160,16 @@ export const adminUpsertFaq = defineCallable(
 export const submitPublicReport = defineCallable(
   'submitPublicReport',
   { input: SubmitPublicReportInput, output: SubmitPublicReportOutput },
-  async ({ input, request, now }) => publicReport(db(), input, requestIp(request.rawRequest), now),
+  async ({ input, request, now }) => {
+    await assertCurrentVersions(db(), input.consents);
+    const result = await publicReport(db(), input, requestIp(request.rawRequest), now);
+    await recordConsents(db(), visitorConsentItems(input.consents), {
+      uid: null,
+      email: input.email,
+      source: 'PUBLIC_REPORT',
+      ip: requestIp(request.rawRequest),
+      userAgent: requestUserAgent(request.rawRequest),
+    });
+    return result;
+  },
 );

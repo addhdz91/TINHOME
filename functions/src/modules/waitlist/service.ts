@@ -12,13 +12,14 @@ import type {
 } from '@tinhome/shared/schemas';
 import type { CityDoc, Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
+import { recordConsents } from '../../core/consent.js';
 import { randomToken, sha256Hex } from '../../core/crypto.js';
 import { enqueueMail } from '../../core/email/queue.js';
 import { publicUrl } from '../../core/public-url.js';
 
 const DAY_MS = 86_400_000;
 
-/** Validates cities, windows and the accepted privacy version against Firestore. */
+/** Validates cities, windows and the accepted legal versions against Firestore. */
 async function validateReferences(
   db: Firestore,
   input: JoinWaitlistInput,
@@ -29,8 +30,10 @@ async function validateReferences(
   }
   const cityRefs = [input.cityId, ...input.destinations].map((id) => db.doc(`cities/${id}`));
   const windowRefs = input.windowIds.map((id) => db.doc(`windows/${id}`));
-  const [privacy, ...snapshots] = await db.getAll(
+  const [privacy, terms, cookies, ...snapshots] = await db.getAll(
     db.doc('legalDocs/privacidad'),
+    db.doc('legalDocs/terminos'),
+    db.doc('legalDocs/cookies'),
     ...cityRefs,
     ...windowRefs,
   );
@@ -43,7 +46,12 @@ async function validateReferences(
   if (windowSnaps.some((snap) => !snap.exists || snap.get('active') !== true)) {
     throw appError('E_VALIDATION', { fields: { windowIds: 'invalid' } });
   }
-  if (!privacy?.exists || privacy.get('currentVersion') !== input.acceptPrivacy) {
+  const accepted: [typeof privacy, string][] = [
+    [privacy, input.acceptPrivacy],
+    [terms, input.acceptTerms],
+    [cookies, input.acceptCookies],
+  ];
+  if (accepted.some(([doc, version]) => !doc?.exists || doc.get('currentVersion') !== version)) {
     throw appError('E_LEGAL_VERSION');
   }
   return citySnaps[0]?.data() as CityDoc;
@@ -58,6 +66,7 @@ export async function joinWaitlist(
   input: JoinWaitlistInput,
   params: Params,
   now: Date,
+  evidence: { ip: string; userAgent: string | null } = { ip: 'unknown', userAgent: null },
 ): Promise<{ ok: true }> {
   const city = await validateReferences(db, input, params);
   const email = normalizeEmail(input.email);
@@ -116,6 +125,16 @@ export async function joinWaitlist(
     );
   });
 
+  // Evidence of what the visitor accepted (no account yet: found by the e-mail hash).
+  await recordConsents(
+    db,
+    [
+      { slug: 'terminos', version: input.acceptTerms, type: 'TERMS' },
+      { slug: 'privacidad', version: input.acceptPrivacy, type: 'PRIVACY' },
+      { slug: 'cookies', version: input.acceptCookies, type: 'COOKIES' },
+    ],
+    { uid: null, email, source: 'WAITLIST', ip: evidence.ip, userAgent: evidence.userAgent },
+  );
   return { ok: true };
 }
 

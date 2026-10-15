@@ -31,6 +31,7 @@ export function RegisterPage() {
   const { preference } = useTheme();
   const terms = useLegalVersion('terminos');
   const privacy = useLegalVersion('privacidad');
+  const cookies = useLegalVersion('cookies');
   const [formError, setFormError] = useState<React.ReactNode>(null);
   // While our own flow runs, auth state changes must not swap the form or redirect.
   const [flowActive, setFlowActive] = useState(false);
@@ -42,26 +43,32 @@ export function RegisterPage() {
     if (state.status === 'signedIn') return <Navigate to="/app" replace />;
   }
   // The form shows at once (NFR-02, prerendered); the legal versions are only needed to send it.
-  if (terms.isError || privacy.isError || terms.data === null || privacy.data === null) {
-    return <ErrorState onRetry={() => void Promise.all([terms.refetch(), privacy.refetch()])} />;
+  const legal = [terms, privacy, cookies];
+  if (legal.some((doc) => doc.isError || doc.data === null)) {
+    return <ErrorState onRetry={() => void Promise.all(legal.map((doc) => doc.refetch()))} />;
   }
   if (state.status === 'error') return <ErrorState onRetry={state.retry} />;
 
   /** Versions being accepted (FR-58); waits for them if the form was sent very early. */
   const legalVersions = async () => {
-    const [termsDoc, privacyDoc] = await Promise.all([
-      terms.data ? Promise.resolve(terms.data) : terms.refetch().then((r) => r.data),
-      privacy.data ? Promise.resolve(privacy.data) : privacy.refetch().then((r) => r.data),
-    ]);
-    if (!termsDoc || !privacyDoc) return null;
-    return { acceptedTerms: termsDoc.currentVersion, acceptedPrivacy: privacyDoc.currentVersion };
+    const [termsDoc, privacyDoc, cookiesDoc] = await Promise.all(
+      legal.map((doc) =>
+        doc.data ? Promise.resolve(doc.data) : doc.refetch().then((result) => result.data),
+      ),
+    );
+    if (!termsDoc || !privacyDoc || !cookiesDoc) return null;
+    return {
+      acceptedTerms: termsDoc.currentVersion,
+      acceptedPrivacy: privacyDoc.currentVersion,
+      acceptedCookies: cookiesDoc.currentVersion,
+    };
   };
   const completing = !flowActive && state.status === 'needsProfile';
   const googleName = completing ? (state.user.displayName ?? '').trim().split(/\s+/) : [];
 
   const finishProfile = async (
     values: RegisterValues,
-    versions: { acceptedTerms: string; acceptedPrivacy: string },
+    versions: { acceptedTerms: string; acceptedPrivacy: string; acceptedCookies: string },
   ) => {
     const code = values.referralCode.trim();
     await completeSignup({

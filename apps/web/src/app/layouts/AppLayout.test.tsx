@@ -76,7 +76,10 @@ describe('AppLayout guards (02_UX §2.3)', () => {
     expect(screen.queryByRole('button', { name: 'Cerrar' })).toBeNull();
     await user.keyboard('{Escape}');
     expect(dialog).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Aceptar y continuar' }));
+    const accept = screen.getByRole('button', { name: 'Aceptar y continuar' });
+    expect(accept).toBeDisabled();
+    await user.click(screen.getByRole('checkbox', { name: /Acepto los Términos/ }));
+    await user.click(accept);
     const { acceptLegalDocs } = await import('@/lib/callables');
     expect(vi.mocked(acceptLegalDocs).mock.calls[0]?.[0]).toEqual({
       items: [{ slug: 'terminos', version: '0.2' }],

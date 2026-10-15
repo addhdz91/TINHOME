@@ -14,3 +14,4 @@ export * from './support.js';
 export * from './admin-ops.js';
 export * from './sponsored.js';
 export * from './privacy.js';
+export * from './consent.js';

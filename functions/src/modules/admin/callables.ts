@@ -14,6 +14,8 @@ import {
   AdminGrantPremiumOutput,
   AdminListAuditInput,
   AdminListAuditOutput,
+  AdminListConsentsInput,
+  AdminListConsentsOutput,
   AdminParamsOutput,
   AdminPublishLegalDocInput,
   AdminPublishLegalDocOutput,
@@ -36,6 +38,7 @@ import { logger } from '../../core/logger.js';
 import { getParams } from '../../core/params.js';
 import { listAudit } from './audit.js';
 import * as catalog from './catalog.js';
+import { listConsents } from './consents.js';
 import { dashboard } from './dashboard.js';
 import { recomputeDemand } from './demand.js';
 import { getLegalDoc, publishLegalDoc } from './legal.js';
@@ -206,4 +209,11 @@ export const jobRecomputeDemand = onSchedule(
       at: clock.now().toISOString(),
     });
   },
+);
+
+/** BR-35 — SADM: legal acceptance evidence by account or e-mail (audited). */
+export const adminListConsents = defineCallable(
+  'adminListConsents',
+  { input: AdminListConsentsInput, output: AdminListConsentsOutput },
+  async ({ input, request }) => listConsents(db(), requireSuperadmin(request), input),
 );

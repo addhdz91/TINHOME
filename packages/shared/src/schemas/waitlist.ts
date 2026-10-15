@@ -15,8 +15,10 @@ export const JoinWaitlistInput = z
     windowIds: z
       .array(z.string().check(z.minLength(1), z.maxLength(60)))
       .check(z.maxLength(WAITLIST_MAX_WINDOWS)),
-    /** Version of `legalDocs/privacidad` the visitor accepted. */
+    /** Versions of `legalDocs/{privacidad,terminos,cookies}` the visitor accepted. */
     acceptPrivacy: z.string().check(z.minLength(1), z.maxLength(40)),
+    acceptTerms: z.string().check(z.minLength(1), z.maxLength(40)),
+    acceptCookies: z.string().check(z.minLength(1), z.maxLength(40)),
   })
   .check(
     z.refine((input) => new Set(input.destinations).size === input.destinations.length, {

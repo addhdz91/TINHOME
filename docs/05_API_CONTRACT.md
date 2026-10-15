@@ -28,12 +28,12 @@
 
 | Callable | Guardas | Entrada | Salida | Errores | Efectos |
 |---|---|---|---|---|---|
-| `completeSignup` | A | `{ firstName, lastName, birthDate, referralCode?, acceptedTerms: version, acceptedPrivacy: version }` | `{ me: Me }` | `E_UNDERAGE`, `E_LEGAL_VERSION`, `E_ALREADY_EXISTS`, `E_VALIDATION` (fecha futura o > 110 años) | Crea `users` (`onboarding.step = 2`), `publicProfiles`, `legalAcceptances` (TERMS, PRIVACY, IP /24), `referralCodes/{código propio}`; `referrals` si el código es válido (uno desconocido se ignora); si hay `waitlist` con ese email → `CONVERTED` + `users.waitlistPrefill`; encola N-02 |
+| `completeSignup` | A | `{ firstName, lastName, birthDate, referralCode?, acceptedTerms: version, acceptedPrivacy: version, acceptedCookies: version }` | `{ me: Me }` | `E_UNDERAGE`, `E_LEGAL_VERSION`, `E_ALREADY_EXISTS`, `E_VALIDATION` (fecha futura o > 110 años) | Crea `users` (`onboarding.step = 2`), `publicProfiles`, `legalAcceptances` (TERMS, PRIVACY, COOKIES; prueba completa, 04 §2.21), `referralCodes/{código propio}`; `referrals` si el código es válido (uno desconocido se ignora); si hay `waitlist` con ese email → `CONVERTED` + `users.waitlistPrefill`; encola N-02 |
 | `getMe` | A | `{}` | `Me` (ver §4) | `E_NOT_FOUND` (cuenta de Auth sin `completeSignup`: el cliente muestra «Completa tu registro») | — |
 | `updateProfile` | A, EV | `{ displayFirstName?, about?, languages?, travelsWith?, avatarPath? }` | `{ profile: PublicProfile }` | `E_TEXT_VIOLATION`, `E_VALIDATION` | Actualiza `publicProfiles` |
 | `updateSettings` | A | `{ theme?: 'system'\|'light'\|'dark'\|'black', notifications?: { [MATCHES\|MESSAGES\|LIKES\|EXCHANGES\|REVIEWS]: { email?: bool, push?: bool } }, pushPreview?: bool }` | `{ ok: true }` | `E_VALIDATION` (incluye `SERVICE`/`LEGAL`, que no se pueden desactivar) | `users.settings` (una clave por categoría y canal, M8) |
 | `confirmPhoneLinked` | A, EV | `{}` | `{ phoneVerified: true }` | `E_PHONE_NOT_LINKED`, `E_PHONE_NOT_ES` (solo móviles `+34 6/7…`) | Lee el teléfono de Auth, marca `phoneVerified`, guarda `phoneE164` y pasa el onboarding al paso 3 |
-| `acceptLegalDocs` | A | `{ items: { slug, version }[] }` (slugs aceptables: `terminos`, `privacidad`, `normas-comunidad`) | `{ ok: true }` | `E_LEGAL_VERSION`, `E_VALIDATION` | `legalAcceptances`, `users.legal` |
+| `acceptLegalDocs` | A | `{ items: { slug, version }[] }` (slugs aceptables: `terminos`, `privacidad`, `cookies`, `normas-comunidad`) | `{ ok: true }` | `E_LEGAL_VERSION`, `E_VALIDATION` | `legalAcceptances`, `users.legal` |
 | `requestAccountDeletion` | A (reautenticado < 5 min) | `{ confirm: 'ELIMINAR' }` | `{ purgeAt }` | `E_REAUTH_REQUIRED`, `E_NOT_FOUND` | BR-29: `users.status = DELETION_PENDING` + `deletion {requestedAt, purgeAt}`, casa `PAUSED` (deja de contar y de verse), cancela intercambios `PROPOSED`/`CONFIRMED` que aún se puedan cancelar (aviso a la otra persona), Stripe `cancel_at_period_end`, revoca sesiones, N-18 (app + email). Idempotente. J-05 purga a los P-16 días |
 | `signOutEverywhere` | A (reautenticado: `auth_time` < 5 min) | `{}` | `{ ok: true }` | `E_REAUTH_REQUIRED` | Revoca los *refresh tokens*; N-27 |
 | `registerPushToken` / `unregisterPushToken` | A | `{ token }` (20–4096) | `{ ok: true }` | `E_VALIDATION` | `users/{uid}/pushTokens/{sha256(token)}` (`token`, `platform`, `userAgent` ≤ 200, `createdAt`, `lastSeenAt`) |
@@ -66,7 +66,7 @@
 
 | Callable | Guardas | Entrada | Salida | Errores |
 |---|---|---|---|---|
-| `joinWaitlist` | PUB | `{ email, cityId, destinations: string[] (1–P-23, sin la propia ciudad), windowIds: string[] (0–10, activas), acceptPrivacy: version }` | `{ ok: true }` (siempre igual, exista o no) | `E_VALIDATION`, `E_RATE_LIMIT` (10/h por IP), `E_CITY_UNKNOWN`, `E_LEGAL_VERSION` |
+| `joinWaitlist` | PUB | `{ email, cityId, destinations: string[] (1–P-23, sin la propia ciudad), windowIds: string[] (0–10, activas), acceptTerms: version, acceptPrivacy: version, acceptCookies: version }` | `{ ok: true }` (siempre igual, exista o no) | `E_VALIDATION`, `E_RATE_LIMIT` (10/h por IP), `E_CITY_UNKNOWN`, `E_LEGAL_VERSION` |
 | `confirmWaitlist` | PUB | `{ token }` (43 car. base64url) | `{ cityId, position?: int }` (`position` solo en la primera confirmación; idempotente) | `E_TOKEN_INVALID` (desconocido o caducado: 7 días) |
 
 Ciudades, ventanas y `demandStats` se leen directamente de Firestore (lectura pública).
@@ -154,7 +154,7 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `unblockUser` | A | `{ targetUid }` | `{ ok: true }` | `E_NOT_FOUND` |
 | `listBlocked` | A | `{}` | `{ items: { uid, displayName, blockedAt }[] }` | — |
 | `submitReport` | A, EV | `{ targetType: 'HOME'\|'USER'\|'REVIEW'\|'MESSAGE', targetId (MESSAGE: `matchId/messageId`), reason: 'PHOTOS_NOT_OWN'\|'RUDE'\|'HARASSMENT'\|'INAPPROPRIATE_MESSAGES'\|'FRAUD'\|'HIDDEN_RENTAL'\|'ILLEGAL'\|'PERSONAL_DATA'\|'OTHER', description (20–2000), attachmentPaths? (≤ 5, `private/reports/{uid}/…`), alsoBlock?: boolean }` | `{ reportId, priority, preventiveHold: boolean }` | `E_RATE_LIMIT` (10/día), `E_VALIDATION` (incluye denunciarse a uno mismo), `E_NOT_FOUND` (contenido inexistente; mensaje de un chat ajeno) | Instantánea (`targetSnapshot`; mensajes: el denunciado y los 10 anteriores); alerta `REPORT_HIGH` + N-26 por email si prioridad alta; retención preventiva si BR-42 (casa si es HOME o fotos ajenas, cuenta en otro caso); acuse N-14 |
-| `submitPublicReport` | PUB (App Check, 3/h por IP) | `{ name, email, targetUrl, reason?, description (20–4000), goodFaith: true }` | `{ reportId }` | `E_RATE_LIMIT`, `E_VALIDATION`. Una URL `/casa/{id}` se enlaza a la casa; sin retención preventiva (denunciante no verificado); acuse N-14 |
+| `submitPublicReport` | PUB (App Check, 3/h por IP) | `{ name, email, targetUrl, reason?, description (20–4000), goodFaith: true, consents: { privacidad: version, cookies: version } }` | `{ reportId }` | `E_RATE_LIMIT`, `E_VALIDATION`, `E_LEGAL_VERSION`. Guarda la prueba en `legalAcceptances` (`PUBLIC_REPORT`). Una URL `/casa/{id}` se enlaza a la casa; sin retención preventiva (denunciante no verificado); acuse N-14 |
 | `submitAppeal` | A | `{ actionId, text (20–2000) }` | `{ appealId }` (= `actionId`) | `E_APPEAL_WINDOW_CLOSED`, `E_APPEAL_EXISTS`, `E_NOT_FOUND`, `E_STATE` (acción no restrictiva) |
 | `getMyStanding` | A | `{}` | `{ strikes: StrikeView[], actions: ModerationActionView[] (con `statement`, `appeal`, `appealable`), hold: { scope, reason, dueAt } \| null }` | — |
 | `adminListReports` | ADM | `{ status?, priority?, cursor?, limit? }` | `{ items, nextCursor }` | — |
@@ -176,7 +176,7 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `adminDecideLocationReview` | ADM | `{ homeId, decision: 'APPROVE'\|'REJECT', reason }` | `{ home }` | `E_STATE` |
 | `adminResolveHold` | ADM | `{ uid, scope: 'HOME'\|'USER', decision: 'RELEASE'\|'CONFIRM', statement? }` | `{ ok: true }` | `E_STATE` (sin retención), `E_STATEMENT_REQUIRED` (CONFIRM: oculta la casa o suspende la cuenta P-32 días) |
 | `adminListAlerts` / `adminHandleAlert` | ADM | `{}` / `{ alertId }` | `{ items: AdminAlertView[] }` / `{ ok: true }` | `E_NOT_FOUND`. El panel lee `adminAlerts` en tiempo real (regla: admin con 2FA) |
-| `submitComplaint` | A o PUB (con `email`; 5/h por uid o IP) | `{ category, subject (5–120), description (20–4000), attachmentPaths?, email?, name? }` | `{ ticketId, number (`TH-AAAA-NNNNNN`), dueAt }` | `E_RATE_LIMIT`, `E_VALIDATION` (visitante sin email) |
+| `submitComplaint` | A o PUB (con `email`; 5/h por uid o IP) | `{ category, subject (5–120), description (20–4000), attachmentPaths?, email?, name?, consents?: { privacidad: version, cookies: version } }` | `{ ticketId, number (`TH-AAAA-NNNNNN`), dueAt }` | `E_RATE_LIMIT`, `E_VALIDATION` (visitante sin email o sin `consents`), `E_LEGAL_VERSION`. Al visitante se le guarda la prueba (`PUBLIC_COMPLAINT`); con cuenta no hace falta |
 | `listMyComplaints` / `getComplaint` | A | `{}` / `{ ticketId }` | `{ items: TicketSummary[] }` / `TicketDetail` | `E_NOT_FOUND` (solicitud ajena) |
 | `addComplaintMessage` | A | `{ ticketId, text }` | `{ ok: true }` | `E_TICKET_CLOSED`, `E_NOT_FOUND` |
 | `adminListComplaints` / `adminGetComplaint` / `adminReplyComplaint` | ADM | `{ status?, cursor?, limit? }` / `{ ticketId }` / `{ ticketId, text, status }` | lista / `TicketDetail` / `{ ok: true }` | `E_NOT_FOUND`. La respuesta envía N-25 (centro + email; visitantes solo email) |
@@ -213,6 +213,7 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `adminGetMetrics` | ADM | `{ from, to, cityId? }` | `{ funnel, premium, demand, sponsored }` |
 | `adminExportCsv` | ADM | `{ report: 'FUNNEL'\|'DEMAND'\|'USERS', from, to }` | `{ url }` |
 | `adminListAudit` | SADM | `{ targetType?, targetId?, actorUid?, cursor? }` | `{ items, nextCursor }` |
+| `adminListConsents` | SADM | `{ uid } \| { email }` (uno de los dos) | `{ items: ConsentRecordView[] }` (máx. 200, más reciente primero; 04 §2.21) — cada consulta queda en `auditLog` (`consents.view`, sin el email buscado) |
 | `adminListGdprRequests` / `adminCloseGdprRequest` | ADM | `{ status?, cursor?, limit? }` / `{ id, status: 'DONE'\|'REJECTED', note (5–2000) }` | `{ items (por `dueAt`, con `overdue`), nextCursor }` / `{ ok: true }` (N-30 a la persona; auditado) |
 
 Todas las `admin*` que cambian algo escriben en `auditLog`.

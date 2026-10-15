@@ -37,7 +37,7 @@
 | `referrals` | `inviteeUid` | Invitador · admin | ✗ |
 | `notifications/{uid}/items` | auto | Propietario | Solo campo `readAt` |
 | `legalDocs` (+ `versions`) | slug / versión | Pública | ✗ |
-| `legalAcceptances` | auto | Propietario · admin | ✗ |
+| `legalAcceptances` | auto | Propietario (el equipo, solo por `adminListConsents`, auditada) | ✗ |
 | `config` | `public`, `params` | `public`: todos · `params`: admin | ✗ |
 | `partners` | auto | Admin | ✗ |
 | `partnerClicks` | auto | Admin | ✗ |
@@ -182,7 +182,7 @@
 `fromCityId`, `toCityId`, `windowId`, `count` (S; se publica solo si ≥ P-18), `updatedAt`.
 
 ### 2.15 `waitlist/{sha256(email)}`
-`email` (normalizado: sin espacios y en minúsculas), `cityId`, `destinations: string[]`, `windowIds: string[]`, `status: PENDING_CONFIRMATION|CONFIRMED|CONVERTED|UNSUBSCRIBED`, `confirmToken` (SHA-256 del token; el token en claro solo viaja en el email), `confirmTokenExpiresAt` (S, 7 días), `privacyVersion` + `privacyAcceptedAt` (consentimiento del visitante; no hay `uid` para `legalAcceptances`), `lastEmailAt` (S, reenvío ≥ 60 s), `createdAt`, `updatedAt`, `confirmedAt?`.
+`email` (normalizado: sin espacios y en minúsculas), `cityId`, `destinations: string[]`, `windowIds: string[]`, `status: PENDING_CONFIRMATION|CONFIRMED|CONVERTED|UNSUBSCRIBED`, `confirmToken` (SHA-256 del token; el token en claro solo viaja en el email), `confirmTokenExpiresAt` (S, 7 días), `privacyVersion` + `privacyAcceptedAt` (resumen; la prueba completa de términos, privacidad y cookies está en `legalAcceptances` con `uid: null` y `emailHash`), `lastEmailAt` (S, reenvío ≥ 60 s), `createdAt`, `updatedAt`, `confirmedAt?`.
 
 ### 2.15b `demandCounters/{fromCityId}_{toCityId}_{windowId}` (solo servidor, M1)
 `fromCityId`, `toCityId`, `windowId`, `count`, `updatedAt`. Recuento bruto (también < P-18). `demandStats` es su proyección pública y solo existe cuando `count ≥ P-18` (FR-18), porque las reglas no pueden ocultar campos.
@@ -209,7 +209,16 @@
 Slugs: `aviso-legal`, `terminos`, `privacidad`, `cookies`, `normas-comunidad`, `info-dsa`, `declaracion-responsable`, `autorizacion-arrendador`, `acuerdo-intercambio`. Documento padre: `currentVersion`, `title`. Versión: `markdown`, `publishedAt`, `requiresReacceptance: bool`, `changeSummary`.
 
 ### 2.21 `legalAcceptances/{id}`
-`uid`, `type: TERMS|PRIVACY|DECLARATION|WITHDRAWAL_START|COMMUNITY_RULES`, `version`, `acceptedAt`, `ipTruncated` (/24), `context?` (`homeId`).
+Prueba de aceptación (BR-35, RGPD art. 7.1). Solo inserción (`create`): nunca se actualiza ni se borra desde la app; una nueva aceptación es un documento nuevo.
+
+- **Quién:** `uid | null` (null para visitantes: lista de espera, reclamación o denuncia pública) y `emailHash` (SHA-256 del email normalizado; permite encontrar las de un visitante sin guardar su email).
+- **Qué:** `type: TERMS|PRIVACY|COOKIES|DECLARATION|WITHDRAWAL_START|COMMUNITY_RULES`, `slug`, `version`, `contentHash` (SHA-256 del markdown exacto de esa versión).
+- **Cuándo:** `acceptedAt` (hora del servidor).
+- **Cómo:** `source: SIGNUP|REACCEPTANCE|WAITLIST|PUBLIC_COMPLAINT|PUBLIC_REPORT|HOME_DECLARATION|PREMIUM_CHECKOUT`, `method: 'CHECKBOX'` (casilla propia de cada texto, sin marcar por defecto), `consentText` (texto exacto junto a la casilla, `CONSENT_TEXTS`) y `authProvider` (`password`, `google.com`… en el registro).
+- **Desde dónde:** `ipTruncated` (/24) y `userAgent` (≤ 300 caracteres).
+- `context?` (`homeId`) en la declaración responsable.
+
+Los registros anteriores a esta versión solo tienen `uid`, `type`, `version`, `acceptedAt` e `ipTruncated`.
 
 ### 2.22 `config/public` y `config/params`
 - `public`: lo que necesita el cliente: `freeDailyLikes`, `premiumMonthlyPriceCents`, `premiumYearlyPriceCents`, `photosMin`, `photosMax`, `maxDestinations`, `maxFlexibleRanges`, `exchangeMaxNights`, `withdrawalDays`, `sponsoredEveryNCards`.
@@ -345,7 +354,8 @@ service cloud.firestore {
     match /entitlements/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
     match /subscriptions/{userId} { allow read: if signedIn() && (uid() == userId || isAdmin()); }
     match /referrals/{id} { allow read: if signedIn() && (resource.data.inviterUid == uid() || isAdmin()); }
-    match /legalAcceptances/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    // Evidence (BR-35): the owner only; staff go through the audited adminListConsents.
+    match /legalAcceptances/{id} { allow read: if signedIn() && resource.data.uid == uid(); }
     match /gdprRequests/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
     match /moderationActions/{id} { allow read: if signedIn() && (resource.data.targetUid == uid() || isAdmin()); }
     match /appeals/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }

@@ -24,6 +24,7 @@ export const CompleteSignupInput = z.object({
   referralCode: z.optional(z.string().check(z.trim(), z.maxLength(20))),
   acceptedTerms: Version,
   acceptedPrivacy: Version,
+  acceptedCookies: Version,
 });
 export type CompleteSignupInput = z.infer<typeof CompleteSignupInput>;
 

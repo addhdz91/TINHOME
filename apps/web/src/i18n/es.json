@@ -172,7 +172,8 @@
       "metrics": "Métricas",
       "audit": "Auditoría",
       "partners": "Patrocinados",
-      "gdpr": "Solicitudes RGPD"
+      "gdpr": "Solicitudes RGPD",
+      "consents": "Consentimientos"
     },
     "denied": {
       "title": "No tienes acceso",
@@ -543,7 +544,8 @@
         "none": "Sin rol",
         "admin": "Admin",
         "superadmin": "Superadmin"
-      }
+      },
+      "consents": "Ver consentimientos legales"
     },
     "catalog": {
       "title": "Ciudades y ventanas",
@@ -708,6 +710,40 @@
         "DONE": "Atendida",
         "REJECTED": "Rechazada"
       }
+    },
+    "consents": {
+      "title": "Consentimientos legales",
+      "intro": "Prueba de qué aceptó cada persona, cuándo y cómo: documento, versión y huella del texto exacto, formulario, texto de la casilla, método de acceso, IP truncada y navegador. Cada consulta queda en la auditoría.",
+      "by": "Buscar por",
+      "byEmail": "Email",
+      "byUid": "ID de usuario",
+      "query": "Valor a buscar",
+      "search": "Buscar",
+      "empty": "No hay consentimientos registrados para esta búsqueda",
+      "download": "Descargar prueba (JSON)",
+      "fileName": "consentimientos-tinhome.json",
+      "cols": {
+        "when": "Fecha",
+        "doc": "Documento",
+        "version": "Versión",
+        "source": "Formulario",
+        "text": "Texto de la casilla",
+        "method": "Método",
+        "provider": "Acceso",
+        "ip": "IP (truncada)",
+        "agent": "Navegador",
+        "hash": "Huella SHA-256 del texto"
+      },
+      "sources": {
+        "SIGNUP": "Registro",
+        "REACCEPTANCE": "Reaceptación",
+        "WAITLIST": "Lista de espera",
+        "PUBLIC_COMPLAINT": "Reclamación pública",
+        "PUBLIC_REPORT": "Denuncia pública",
+        "HOME_DECLARATION": "Declaración de la casa",
+        "PREMIUM_CHECKOUT": "Pago Premium"
+      },
+      "legacy": "Registro anterior a la ampliación (sin detalle de formulario)"
     }
   },
   "appShell": {
@@ -981,7 +1017,9 @@
         "destinations": "Elige al menos una ciudad de destino.",
         "destinationsMax": "Elige como máximo {{max}} ciudades.",
         "acceptPrivacy": "Necesitamos que aceptes la política de privacidad.",
-        "windowIds": "Revisa las fechas elegidas."
+        "windowIds": "Revisa las fechas elegidas.",
+        "acceptTerms": "Necesitamos que aceptes los Términos y condiciones.",
+        "acceptCookies": "Confirma que has leído la Política de cookies."
       }
     },
     "noCities": "Ahora mismo no hay ciudades disponibles. Vuelve en unos días.",
@@ -1016,6 +1054,18 @@
       "declaracion-responsable": "Declaración responsable",
       "autorizacion-arrendador": "Autorización del arrendador",
       "acuerdo-intercambio": "Acuerdo de intercambio"
+    },
+    "read": "Leer",
+    "readDoc": "Leer {{title}}",
+    "consentRequired": {
+      "terminos": "Acepta los Términos y condiciones para continuar.",
+      "privacidad": "Acepta la Política de privacidad para continuar.",
+      "cookies": "Confirma que has leído la Política de cookies para continuar."
+    },
+    "consentDocs": {
+      "terminos": "Términos y condiciones",
+      "privacidad": "Política de privacidad",
+      "cookies": "Política de cookies"
     }
   },
   "authErrors": {
@@ -1066,7 +1116,8 @@
       "passwordCommon": "Esta contraseña es demasiado común. Elige otra.",
       "referralCode": "El código tiene 8 letras o números.",
       "terms": "Acepta los Términos para continuar.",
-      "privacy": "Acepta la Política de privacidad para continuar."
+      "privacy": "Acepta la Política de privacidad para continuar.",
+      "cookies": "Confirma que has leído la Política de cookies para continuar."
     },
     "register": {
       "title": "Crea tu cuenta",

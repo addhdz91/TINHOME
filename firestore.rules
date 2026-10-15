@@ -54,7 +54,8 @@ service cloud.firestore {
     match /entitlements/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
     match /subscriptions/{userId} { allow read: if signedIn() && (uid() == userId || isAdmin()); }
     match /referrals/{id} { allow read: if signedIn() && (resource.data.inviterUid == uid() || isAdmin()); }
-    match /legalAcceptances/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
+    // Evidence (BR-35): the owner only; staff go through the audited adminListConsents.
+    match /legalAcceptances/{id} { allow read: if signedIn() && resource.data.uid == uid(); }
     match /gdprRequests/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }
     match /moderationActions/{id} { allow read: if signedIn() && (resource.data.targetUid == uid() || isAdmin()); }
     match /appeals/{id} { allow read: if signedIn() && (resource.data.uid == uid() || isAdmin()); }

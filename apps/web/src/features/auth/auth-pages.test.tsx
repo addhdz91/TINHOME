@@ -47,10 +47,11 @@ async function fillRegister(user: ReturnType<typeof userEvent.setup>, birthDate 
 async function acceptLegal(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('checkbox', { name: /Acepto los Términos/ }));
   await user.click(screen.getByRole('checkbox', { name: /Política de privacidad/ }));
+  await user.click(screen.getByRole('checkbox', { name: /Política de cookies/ }));
 }
 
 describe('RegisterPage (FR-01)', () => {
-  it('AC-01.4 — the button stays disabled until Terms and Privacy are accepted', async () => {
+  it('AC-01.4 — the button stays disabled until Terms, Privacy and Cookies are accepted', async () => {
     const user = userEvent.setup();
     renderRoutesWithAuth(routes, '/registro', authValue({ status: 'signedOut' }));
     const submit = await screen.findByRole('button', { name: 'Crear cuenta' });
@@ -58,7 +59,19 @@ describe('RegisterPage (FR-01)', () => {
     await user.click(screen.getByRole('checkbox', { name: /Acepto los Términos/ }));
     expect(submit).toBeDisabled();
     await user.click(screen.getByRole('checkbox', { name: /Política de privacidad/ }));
+    expect(submit).toBeDisabled();
+    await user.click(screen.getByRole('checkbox', { name: /Política de cookies/ }));
     expect(submit).toBeEnabled();
+  });
+
+  it('each legal text has its own checkbox and a «Leer» link outside the label', async () => {
+    const user = userEvent.setup();
+    renderRoutesWithAuth(routes, '/registro', authValue({ status: 'signedOut' }));
+    const read = await screen.findByRole('button', { name: 'Leer Política de cookies' });
+    const box = screen.getByRole('checkbox', { name: /Política de cookies/ });
+    await user.click(read);
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(box).not.toBeChecked();
   });
 
   it('AC-01.2 — rejects a minor before creating any account', async () => {
@@ -109,6 +122,7 @@ describe('RegisterPage (FR-01)', () => {
       referralCode: 'ABCDEFGH',
       acceptedTerms: '0.1-provisional',
       acceptedPrivacy: '0.1-provisional',
+      acceptedCookies: '0.1-provisional',
     });
     expect(actions.forgetReferral).toHaveBeenCalled();
   });

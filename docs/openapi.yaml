@@ -40,7 +40,7 @@ paths:
       tags:
       - Cuenta
       summary: Completa el alta tras crear el usuario en Auth
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: A. Guarda la prueba de aceptación de términos, privacidad y cookies (legalAcceptances, 04 §2.21). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -51,23 +51,39 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    firstName: &id001
+                    firstName:
                       type: string
-                    lastName: *id001
-                    birthDate: &id006
+                      minLength: 1
+                      maxLength: 60
+                    lastName:
                       type: string
-                      format: date
-                    referralCode: *id001
-                    acceptedTerms: *id001
-                    acceptedPrivacy: *id001
+                      minLength: 1
+                      maxLength: 60
+                    birthDate:
+                      type: string
+                    referralCode:
+                      type: string
+                      maxLength: 20
+                    acceptedTerms:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
+                    acceptedPrivacy:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
+                    acceptedCookies:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
                   required:
                   - firstName
                   - lastName
                   - birthDate
                   - acceptedTerms
                   - acceptedPrivacy
+                  - acceptedCookies
               required:
               - data
       responses:
@@ -81,12 +97,319 @@ paths:
                 properties:
                   result:
                     type: object
-                    additionalProperties: false
                     properties:
                       me:
-                        $ref: '#/components/schemas/Me'
+                        type: object
+                        properties:
+                          uid:
+                            type: string
+                          email:
+                            type: string
+                          firstName:
+                            type: string
+                          status:
+                            type: string
+                            enum:
+                            - ACTIVE
+                            - SUSPENDED
+                            - BANNED
+                            - DELETION_PENDING
+                            - DELETED
+                          verification:
+                            type: object
+                            properties:
+                              emailVerified:
+                                type: boolean
+                              phoneVerified:
+                                type: boolean
+                              identity:
+                                type: string
+                                enum:
+                                - NONE
+                                - PENDING
+                                - INFO_REQUESTED
+                                - APPROVED
+                                - REJECTED
+                            required:
+                            - emailVerified
+                            - phoneVerified
+                            - identity
+                            additionalProperties: false
+                          onboarding:
+                            type: object
+                            properties:
+                              step:
+                                anyOf:
+                                - type: number
+                                  const: 1
+                                - type: number
+                                  const: 2
+                                - type: number
+                                  const: 3
+                                - type: number
+                                  const: 4
+                                - type: number
+                                  const: 5
+                                - type: number
+                                  const: 6
+                              completed:
+                                type: boolean
+                              percent:
+                                type: integer
+                                minimum: 0
+                                maximum: 100
+                            required:
+                            - step
+                            - completed
+                            - percent
+                            additionalProperties: false
+                          home:
+                            anyOf:
+                            - type: object
+                              properties:
+                                id:
+                                  type: string
+                                status:
+                                  type: string
+                                  enum:
+                                  - DRAFT
+                                  - PUBLISHED
+                                  - PAUSED
+                                  - HIDDEN_BY_ADMIN
+                                visible:
+                                  type: boolean
+                                cityId:
+                                  type:
+                                  - string
+                                  - 'null'
+                              required:
+                              - id
+                              - status
+                              - visible
+                              - cityId
+                              additionalProperties: false
+                            - type: 'null'
+                          city:
+                            anyOf:
+                            - type: object
+                              properties:
+                                id:
+                                  type: string
+                                name:
+                                  type: string
+                                status:
+                                  type: string
+                                  enum:
+                                  - WAITLIST
+                                  - OPEN
+                                  - CLOSED
+                                progress:
+                                  type: object
+                                  properties:
+                                    count:
+                                      type: integer
+                                      minimum: -9007199254740991
+                                      maximum: 9007199254740991
+                                    threshold:
+                                      type: integer
+                                      minimum: -9007199254740991
+                                      maximum: 9007199254740991
+                                  required:
+                                  - count
+                                  - threshold
+                                  additionalProperties: false
+                              required:
+                              - id
+                              - name
+                              - status
+                              - progress
+                              additionalProperties: false
+                            - type: 'null'
+                          premium:
+                            type: object
+                            properties:
+                              active:
+                                type: boolean
+                              until:
+                                anyOf:
+                                - type: string
+                                  format: date-time
+                                  pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                                - type: 'null'
+                              source:
+                                anyOf:
+                                - type: string
+                                  enum:
+                                  - STRIPE
+                                  - FOUNDER
+                                  - REFERRAL
+                                  - ADMIN
+                                - type: 'null'
+                              plan:
+                                anyOf:
+                                - type: string
+                                  enum:
+                                  - MONTHLY
+                                  - YEARLY
+                                - type: 'null'
+                              cancelAtPeriodEnd:
+                                type: boolean
+                              canWithdraw:
+                                type: boolean
+                            required:
+                            - active
+                            - until
+                            - source
+                            - plan
+                            - cancelAtPeriodEnd
+                            - canWithdraw
+                            additionalProperties: false
+                          likes:
+                            type: object
+                            properties:
+                              remainingToday:
+                                anyOf:
+                                - type: integer
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                - type: 'null'
+                              resetsAt:
+                                type: string
+                                format: date-time
+                                pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+                            required:
+                            - remainingToday
+                            - resetsAt
+                            additionalProperties: false
+                          canLike:
+                            type: boolean
+                          blockers:
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                              - ACCOUNT_RESTRICTED
+                              - EMAIL
+                              - PHONE
+                              - HOME_INCOMPLETE
+                              - NO_AVAILABILITY
+                              - IDENTITY_MISSING
+                              - IDENTITY_PENDING
+                              - IDENTITY_REJECTED
+                              - DECLARATION
+                              - HOME_NOT_PUBLISHED
+                              - CITY_WAITLIST
+                              - LEGAL_OUTDATED
+                          legalPending:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                slug:
+                                  type: string
+                                version:
+                                  type: string
+                                requiresReacceptance:
+                                  type: boolean
+                              required:
+                              - slug
+                              - version
+                              - requiresReacceptance
+                              additionalProperties: false
+                          foundingMember:
+                            type: boolean
+                          referralCode:
+                            type: string
+                          roles:
+                            type: array
+                            items:
+                              type: string
+                              enum:
+                              - admin
+                              - superadmin
+                          settings:
+                            type: object
+                            properties:
+                              theme:
+                                type: string
+                                enum:
+                                - system
+                                - light
+                                - dark
+                                - black
+                              notifications:
+                                type: object
+                                properties:
+                                  MATCHES:
+                                    type: object
+                                    properties:
+                                      email:
+                                        type: boolean
+                                      push:
+                                        type: boolean
+                                    additionalProperties: false
+                                  MESSAGES:
+                                    type: object
+                                    properties:
+                                      email:
+                                        type: boolean
+                                      push:
+                                        type: boolean
+                                    additionalProperties: false
+                                  LIKES:
+                                    type: object
+                                    properties:
+                                      email:
+                                        type: boolean
+                                      push:
+                                        type: boolean
+                                    additionalProperties: false
+                                  EXCHANGES:
+                                    type: object
+                                    properties:
+                                      email:
+                                        type: boolean
+                                      push:
+                                        type: boolean
+                                    additionalProperties: false
+                                  REVIEWS:
+                                    type: object
+                                    properties:
+                                      email:
+                                        type: boolean
+                                      push:
+                                        type: boolean
+                                    additionalProperties: false
+                                additionalProperties: false
+                              pushPreview:
+                                type: boolean
+                            required:
+                            - theme
+                            - notifications
+                            - pushPreview
+                            additionalProperties: false
+                        required:
+                        - uid
+                        - email
+                        - firstName
+                        - status
+                        - verification
+                        - onboarding
+                        - home
+                        - city
+                        - premium
+                        - likes
+                        - canLike
+                        - blockers
+                        - legalPending
+                        - foundingMember
+                        - referralCode
+                        - roles
+                        - settings
+                        additionalProperties: false
                     required:
                     - me
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -160,7 +483,7 @@ paths:
                   type: object
                   additionalProperties: false
                   properties:
-                    displayFirstName: *id001
+                    displayFirstName: &id001 {type: string}
                     about:
                       type: string
                       maxLength: 300
@@ -360,7 +683,7 @@ paths:
       tags:
       - Cuenta
       summary: Acepta versiones de textos legales
-      description: 'Callable de Firebase. Guardas: A. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: A. Un registro de prueba por texto (source REACCEPTANCE). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -371,16 +694,22 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     items:
+                      minItems: 1
+                      maxItems: 10
                       type: array
                       items:
                         type: object
-                        additionalProperties: false
                         properties:
-                          slug: *id001
-                          version: *id001
+                          slug:
+                            type: string
+                            minLength: 1
+                            maxLength: 60
+                          version:
+                            type: string
+                            minLength: 1
+                            maxLength: 40
                         required:
                         - slug
                         - version
@@ -397,7 +726,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: &id003 {additionalProperties: false, properties: {ok: {const: true}}, required: [ok], type: object}
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -1020,7 +1357,7 @@ paths:
       tags:
       - Ciudades
       summary: Apuntarse a la lista de espera (pública)
-      description: 'Callable de Firebase. Guardas: PUB. Errores: E_VALIDATION, E_RATE_LIMIT, E_CITY_UNKNOWN, E_LEGAL_VERSION. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: PUB. Errores: E_VALIDATION, E_RATE_LIMIT, E_CITY_UNKNOWN, E_LEGAL_VERSION. Prueba de aceptación por emailHash (source WAITLIST). Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -1031,25 +1368,50 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     email:
                       type: string
-                      format: email
-                    cityId: *id001
+                    cityId:
+                      type: string
+                      minLength: 1
+                      maxLength: 60
+                      pattern: ^[a-z0-9-]+$
                     destinations:
+                      minItems: 1
+                      maxItems: 5
                       type: array
-                      items: *id001
+                      items:
+                        type: string
+                        minLength: 1
+                        maxLength: 60
+                        pattern: ^[a-z0-9-]+$
                     windowIds:
+                      maxItems: 10
                       type: array
-                      items: *id001
-                    acceptPrivacy: *id001
+                      items:
+                        type: string
+                        minLength: 1
+                        maxLength: 60
+                    acceptPrivacy:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
+                    acceptTerms:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
+                    acceptCookies:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
                   required:
                   - email
                   - cityId
                   - destinations
                   - windowIds
                   - acceptPrivacy
+                  - acceptTerms
+                  - acceptCookies
               required:
               - data
       responses:
@@ -1061,7 +1423,15 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        const: true
+                    required:
+                    - ok
+                    additionalProperties: false
                 required:
                 - result
         default:
@@ -3941,7 +4311,7 @@ paths:
       tags:
       - Seguridad
       summary: Denuncia pública sin cuenta (FR-43)
-      description: 'Callable de Firebase. Guardas: PUB. App Check + 3 por hora por IP. Sin retención preventiva (denunciante no verificado). Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: PUB. App Check + 3 por hora por IP. Sin retención preventiva (denunciante no verificado). consents (privacidad y cookies) obligatorio; E_LEGAL_VERSION si no es la versión vigente. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -3985,12 +4355,28 @@ paths:
                     goodFaith:
                       type: boolean
                       const: true
+                    consents:
+                      type: object
+                      properties:
+                        privacidad:
+                          type: string
+                          minLength: 1
+                          maxLength: 40
+                        cookies:
+                          type: string
+                          minLength: 1
+                          maxLength: 40
+                      required:
+                      - privacidad
+                      - cookies
+                      additionalProperties: false
                   required:
                   - name
                   - email
                   - targetUrl
                   - description
                   - goodFaith
+                  - consents
               required:
               - data
       responses:
@@ -8033,7 +8419,7 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: *id003
+                  result: &id003 {additionalProperties: false, properties: {ok: {const: true}}, required: [ok], type: object}
                 required:
                 - result
         default:
@@ -8543,7 +8929,7 @@ paths:
       tags:
       - Ayuda
       summary: Queja o reclamación con número de seguimiento (FR-67, BR-43)
-      description: 'Callable de Firebase. Guardas: A|PUB. Visitantes: email obligatorio. 5 por hora (uid o IP). Acuse N-25 con número y plazo P-38. Ver 05_API_CONTRACT.md.'
+      description: 'Callable de Firebase. Guardas: A|PUB. Visitantes: email y consents (privacidad y cookies) obligatorios. 5 por hora (uid o IP). Acuse N-25 con número y plazo P-38. Ver 05_API_CONTRACT.md.'
       requestBody:
         required: true
         content:
@@ -8587,6 +8973,21 @@ paths:
                       type: string
                       minLength: 2
                       maxLength: 80
+                    consents:
+                      type: object
+                      properties:
+                        privacidad:
+                          type: string
+                          minLength: 1
+                          maxLength: 40
+                        cookies:
+                          type: string
+                          minLength: 1
+                          maxLength: 40
+                      required:
+                      - privacidad
+                      - cookies
+                      additionalProperties: false
                   required:
                   - category
                   - subject
@@ -11368,6 +11769,142 @@ paths:
       security:
       - FirebaseIdToken: []
         AppCheck: []
+  /adminListConsents:
+    post:
+      operationId: adminListConsents
+      tags:
+      - Admin
+      summary: Prueba de aceptación de textos legales por cuenta o email (BR-35)
+      description: 'Callable de Firebase. Guardas: SADM. Máx. 200 registros. Cada consulta queda en auditLog (consents.view). Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    uid:
+                      type: string
+                      minLength: 1
+                      maxLength: 128
+                    email:
+                      type: string
+                      maxLength: 254
+                      format: email
+                      pattern: ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            uid:
+                              type:
+                              - string
+                              - 'null'
+                            type:
+                              type: string
+                              enum:
+                              - TERMS
+                              - PRIVACY
+                              - DECLARATION
+                              - WITHDRAWAL_START
+                              - COMMUNITY_RULES
+                              - COOKIES
+                            slug:
+                              type:
+                              - string
+                              - 'null'
+                            version:
+                              type: string
+                            contentHash:
+                              type:
+                              - string
+                              - 'null'
+                            source:
+                              anyOf:
+                              - type: string
+                                enum:
+                                - SIGNUP
+                                - REACCEPTANCE
+                                - WAITLIST
+                                - PUBLIC_COMPLAINT
+                                - PUBLIC_REPORT
+                                - HOME_DECLARATION
+                                - PREMIUM_CHECKOUT
+                              - type: 'null'
+                            method:
+                              type:
+                              - string
+                              - 'null'
+                            consentText:
+                              type:
+                              - string
+                              - 'null'
+                            authProvider:
+                              type:
+                              - string
+                              - 'null'
+                            acceptedAt:
+                              type:
+                              - string
+                              - 'null'
+                            ipTruncated:
+                              type:
+                              - string
+                              - 'null'
+                            userAgent:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - id
+                          - uid
+                          - type
+                          - slug
+                          - version
+                          - contentHash
+                          - source
+                          - method
+                          - consentText
+                          - authProvider
+                          - acceptedAt
+                          - ipTruncated
+                          - userAgent
+                          additionalProperties: false
+                    required:
+                    - items
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
 components:
   securitySchemes:
     FirebaseIdToken:
@@ -11582,7 +12119,7 @@ components:
             type: object
             additionalProperties: false
             properties:
-              start: *id006
+              start: &id006 {format: date, type: string}
               end: *id006
             required:
             - start

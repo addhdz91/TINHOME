@@ -1,23 +1,44 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo, useRef } from 'react';
 import { Controller, useForm, useWatch, type FieldErrors } from 'react-hook-form';
-import { Trans, useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { CheckboxGroup } from '@/components/CheckboxGroup';
 import { FieldError } from '@/components/FieldError';
 import { Button } from '@/components/ui/button';
 import type { City, ExchangeWindow } from '@/features/cities';
+import { ConsentCheckbox } from '@/features/legal/components/ConsentCheckbox';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { useJoinWaitlist } from '../api/use-waitlist';
 import { waitlistFormSchema, type WaitlistFormValues } from '../lib/form-schema';
 
-const FIELD_ORDER = ['email', 'cityId', 'destinations', 'windowIds', 'acceptPrivacy'] as const;
+const FIELD_ORDER = [
+  'email',
+  'cityId',
+  'destinations',
+  'windowIds',
+  'acceptTerms',
+  'acceptPrivacy',
+  'acceptCookies',
+] as const;
+
+/** Legal texts the visitor accepts, each with its own checkbox and «Leer». */
+const CONSENTS = [
+  { field: 'acceptTerms', slug: 'terminos' },
+  { field: 'acceptPrivacy', slug: 'privacidad' },
+  { field: 'acceptCookies', slug: 'cookies' },
+] as const;
+
+export interface WaitlistLegalVersions {
+  terminos: string;
+  privacidad: string;
+  cookies: string;
+}
 type FieldName = (typeof FIELD_ORDER)[number];
 
 interface WaitlistFormProps {
   cities: City[];
   windows: ExchangeWindow[];
-  privacyVersion: string;
+  legalVersions: WaitlistLegalVersions;
   maxDestinations: number;
   onJoined: () => void;
   onPrivacyOutdated: () => void;
@@ -27,7 +48,7 @@ interface WaitlistFormProps {
 export function WaitlistForm({
   cities,
   windows,
-  privacyVersion,
+  legalVersions,
   maxDestinations,
   onJoined,
   onPrivacyOutdated,
@@ -44,7 +65,15 @@ export function WaitlistForm({
     formState: { errors, isSubmitted },
   } = useForm<WaitlistFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', cityId: '', destinations: [], windowIds: [], acceptPrivacy: false },
+    defaultValues: {
+      email: '',
+      cityId: '',
+      destinations: [],
+      windowIds: [],
+      acceptTerms: false,
+      acceptPrivacy: false,
+      acceptCookies: false,
+    },
   });
   const cityId = useWatch({ control, name: 'cityId' });
 
@@ -69,7 +98,9 @@ export function WaitlistForm({
         cityId: values.cityId,
         destinations: values.destinations,
         windowIds: values.windowIds,
-        acceptPrivacy: privacyVersion,
+        acceptTerms: legalVersions.terminos,
+        acceptPrivacy: legalVersions.privacidad,
+        acceptCookies: legalVersions.cookies,
       });
       onJoined();
     } catch (error) {
@@ -194,27 +225,17 @@ export function WaitlistForm({
         />
       ) : null}
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start gap-3">
-          <input
-            id="waitlist-acceptPrivacy"
-            type="checkbox"
-            aria-invalid={errors.acceptPrivacy ? true : undefined}
-            aria-describedby="waitlist-acceptPrivacy-error"
-            className="mt-1 size-5 accent-primary"
-            {...register('acceptPrivacy')}
+      <fieldset className="flex flex-col gap-1">
+        {CONSENTS.map(({ field, slug }) => (
+          <ConsentCheckbox
+            key={field}
+            id={`waitlist-${field}`}
+            slug={slug}
+            error={messageFor(field)}
+            {...register(field)}
           />
-          <label htmlFor="waitlist-acceptPrivacy">
-            <Trans
-              i18nKey="waitlist.form.privacy"
-              components={{
-                1: <Link to="/legal/privacidad" target="_blank" className="text-link underline" />,
-              }}
-            />
-          </label>
-        </div>
-        <FieldError id="waitlist-acceptPrivacy-error" message={messageFor('acceptPrivacy')} />
-      </div>
+        ))}
+      </fieldset>
 
       {showServerError ? (
         <p role="alert" className="rounded-md border border-danger p-3">

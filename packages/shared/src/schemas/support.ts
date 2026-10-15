@@ -10,6 +10,13 @@ import { PaginationInput } from './common.js';
 const Attachments = z.optional(z.array(z.string().check(z.maxLength(300))).check(z.maxLength(5)));
 
 /** FR-67 — `submitComplaint`: signed-in users or visitors (with e-mail). */
+/** Versions of the privacy and cookies policies a visitor accepted in a public form. */
+export const VisitorConsents = z.strictObject({
+  privacidad: z.string().check(z.minLength(1), z.maxLength(40)),
+  cookies: z.string().check(z.minLength(1), z.maxLength(40)),
+});
+export type VisitorConsents = z.infer<typeof VisitorConsents>;
+
 export const SubmitComplaintInput = z.object({
   category: z.enum(COMPLAINT_CATEGORIES),
   subject: z.string().check(z.trim(), z.minLength(5), z.maxLength(120)),
@@ -17,6 +24,8 @@ export const SubmitComplaintInput = z.object({
   attachmentPaths: Attachments,
   email: z.optional(z.email().check(z.maxLength(254))),
   name: z.optional(z.string().check(z.trim(), z.minLength(2), z.maxLength(80))),
+  /** Visitors only (signed-in people accepted them at sign-up). */
+  consents: z.optional(VisitorConsents),
 });
 export type SubmitComplaintInput = z.infer<typeof SubmitComplaintInput>;
 export const SubmitComplaintOutput = z.object({
@@ -107,5 +116,6 @@ export const SubmitPublicReportInput = z.object({
   reason: z.optional(z.enum(REPORT_REASONS)),
   description: z.string().check(z.trim(), z.minLength(20), z.maxLength(4000)),
   goodFaith: z.literal(true),
+  consents: VisitorConsents,
 });
 export const SubmitPublicReportOutput = z.object({ reportId: z.string() });

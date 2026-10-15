@@ -58,6 +58,7 @@ export const LEGAL_DOCS: Record<LegalDocSlug, { title: string; markdown: string 
       'Base jurídica',
       'Encargados y transferencias',
       'Conservación',
+      'Registro de tu aceptación de los textos legales',
       'Tus derechos',
     ]),
   },

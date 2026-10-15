@@ -6,7 +6,9 @@ const valid = {
   cityId: 'madrid',
   destinations: ['valencia'],
   windowIds: ['ss27'],
+  acceptTerms: '0.1-provisional',
   acceptPrivacy: '0.1-provisional',
+  acceptCookies: '0.1-provisional',
 };
 
 describe('JoinWaitlistInput', () => {

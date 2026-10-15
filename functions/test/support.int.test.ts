@@ -80,7 +80,12 @@ describe('complaints (FR-67, BR-43)', () => {
   it('visitors must leave an e-mail', async () => {
     expect(await errorCode(submitComplaint.run(publicRequest(complaint)))).toBe('E_VALIDATION');
     const visitor = await submitComplaint.run(
-      publicRequest({ ...complaint, email: 'visitante@ejemplo.es', name: 'Ana' }),
+      publicRequest({
+        ...complaint,
+        email: 'visitante@ejemplo.es',
+        name: 'Ana',
+        consents: { privacidad: '0.1', cookies: '0.1' },
+      }),
     );
     expect(visitor.number).toMatch(/^TH-2027-\d{6}$/);
     expect(await mails()).toEqual(['N-25:visitante@ejemplo.es']);
@@ -165,6 +170,7 @@ describe('public report (FR-43)', () => {
       reason: 'PHOTOS_NOT_OWN' as const,
       description: 'Estas fotos son de mi piso, no de esta persona.',
       goodFaith: true as const,
+      consents: { privacidad: '0.1', cookies: '0.1' },
     };
     const { reportId } = await submitPublicReport.run(publicRequest(input, '198.51.100.9'));
     const report = (await db().doc(`reports/${reportId}`).get()).data();

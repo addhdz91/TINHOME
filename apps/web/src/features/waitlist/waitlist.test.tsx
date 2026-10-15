@@ -18,7 +18,9 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.selectOptions(screen.getByLabelText('Tu ciudad'), 'malaga');
   await user.click(screen.getByRole('checkbox', { name: 'Madrid' }));
   await user.click(screen.getByRole('checkbox', { name: 'Semana Santa 2027' }));
-  await user.click(screen.getByRole('checkbox', { name: /política de privacidad/ }));
+  await user.click(screen.getByRole('checkbox', { name: /Términos y condiciones/ }));
+  await user.click(screen.getByRole('checkbox', { name: /Política de privacidad/ }));
+  await user.click(screen.getByRole('checkbox', { name: /Política de cookies/ }));
 }
 
 describe('WaitlistPage', () => {
@@ -31,7 +33,9 @@ describe('WaitlistPage', () => {
     expect(summary).toHaveTextContent('Escribe un email válido.');
     expect(summary).toHaveTextContent('Elige tu ciudad.');
     expect(summary).toHaveTextContent('Elige al menos una ciudad de destino.');
+    expect(summary).toHaveTextContent('Necesitamos que aceptes los Términos y condiciones.');
     expect(summary).toHaveTextContent('Necesitamos que aceptes la política de privacidad.');
+    expect(summary).toHaveTextContent('Confirma que has leído la Política de cookies.');
     expect(screen.getByRole('link', { name: 'Elige tu ciudad.' })).toHaveAttribute(
       'href',
       '#waitlist-cityId',
@@ -48,7 +52,7 @@ describe('WaitlistPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Valencia' })).toBeInTheDocument();
   });
 
-  it('sends the accepted privacy version and shows «Revisa tu email»', async () => {
+  it('sends each accepted legal version and shows «Revisa tu email»', async () => {
     callables.joinWaitlist.mockResolvedValue({ ok: true });
     const user = userEvent.setup();
     renderRoutes(waitlistRoutes, '/lista-espera');
@@ -61,7 +65,9 @@ describe('WaitlistPage', () => {
       cityId: 'malaga',
       destinations: ['madrid'],
       windowIds: ['semana-santa-2027'],
+      acceptTerms: '0.1-provisional',
       acceptPrivacy: '0.1-provisional',
+      acceptCookies: '0.1-provisional',
     });
   });
 

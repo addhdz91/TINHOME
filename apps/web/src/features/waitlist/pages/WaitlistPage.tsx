@@ -18,12 +18,16 @@ export function WaitlistPage() {
   const cities = useCities();
   const windows = useActiveWindows();
   const privacy = useLegalVersion('privacidad');
+  const terms = useLegalVersion('terminos');
+  const cookies = useLegalVersion('cookies');
+  const legal = [privacy, terms, cookies];
   const config = usePublicConfig();
   const demand = useTopDemand();
   const [joined, setJoined] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
-  const loading = cities.isPending || windows.isPending || privacy.isPending || config.isPending;
+  const loading =
+    cities.isPending || windows.isPending || config.isPending || legal.some((doc) => doc.isPending);
 
   let content;
   if (joined) {
@@ -56,14 +60,21 @@ export function WaitlistPage() {
         <span className="sr-only">{t('common.loading')}</span>
       </div>
     );
-  } else if (!cities.isSuccess || !windows.isSuccess || !config.isSuccess || !privacy.data) {
-    // Any failed request, or no privacy text published: the visitor cannot consent yet.
+  } else if (
+    !cities.isSuccess ||
+    !windows.isSuccess ||
+    !config.isSuccess ||
+    !privacy.data ||
+    !terms.data ||
+    !cookies.data
+  ) {
+    // Any failed request, or a legal text not published: the visitor cannot consent yet.
     content = (
       <ErrorState
         onRetry={() => {
           void cities.refetch();
           void windows.refetch();
-          void privacy.refetch();
+          for (const doc of legal) void doc.refetch();
           void config.refetch();
         }}
       />
@@ -76,10 +87,16 @@ export function WaitlistPage() {
         key={formKey}
         cities={cities.data}
         windows={windows.data}
-        privacyVersion={privacy.data.currentVersion}
+        legalVersions={{
+          privacidad: privacy.data.currentVersion,
+          terminos: terms.data.currentVersion,
+          cookies: cookies.data.currentVersion,
+        }}
         maxDestinations={config.data.maxDestinations}
         onJoined={() => setJoined(true)}
-        onPrivacyOutdated={() => void privacy.refetch()}
+        onPrivacyOutdated={() => {
+          for (const doc of legal) void doc.refetch();
+        }}
       />
     );
   }

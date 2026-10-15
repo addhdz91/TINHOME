@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { COMPLAINT_CATEGORIES, type ComplaintCategory } from '@tinhome/shared/constants';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
+import { useVisitorConsentVersions } from '@/features/legal/api/use-visitor-consents';
+import { ConsentCheckbox } from '@/features/legal/components/ConsentCheckbox';
 import { toUserMessage } from '@/lib/app-error';
 import { submitComplaint } from '@/lib/callables';
 import { formatInstant } from '@/lib/format';
@@ -25,13 +27,22 @@ export function ComplaintForm({ visitor }: { visitor: boolean }) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [touched, setTouched] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptCookies, setAcceptCookies] = useState(false);
+  const legal = useVisitorConsentVersions(visitor);
   const send = useMutation({
     mutationFn: () =>
       submitComplaint({
         category,
         subject: subject.trim(),
         description: description.trim(),
-        ...(visitor ? { email: email.trim(), ...(name.trim() ? { name: name.trim() } : {}) } : {}),
+        ...(visitor
+          ? {
+              email: email.trim(),
+              ...(name.trim() ? { name: name.trim() } : {}),
+              ...(legal.versions ? { consents: legal.versions } : {}),
+            }
+          : {}),
       }),
     onError: (error) => toast.error(toUserMessage(t, error)),
   });
@@ -44,7 +55,17 @@ export function ComplaintForm({ visitor }: { visitor: boolean }) {
     email:
       visitor && !/^\S+@\S+\.\S+$/.test(email.trim()) ? t('support.form.emailError') : undefined,
   };
-  const valid = !errors.subject && !errors.description && !errors.email;
+  const consentErrors = {
+    privacy: visitor && !acceptPrivacy ? t('legal.consentRequired.privacidad') : undefined,
+    cookies: visitor && !acceptCookies ? t('legal.consentRequired.cookies') : undefined,
+  };
+  const valid =
+    !errors.subject &&
+    !errors.description &&
+    !errors.email &&
+    !consentErrors.privacy &&
+    !consentErrors.cookies &&
+    (!visitor || legal.versions !== null);
 
   if (send.data) {
     return (
@@ -137,6 +158,29 @@ export function ComplaintForm({ visitor }: { visitor: boolean }) {
           {touched && errors.description ? errors.description : t('support.form.descriptionHint')}
         </p>
       </div>
+      {visitor ? (
+        <fieldset className="flex flex-col gap-1">
+          <ConsentCheckbox
+            id="complaint-privacy"
+            slug="privacidad"
+            checked={acceptPrivacy}
+            onChange={(event) => setAcceptPrivacy(event.target.checked)}
+            error={touched ? consentErrors.privacy : undefined}
+          />
+          <ConsentCheckbox
+            id="complaint-cookies"
+            slug="cookies"
+            checked={acceptCookies}
+            onChange={(event) => setAcceptCookies(event.target.checked)}
+            error={touched ? consentErrors.cookies : undefined}
+          />
+          {legal.isError ? (
+            <p role="alert" className="text-sm text-danger">
+              {t('errors.E_LEGAL_VERSION')}
+            </p>
+          ) : null}
+        </fieldset>
+      ) : null}
       <p className="text-sm text-muted">{t('support.official')}</p>
       <Button type="submit" size="lg" disabled={send.isPending}>
         {t('support.form.submit')}

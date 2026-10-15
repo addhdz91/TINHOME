@@ -24,6 +24,9 @@ import {
   DEMO_PROJECT_ID,
   PARAM_DEFAULTS,
   toPublicConfig,
+  CONSENT_DOCS,
+  CONSENT_TEXTS,
+  SIGNUP_LEGAL_DOCS,
 } from '@tinhome/shared/constants';
 import { demandStatId, dhashBands } from '@tinhome/shared/domain';
 import { buildCatalog } from './seed-data/catalog.js';
@@ -194,11 +197,34 @@ async function seedUsers(): Promise<void> {
       legal: {
         terminos: demo.acceptedTerms === 'current' ? LEGAL_VERSION : demo.acceptedTerms,
         privacidad: LEGAL_VERSION,
+        cookies: LEGAL_VERSION,
       },
       settings: { theme: demo.theme, notifications: {} },
       createdAt: now,
       updatedAt: now,
     });
+    // Example evidence of the sign-up consents (same shape as the server writes, M10).
+    for (const slug of CONSENT_DOCS) {
+      const version =
+        slug === 'terminos' && demo.acceptedTerms !== 'current'
+          ? demo.acceptedTerms
+          : LEGAL_VERSION;
+      batch.set(db.doc(`legalAcceptances/seed-${demo.uid}-${slug}`), {
+        uid: demo.uid,
+        emailHash: createHash('sha256').update(demo.email.toLowerCase()).digest('hex'),
+        type: SIGNUP_LEGAL_DOCS[slug],
+        slug,
+        version,
+        contentHash: createHash('sha256').update(LEGAL_DOCS[slug].markdown).digest('hex'),
+        source: 'SIGNUP',
+        method: 'CHECKBOX',
+        consentText: CONSENT_TEXTS[slug],
+        authProvider: 'password',
+        acceptedAt: now,
+        ipTruncated: '203.0.113.0/24',
+        userAgent: 'Datos de ejemplo (seed)',
+      });
+    }
     batch.set(db.doc(`publicProfiles/${demo.uid}`), {
       displayName: `${demo.firstName} ${demo.lastName.charAt(0)}.`,
       photoUrl: null,

@@ -8,6 +8,7 @@ import {
 } from '@tinhome/shared/schemas';
 import { toAppError } from '../../core/app-error.js';
 import { clock } from '../../core/clock.js';
+import { requestUserAgent } from '../../core/consent.js';
 import { db } from '../../core/firebase.js';
 import { logger } from '../../core/logger.js';
 import { callableOptions } from '../../core/options.js';
@@ -32,7 +33,10 @@ export const joinWaitlist = onCall(callableOptions, async (request) => {
       now,
     });
     const params = await getParams();
-    const result = await waitlist.joinWaitlist(db(), input, params, now);
+    const result = await waitlist.joinWaitlist(db(), input, params, now, {
+      ip: requestIp(request.rawRequest),
+      userAgent: requestUserAgent(request.rawRequest),
+    });
     logger.info('joinWaitlist', {
       callable: 'joinWaitlist',
       cityId: input.cityId,
