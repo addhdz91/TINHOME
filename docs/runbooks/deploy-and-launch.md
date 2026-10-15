@@ -57,6 +57,7 @@ Después del despliegue:
    - registro con email real;
    - SMS de verificación;
    - pago de prueba (tarjeta 4242);
+   - «Continuar con Google» en `/entrar` y `/registro`, y la reautenticación con Google (popup sin precarga, 10 §5);
    - web push en Android Chrome y en iOS con la PWA instalada;
    - `curl -I https://<dominio>/` → `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options: DENY`.
 

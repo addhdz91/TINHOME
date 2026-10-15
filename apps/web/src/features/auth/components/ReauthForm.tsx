@@ -10,6 +10,7 @@ import { useAuth } from '@/app/auth/auth-context';
 import { Button } from '@/components/ui/button';
 import { toUserMessage } from '@/lib/app-error';
 import { authErrorCode, authErrorKey } from '@/lib/auth-errors';
+import { popupResolver } from '@/lib/firebase-auth';
 import { PasswordField } from './PasswordField';
 
 /**
@@ -44,7 +45,7 @@ export function ReauthForm({
           EmailAuthProvider.credential(user.email ?? '', password),
         );
       } else {
-        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+        await reauthenticateWithPopup(user, new GoogleAuthProvider(), popupResolver());
       }
       await user.getIdToken(true);
       await action();

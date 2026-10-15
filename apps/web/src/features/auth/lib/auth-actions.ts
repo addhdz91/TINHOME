@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { VERIFY_EMAIL_RESEND_SECONDS } from '@tinhome/shared/constants';
 import { authErrorCode } from '@/lib/auth-errors';
-import { firebaseAuth } from '@/lib/firebase-auth';
+import { firebaseAuth, popupResolver } from '@/lib/firebase-auth';
 
 const RESEND_KEY = 'tinhome-verify-sent-at';
 const REF_KEY = 'tinhome-ref';
@@ -29,7 +29,7 @@ export function signInWithEmail(email: string, password: string): Promise<User> 
 export function signInWithGoogle(): Promise<User> {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  return signInWithPopup(firebaseAuth(), provider).then((cred) => cred.user);
+  return signInWithPopup(firebaseAuth(), provider, popupResolver()).then((cred) => cred.user);
 }
 
 /** FR-02 — verification e-mail (Firebase template), back to step 2 of the onboarding. */

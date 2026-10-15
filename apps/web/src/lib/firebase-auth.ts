@@ -1,4 +1,14 @@
-import { connectAuthEmulator, getAuth, type Auth, type User } from 'firebase/auth';
+import {
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+  browserSessionPersistence,
+  connectAuthEmulator,
+  indexedDBLocalPersistence,
+  initializeAuth,
+  type Auth,
+  type PopupRedirectResolver,
+  type User,
+} from 'firebase/auth';
 import { emulatorsEnabled, firebaseApp } from './firebase-app';
 
 let auth: Auth | null = null;
@@ -10,7 +20,11 @@ let settled = false;
  */
 export function firebaseAuth(): Auth {
   if (auth) return auth;
-  auth = getAuth(firebaseApp());
+  // Same persistence as `getAuth`, but without the popup resolver: `getAuth` preloads Google's
+  // `apis.google.com` iframe on every page. It is passed only to the popup calls (NFR-02).
+  auth = initializeAuth(firebaseApp(), {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence],
+  });
   auth.languageCode = 'es';
   if (emulatorsEnabled()) {
     connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
@@ -34,4 +48,9 @@ export async function settledAuthUser(): Promise<User | null> {
  */
 export function knownAuthUser(): User | null | undefined {
   return settled ? firebaseAuth().currentUser : undefined;
+}
+
+/** For `signInWithPopup` / `reauthenticateWithPopup` only (loaded when the user taps Google). */
+export function popupResolver(): PopupRedirectResolver {
+  return browserPopupRedirectResolver;
 }
