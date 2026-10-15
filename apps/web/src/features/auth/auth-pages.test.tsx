@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppError } from '@/lib/app-error';
+import * as publicData from '@/lib/firestore-public';
 import { renderRoutesWithAuth } from '@/test/render';
 import { authValue, fakeUser, signedIn } from '@/test/session';
 import { authRoutes } from './routes';
@@ -110,6 +111,34 @@ describe('RegisterPage (FR-01)', () => {
       acceptedPrivacy: '0.1-provisional',
     });
     expect(actions.forgetReferral).toHaveBeenCalled();
+  });
+
+  it('NFR-02 — shows the form before the legal versions arrive and waits for them to sign up', async () => {
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const read = publicData.readPublicDoc;
+    const spy = vi
+      .spyOn(publicData, 'readPublicDoc')
+      .mockImplementation(async (path) => (await gate, read(path)));
+    actions.signUpWithEmail.mockResolvedValue(fakeUser({ emailVerified: false }));
+    callables.completeSignup.mockResolvedValue({});
+    const user = userEvent.setup();
+    renderRoutesWithAuth(routes, '/registro', authValue({ status: 'signedOut' }));
+
+    await fillRegister(user);
+    await acceptLegal(user);
+    await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    expect(spy).toHaveBeenCalledWith('legalDocs/terminos');
+    expect(actions.signUpWithEmail).not.toHaveBeenCalled();
+    release();
+    await waitFor(() => expect(actions.signUpWithEmail).toHaveBeenCalled());
+    expect(callables.completeSignup.mock.calls[0]?.[0]).toMatchObject({
+      acceptedTerms: '0.1-provisional',
+      acceptedPrivacy: '0.1-provisional',
+    });
+    spy.mockRestore();
   });
 
   it('deletes the Auth user if the server refuses a minor (defence in depth)', async () => {

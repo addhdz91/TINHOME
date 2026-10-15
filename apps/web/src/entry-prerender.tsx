@@ -2,8 +2,12 @@ import './i18n';
 import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { AuthContext, type AuthContextValue } from './app/auth/auth-context';
+import { AuthPagesLayout } from './app/layouts/AuthPagesLayout';
 import { PublicLayout } from './app/layouts/PublicLayout';
 import { Providers } from './app/Providers';
+import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { SignInPage } from './features/auth/pages/SignInPage';
 import { LandingPage } from './features/landing/pages/LandingPage';
 
 /**
@@ -27,6 +31,45 @@ export function render(): string {
     <StrictMode>
       <Providers>
         <RouterProvider router={router} />
+      </Providers>
+    </StrictMode>,
+  );
+}
+
+/** Signed-out session: what a first visit to the sign-in and sign-up pages shows. */
+const signedOut: AuthContextValue = {
+  state: { status: 'signedOut' },
+  refreshMe: () => Promise.resolve(),
+  signOut: () => Promise.resolve(),
+};
+
+export const AUTH_PAGES = ['/entrar', '/registro'] as const;
+export type AuthPagePath = (typeof AUTH_PAGES)[number];
+
+/**
+ * NFR-02 — `/entrar` and `/registro` signed out, prerendered with the same tree the client
+ * renders first (Providers → session → AuthPagesLayout → page), so main.tsx can hydrate the
+ * markup instead of replacing it.
+ */
+export function renderAuthPage(path: AuthPagePath): string {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <AuthPagesLayout />,
+        children: [
+          { path: '/entrar', element: <SignInPage /> },
+          { path: '/registro', element: <RegisterPage /> },
+        ],
+      },
+    ],
+    { initialEntries: [path] },
+  );
+  return renderToString(
+    <StrictMode>
+      <Providers>
+        <AuthContext value={signedOut}>
+          <RouterProvider router={router} />
+        </AuthContext>
       </Providers>
     </StrictMode>,
   );

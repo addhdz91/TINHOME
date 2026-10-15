@@ -1,7 +1,8 @@
-import { connectAuthEmulator, getAuth, type Auth } from 'firebase/auth';
+import { connectAuthEmulator, getAuth, type Auth, type User } from 'firebase/auth';
 import { emulatorsEnabled, firebaseApp } from './firebase-app';
 
 let auth: Auth | null = null;
+let settled = false;
 
 /**
  * Auth only (NFR-02): sign-in, sign-up and the session gate need just this SDK, so they do
@@ -17,4 +18,20 @@ export function firebaseAuth(): Auth {
     auth.settings.appVerificationDisabledForTesting = true;
   }
   return auth;
+}
+
+/** Resolves once Firebase knows whether someone is signed in (persisted session read). */
+export async function settledAuthUser(): Promise<User | null> {
+  const instance = firebaseAuth();
+  await instance.authStateReady();
+  settled = true;
+  return instance.currentUser;
+}
+
+/**
+ * The user if `settledAuthUser()` already resolved, otherwise `undefined` (still loading). Lets
+ * the session start in its final state when a prerendered page is hydrated (NFR-02).
+ */
+export function knownAuthUser(): User | null | undefined {
+  return settled ? firebaseAuth().currentUser : undefined;
 }

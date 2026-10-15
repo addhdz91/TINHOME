@@ -1081,7 +1081,8 @@
       "completeTitle": "Completa tu registro",
       "completeSubtitle": "Necesitamos unos datos más para crear tu cuenta.",
       "completeSubmit": "Guardar y continuar",
-      "invited": "Te ha invitado alguien de TinHome: al verificar tu identidad, los dos tendréis un mes de Premium."
+      "invited": "Te ha invitado alguien de TinHome: al verificar tu identidad, los dos tendréis un mes de Premium.",
+      "legalUnavailable": "No hemos podido cargar los textos legales. Revisa tu conexión e inténtalo de nuevo."
     },
     "signIn": {
       "title": "Entra en TinHome",

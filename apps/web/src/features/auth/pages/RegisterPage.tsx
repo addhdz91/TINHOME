@@ -7,7 +7,7 @@ import { RouteFallback } from '@/app/RouteFallback';
 import { useTheme } from '@/app/theme-context';
 import { ErrorState } from '@/components/ErrorState';
 import { Seo } from '@/components/Seo';
-import { useLegalVersion } from '@/features/legal';
+import { useLegalVersion } from '@/features/legal/api/use-legal-doc';
 import { toAppError, toUserMessage } from '@/lib/app-error';
 import { authErrorCode, authErrorKey } from '@/lib/auth-errors';
 import { completeSignup, updateSettings } from '@/lib/callables';
@@ -38,23 +38,31 @@ export function RegisterPage() {
   const referral = normalizeReferralCode(params.get('ref') ?? rememberedReferral() ?? '');
 
   if (!flowActive) {
-    if (state.status === 'loading' || terms.isPending || privacy.isPending)
-      return <RouteFallback />;
+    if (state.status === 'loading') return <RouteFallback />;
     if (state.status === 'signedIn') return <Navigate to="/app" replace />;
   }
-  if (terms.isError || privacy.isError || !terms.data || !privacy.data) {
+  // The form shows at once (NFR-02, prerendered); the legal versions are only needed to send it.
+  if (terms.isError || privacy.isError || terms.data === null || privacy.data === null) {
     return <ErrorState onRetry={() => void Promise.all([terms.refetch(), privacy.refetch()])} />;
   }
   if (state.status === 'error') return <ErrorState onRetry={state.retry} />;
 
-  const versions = {
-    acceptedTerms: terms.data.currentVersion,
-    acceptedPrivacy: privacy.data.currentVersion,
+  /** Versions being accepted (FR-58); waits for them if the form was sent very early. */
+  const legalVersions = async () => {
+    const [termsDoc, privacyDoc] = await Promise.all([
+      terms.data ? Promise.resolve(terms.data) : terms.refetch().then((r) => r.data),
+      privacy.data ? Promise.resolve(privacy.data) : privacy.refetch().then((r) => r.data),
+    ]);
+    if (!termsDoc || !privacyDoc) return null;
+    return { acceptedTerms: termsDoc.currentVersion, acceptedPrivacy: privacyDoc.currentVersion };
   };
   const completing = !flowActive && state.status === 'needsProfile';
   const googleName = completing ? (state.user.displayName ?? '').trim().split(/\s+/) : [];
 
-  const finishProfile = async (values: RegisterValues) => {
+  const finishProfile = async (
+    values: RegisterValues,
+    versions: { acceptedTerms: string; acceptedPrivacy: string },
+  ) => {
     const code = values.referralCode.trim();
     await completeSignup({
       firstName: values.firstName,
@@ -70,17 +78,23 @@ export function RegisterPage() {
 
   const onSubmit = async (values: RegisterValues) => {
     setFormError(null);
+    // Before any account exists: without the current legal versions nothing is created.
+    const versions = await legalVersions();
+    if (!versions) {
+      setFormError(t('auth.register.legalUnavailable'));
+      return;
+    }
     setFlowActive(true);
     try {
       if (completing) {
-        await finishProfile(values);
+        await finishProfile(values, versions);
         await refreshMe();
         void navigate('/app', { replace: true });
         return;
       }
       const user = await signUpWithEmail(values.email, values.password);
       try {
-        await finishProfile(values);
+        await finishProfile(values, versions);
       } catch (error) {
         // AC-01.2 — no account is kept for a minor (or any refused profile).
         if (toAppError(error).code === 'E_UNDERAGE') await user.delete();

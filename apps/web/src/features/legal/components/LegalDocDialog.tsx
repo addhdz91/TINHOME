@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LegalDocSlug } from '@tinhome/shared/constants';
 import { ErrorState } from '@/components/ErrorState';
@@ -6,7 +6,9 @@ import { Skeleton } from '@/components/Skeleton';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { formatInstant } from '@/lib/format';
 import { useLegalDoc } from '../api/use-legal-doc';
-import { SafeMarkdown } from './SafeMarkdown';
+
+// Markdown renderer only when a text is opened (keeps react-markdown out of the sign-up page).
+const SafeMarkdown = lazy(async () => ({ default: (await import('./SafeMarkdown')).SafeMarkdown }));
 
 function LegalDocBody({ slug }: { slug: LegalDocSlug }) {
   const { t } = useTranslation();
@@ -28,7 +30,9 @@ function LegalDocBody({ slug }: { slug: LegalDocSlug }) {
         {t('legal.version', { version: doc.data.version })}
         {doc.data.publishedAt ? ` · ${formatInstant(doc.data.publishedAt)}` : ''}
       </p>
-      <SafeMarkdown markdown={doc.data.markdown} />
+      <Suspense fallback={<Skeleton className="h-40" />}>
+        <SafeMarkdown markdown={doc.data.markdown} />
+      </Suspense>
     </>
   );
 }

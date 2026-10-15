@@ -27,6 +27,14 @@
         }
       },
       {
+        "source": "/entrar",
+        "destination": "/entrar.html"
+      },
+      {
+        "source": "/registro",
+        "destination": "/registro.html"
+      },
+      {
         "source": "**",
         "destination": "/app.html"
       }

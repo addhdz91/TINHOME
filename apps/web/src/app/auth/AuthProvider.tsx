@@ -3,7 +3,7 @@ import { onIdTokenChanged, signOut as firebaseSignOut, type User } from 'firebas
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTheme } from '@/app/theme-context';
 import { toAppError } from '@/lib/app-error';
-import { firebaseAuth } from '@/lib/firebase-auth';
+import { firebaseAuth, knownAuthUser } from '@/lib/firebase-auth';
 import { getMe, updateSettings } from '@/lib/session-api';
 import { AuthContext, meKey, type AuthContextValue, type AuthState } from './auth-context';
 
@@ -14,7 +14,7 @@ import { AuthContext, meKey, type AuthContextValue, type AuthState } from './aut
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [user, setUser] = useState<User | null | undefined>(knownAuthUser);
 
   useEffect(() => onIdTokenChanged(firebaseAuth(), (next) => setUser(next)), []);
 

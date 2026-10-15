@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 import { TextField } from '@/components/TextField';
 import { Button } from '@/components/ui/button';
-import { LegalLink } from '@/features/legal';
+import { LegalLink } from '@/features/legal/components/LegalDocDialog';
 import { registerSchema, type RegisterValues } from '../lib/register-schema';
 import { PasswordField } from './PasswordField';
 
