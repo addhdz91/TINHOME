@@ -2,6 +2,7 @@ import type { Firestore } from 'firebase-admin/firestore';
 import { rankCandidates } from '@tinhome/shared/domain';
 import type { ListLikesReceivedOutput } from '@tinhome/shared/schemas';
 import type { Params } from '@tinhome/shared/types';
+import { cursorOffset } from '../../core/pagination.js';
 import { loadCandidates, loadCatalog, toCards } from '../discover/candidates.js';
 import type { Viewer } from '../discover/viewer.js';
 
@@ -36,7 +37,7 @@ export async function likesReceived(
   );
   if (!viewer.isPremium)
     return { count: ranked.length, items: null, withMessage, nextCursor: null };
-  const offset = Number(input.cursor ?? 0) || 0;
+  const offset = cursorOffset(input.cursor);
   const page = ranked.slice(offset, offset + input.limit);
   return {
     count: ranked.length,

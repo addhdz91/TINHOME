@@ -3,11 +3,31 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
 import { DEMO_PROJECT_ID } from '@tinhome/shared/constants';
 
-/** Default bucket (`STORAGE_BUCKET` or `<project>.appspot.com`, as the web client). */
+/**
+ * Default bucket: `STORAGE_BUCKET`, else the project's own default bucket from FIREBASE_CONFIG
+ * (new projects use `*.firebasestorage.app`, so the name is never guessed in production).
+ */
 export function bucketName(): string {
-  const projectId =
-    process.env.GCLOUD_PROJECT ?? process.env.GOOGLE_CLOUD_PROJECT ?? DEMO_PROJECT_ID;
-  return process.env.STORAGE_BUCKET ?? `${projectId}.appspot.com`;
+  if (process.env.STORAGE_BUCKET) return process.env.STORAGE_BUCKET;
+  const fromConfig = firebaseConfigBucket();
+  if (fromConfig) return fromConfig;
+  if (process.env.FUNCTIONS_EMULATOR === 'true' || process.env.VITEST) {
+    const projectId =
+      process.env.GCLOUD_PROJECT ?? process.env.GOOGLE_CLOUD_PROJECT ?? DEMO_PROJECT_ID;
+    return `${projectId}.appspot.com`;
+  }
+  throw new Error('STORAGE_BUCKET is not configured');
+}
+
+function firebaseConfigBucket(): string | null {
+  try {
+    const config = JSON.parse(process.env.FIREBASE_CONFIG ?? '{}') as { storageBucket?: unknown };
+    return typeof config.storageBucket === 'string' && config.storageBucket
+      ? config.storageBucket
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export function bucket() {

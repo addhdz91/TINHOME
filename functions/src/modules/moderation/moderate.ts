@@ -1,6 +1,7 @@
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import {
+  ADMIN_ROLES,
   RESTRICTIVE_ACTIONS,
   type ModerationAction,
   type ReportReason,
@@ -18,6 +19,7 @@ import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { writeAudit } from '../../core/audit.js';
 import { enqueueMailNow } from '../../core/email/queue.js';
+import { forgetUserSession } from '../../core/privileged-session.js';
 import { publicUrl } from '../../core/public-url.js';
 import { releaseHolds } from '../home/holds.js';
 import { recomputeHome } from '../home/visibility.js';
@@ -120,6 +122,7 @@ async function setUserStatus(
     await getAuth()
       .revokeRefreshTokens(uid)
       .catch(() => undefined);
+  forgetUserSession(uid);
   await recomputeHome(db, uid, params);
 }
 
@@ -158,9 +161,42 @@ async function setContentHidden(
   }
 }
 
+/**
+ * FR-68 — hiding a message removes its text from the chat document itself (participants can
+ * read message documents, so a flag alone would still deliver the text). The original is
+ * kept server-only in `hiddenMessages` to restore it if the decision is reverted.
+ */
 async function setMessageHidden(db: Firestore, targetId: string, hidden: boolean): Promise<void> {
   const [matchId = '', messageId = ''] = targetId.split('/');
-  await db.doc(`matches/${matchId}/messages/${messageId}`).update({ hiddenByModeration: hidden });
+  const matchRef = db.doc(`matches/${matchId}`);
+  const messageRef = matchRef.collection('messages').doc(messageId);
+  const archiveRef = db.doc(`hiddenMessages/${matchId}_${messageId}`);
+  await db.runTransaction(async (tx) => {
+    const [match, message, archive] = await tx.getAll(matchRef, messageRef, archiveRef);
+    if (!message?.exists) throw appError('E_NOT_FOUND');
+    const last = match?.get('lastMessage') as { at?: Timestamp } | null | undefined;
+    const createdAt = message.get('createdAt') as Timestamp | undefined;
+    const isLast = Boolean(last?.at && createdAt && last.at.isEqual(createdAt));
+    if (hidden) {
+      if (!archive?.exists) {
+        tx.set(archiveRef, {
+          matchId,
+          messageId,
+          text: String(message.get('text') ?? ''),
+          hiddenAt: FieldValue.serverTimestamp(),
+        });
+      }
+      tx.update(messageRef, { hiddenByModeration: true, text: '' });
+      if (isLast) tx.update(matchRef, { 'lastMessage.text': '' });
+    } else {
+      const text = archive?.exists
+        ? String(archive.get('text') ?? '')
+        : String(message.get('text') ?? '');
+      tx.update(messageRef, { hiddenByModeration: false, text });
+      if (isLast) tx.update(matchRef, { 'lastMessage.text': text.slice(0, 120) });
+      if (archive?.exists) tx.delete(archiveRef);
+    }
+  });
 }
 
 /** FR-68 / FR-45 — undoes the effect of an action (appeal upheld or RESTORE). */
@@ -272,6 +308,21 @@ export async function notifyReporter(
 }
 
 /**
+ * ASVS V4.1 — nobody sanctions themselves, and only a superadmin sanctions a staff account
+ * (an admin could otherwise ban the superadmin, the only role able to undo it).
+ */
+async function assertCanSanction(actor: Actor, targetUid: string): Promise<void> {
+  if (actor.uid === targetUid) throw appError('E_VALIDATION', { fields: { targetUid: 'self' } });
+  const target = await getAuth()
+    .getUser(targetUid)
+    .catch(() => null);
+  const role = target?.customClaims?.role as unknown;
+  if ((ADMIN_ROLES as readonly unknown[]).includes(role) && actor.role !== 'superadmin') {
+    throw appError('E_ROLE_REQUIRED');
+  }
+}
+
+/**
  * FR-44 / FR-68 / BR-27 — applies a moderation decision. Restrictive actions need a statement
  * of reasons, which is stored with the action and sent to the affected person. A strike is only
  * recorded when the admin asks for it; the system then proposes the next sanction, which the
@@ -292,6 +343,7 @@ export async function moderate(
     throw appError('E_VALIDATION', { fields: { action: 'target' } });
   const target = await db.doc(`users/${input.targetUid}`).get();
   if (!target.exists) throw appError('E_NOT_FOUND');
+  if (restrictive) await assertCanSanction(actor, input.targetUid);
   const report = input.reportId ? await db.doc(`reports/${input.reportId}`).get() : null;
   if (input.reportId && !report?.exists) throw appError('E_NOT_FOUND');
 

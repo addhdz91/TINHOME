@@ -9,6 +9,7 @@ import type {
 } from '@tinhome/shared/schemas';
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
+import { cursorOffset } from '../../core/pagination.js';
 import { activeMatchBetween } from '../match/matches.js';
 import { getSponsored } from '../sponsored/service.js';
 import { iso } from '../verification/view.js';
@@ -139,7 +140,7 @@ export async function searchHomes(
               (b.rating?.count ?? 0) - (a.rating?.count ?? 0),
           )
         : rankCandidates(candidates, params.rankingWeights, viewer.seed, now);
-  const offset = Number(input.cursor ?? 0) || 0;
+  const offset = cursorOffset(input.cursor);
   const page = sorted.slice(offset, offset + input.limit);
   return {
     items: await toCards(db, page, viewer, catalog),
@@ -261,15 +262,20 @@ export async function passHome(
   });
 }
 
-/** AC-20.3 — undo the last pass: once per app session for free users, unlimited for Premium. */
+/**
+ * AC-20.3 — undo the last pass: once per session for free users, unlimited for Premium. The
+ * session is the sign-in (`auth_time` of the ID token), not an id the client chooses: a new
+ * random `sessionId` per call would otherwise give unlimited free undos.
+ */
 export async function undoPass(
   db: Firestore,
   viewer: Viewer,
-  input: { homeId: string; sessionId: string },
+  input: { homeId: string },
+  signedInAt: number,
   now: Date,
 ): Promise<void> {
   const passRef = db.doc(`passes/${viewer.uid}_${input.homeId}`);
-  const counterRef = db.doc(`rateLimits/undo_${viewer.uid}_${input.sessionId}`);
+  const counterRef = db.doc(`rateLimits/undo_${viewer.uid}_${String(signedInAt)}`);
   await db.runTransaction(async (tx) => {
     const [pass, counter] = await Promise.all([tx.get(passRef), tx.get(counterRef)]);
     if (!pass.exists) throw appError('E_NOT_FOUND');

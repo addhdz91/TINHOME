@@ -247,6 +247,8 @@ export async function respondExchange(
   now: Date,
 ): Promise<ExchangeView> {
   const snap = await participantExchange(db, uid, input.exchangeId);
+  // 05 §2.8 — A, EV, ACT: a suspended or banned account cannot confirm an exchange.
+  requireUserActive((await db.doc(`users/${uid}`).get()).data() ?? {});
   const today = toIsoDate(now);
   await db.runTransaction(async (tx) => {
     const exchange = await tx.get(snap.ref);

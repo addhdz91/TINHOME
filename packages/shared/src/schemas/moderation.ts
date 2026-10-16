@@ -13,17 +13,19 @@ import {
   STATEMENT_GROUNDS,
   STATEMENT_TEMPLATES,
 } from '../constants/enums.js';
-import { PaginationInput } from './common.js';
+import { AttachmentPath, DocId, PaginationInput } from './common.js';
 
-const Id = z.string().check(z.minLength(1), z.maxLength(256));
+const Id = DocId;
+/** A report target: a document id, or `matchId/messageId` for MESSAGE. */
+const TargetRef = z.string().check(z.regex(/^[A-Za-z0-9_-]{1,256}(\/[A-Za-z0-9_-]{1,256})?$/));
 
 /** FR-42 — `submitReport`. MESSAGE targets are `matchId/messageId`. */
 export const SubmitReportInput = z.object({
   targetType: z.enum(REPORT_TARGETS),
-  targetId: Id,
+  targetId: TargetRef,
   reason: z.enum(REPORT_REASONS),
   description: z.string().check(z.trim(), z.minLength(20), z.maxLength(2000)),
-  attachmentPaths: z.optional(z.array(z.string().check(z.maxLength(300))).check(z.maxLength(5))),
+  attachmentPaths: z.optional(z.array(AttachmentPath).check(z.maxLength(5))),
   alsoBlock: z.optional(z.boolean()),
 });
 export type SubmitReportInput = z.infer<typeof SubmitReportInput>;
@@ -136,7 +138,7 @@ export type AdminGetReportOutput = z.infer<typeof AdminGetReportOutput>;
 export const AdminModerateInput = z.object({
   reportId: z.optional(Id),
   targetType: z.enum(REPORT_TARGETS),
-  targetId: Id,
+  targetId: TargetRef,
   targetUid: Id,
   action: z.enum(MODERATION_ACTIONS),
   recordStrike: z.optional(z.boolean()),

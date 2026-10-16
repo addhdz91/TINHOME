@@ -5,6 +5,7 @@ import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { sha256Hex } from '../../core/crypto.js';
 import { logger, pseudonymize } from '../../core/logger.js';
+import { forgetUserSession } from '../../core/privileged-session.js';
 import { publicUrl } from '../../core/public-url.js';
 import { bucket } from '../../core/storage.js';
 import { requireRecentSignIn } from '../account/service.js';
@@ -122,6 +123,7 @@ export async function requestAccountDeletion(
   await getAuth()
     .revokeRefreshTokens(uid)
     .catch(() => undefined);
+  forgetUserSession(uid);
   logger.info('account deletion requested', { uid: pseudonymize(uid) });
   return { purgeAt: purgeAt.toISOString() };
 }
@@ -164,6 +166,7 @@ export async function purgeAccount(db: Firestore, uid: string, now: Date): Promi
     `avatars/${uid}/`,
     `private/verifications/${uid}/`,
     `private/exports/gdpr/${uid}/`,
+    `private/reports/${uid}/`,
   ]) {
     await bucket()
       .deleteFiles({ prefix, force: true })

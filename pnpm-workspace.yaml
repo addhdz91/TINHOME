@@ -10,3 +10,9 @@ onlyBuiltDependencies:
   - protobufjs
   - unrs-resolver
   - sharp
+
+# Security audit (10 §5, 16/10/2026): @firebase/firestore pins @grpc/grpc-js ~1.9, affected by
+# GHSA-m9gg-hp2v-232j / GHSA-f596-whhp-79r4 (fixed in 1.13.6, same major). Remove once the
+# Firebase SDK depends on a fixed version.
+overrides:
+  '@grpc/grpc-js@<1.13.6': 1.13.6

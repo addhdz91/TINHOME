@@ -11,6 +11,7 @@ import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { writeAudit } from '../../core/audit.js';
 import { enqueueMailNow } from '../../core/email/queue.js';
+import { cursorOffset } from '../../core/pagination.js';
 import { publicUrl } from '../../core/public-url.js';
 import type { Actor } from '../moderation/moderate.js';
 import { resolvePushSender } from '../notifications/push.js';
@@ -179,7 +180,7 @@ export async function adminList(
     .orderBy('dueAt', 'asc')
     .limit(200)
     .get();
-  const offset = input.cursor ? Number(input.cursor) : 0;
+  const offset = cursorOffset(input.cursor);
   const items = snaps.docs.map(toTicketSummary);
   const next = offset + input.limit;
   return {

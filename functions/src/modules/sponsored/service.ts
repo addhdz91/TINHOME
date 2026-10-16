@@ -17,6 +17,7 @@ import type { AdminUpsertPartnerInput, PartnerView } from '@tinhome/shared/schem
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { writeAudit } from '../../core/audit.js';
+import { consumeRateLimit } from '../../core/rate-limit.js';
 import type { Actor } from '../moderation/moderate.js';
 
 const DAY_MS = 86_400_000;
@@ -184,6 +185,9 @@ export async function listPartners(db: Firestore, now: Date): Promise<{ items: P
   return { items: await Promise.all(partners.docs.map((snap) => view(db, snap, now))) };
 }
 
+/** Counted clicks per IP and partner and hour. */
+export const CLICKS_PER_HOUR = 5;
+
 /**
  * 05 §2.15 — counts the click (no cookies, no uid: `uidHash` is left out on purpose) and
  * returns the destination with `utm_source=tinhome`, or null for an unknown/inactive partner.
@@ -193,17 +197,31 @@ export async function recordClick(
   partnerId: string,
   placement: string | undefined,
   now: Date,
+  ip = 'unknown',
 ): Promise<string | null> {
   if (!/^[A-Za-z0-9_-]{1,60}$/.test(partnerId)) return null;
   const snap = await db.doc(`partners/${partnerId}`).get();
   const targetUrl = snap.get('targetUrl') as string | undefined;
   if (!snap.exists || snap.get('active') !== true || !targetUrl) return null;
   const known = SPONSORED_PLACEMENTS.find((p) => p === placement);
-  await db.collection('partnerClicks').add({
-    partnerId,
-    placement: known ?? 'UNKNOWN',
-    createdAt: Timestamp.fromDate(now),
-  });
+  // Anti-fraud: the person is always redirected, but only CLICKS_PER_HOUR clicks per IP and
+  // partner are counted (a loop of requests must not inflate the partner's report).
+  const counted = await consumeRateLimit(db, {
+    scope: 'partnerClick',
+    key: `${ip}|${partnerId}`,
+    limit: CLICKS_PER_HOUR,
+    windowMs: 3_600_000,
+    now,
+  }).then(
+    () => true,
+    () => false,
+  );
+  if (counted)
+    await db.collection('partnerClicks').add({
+      partnerId,
+      placement: known ?? 'UNKNOWN',
+      createdAt: Timestamp.fromDate(now),
+    });
   try {
     return withUtmSource(targetUrl);
   } catch {

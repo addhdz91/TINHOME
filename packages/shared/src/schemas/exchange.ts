@@ -1,9 +1,9 @@
 import { z } from 'zod/mini';
 import { EXCHANGE_STATUS, REVIEW_STATUS } from '../constants/enums.js';
-import { IsoDateSchema } from './common.js';
+import { DocId, IsoDateSchema } from './common.js';
 
-const Uid = z.string().check(z.minLength(1), z.maxLength(128));
-const ExchangeId = z.string().check(z.minLength(1), z.maxLength(128));
+const Uid = DocId;
+const ExchangeId = DocId;
 /**
  * Optional free text; an empty string or `null` counts as «not given» (the callable client
  * serialises `undefined` as `null`).
@@ -16,7 +16,7 @@ const OptionalText = (max: number) =>
 
 /** FR-30 / BR-15 — `proposeExchange`. Guests and pets are what each person takes to the other home. */
 export const ProposeExchangeInput = z.object({
-  matchId: z.string().check(z.minLength(1), z.maxLength(200)),
+  matchId: DocId,
   startDate: IsoDateSchema,
   endDate: IsoDateSchema,
   guests: z.record(Uid, z.int().check(z.gte(1), z.lte(12))),

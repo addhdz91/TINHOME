@@ -17,10 +17,6 @@ service firebase.storage {
     match /homes/{userId}/photos/{file} {
       allow read: if signedIn() && request.auth.token.email_verified == true;
     }
-    match /avatars/{userId}/{file} {
-      allow read: if signedIn() && request.auth.token.email_verified == true;
-      allow create, update: if signedIn() && request.auth.uid == userId && isImage() && request.resource.size < 5 * 1024 * 1024;
-    }
     // Verification documents: the owner only creates; read only through a server-signed URL
     match /private/verifications/{userId}/{verificationId}/{file} {
       allow create: if signedIn() && request.auth.uid == userId && isDoc() && under10MB();

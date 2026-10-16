@@ -9,7 +9,7 @@ import {
   getSponsored,
   partnerIdFromPath,
 } from '../src/modules/sponsored/callables.js';
-import { recordClick } from '../src/modules/sponsored/service.js';
+import { CLICKS_PER_HOUR, recordClick } from '../src/modules/sponsored/service.js';
 import { seedEligible } from './fixtures.js';
 import {
   authedRequest,
@@ -136,5 +136,14 @@ describe('partner redirect (05 §2.15)', () => {
     expect(await recordClick(db(), '../x', 'MATCH', new Date())).toBe(null);
     const list = await adminListPartners.run(authedRequest({}, boss));
     expect(list.items[0]?.clicks30d).toBe(1);
+  });
+  it('always redirects but counts at most 5 clicks per IP, partner and hour (anti-fraud)', async () => {
+    const { partner: p } = await adminUpsertPartner.run(authedRequest(partner, boss));
+    const at = new Date('2027-03-01T10:00:00Z');
+    for (let i = 0; i < 8; i += 1) {
+      expect(await recordClick(db(), p.id, 'DECK', at, '198.51.100.20')).toContain('example.com');
+    }
+    await recordClick(db(), p.id, 'DECK', at, '198.51.100.21');
+    expect((await db().collection('partnerClicks').get()).size).toBe(CLICKS_PER_HOUR + 1);
   });
 });

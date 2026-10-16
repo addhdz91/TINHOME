@@ -16,6 +16,7 @@ import type {
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { writeAudit } from '../../core/audit.js';
+import { cursorOffset } from '../../core/pagination.js';
 import { releaseHolds } from '../home/holds.js';
 import { actionView } from './appeals.js';
 import { moderate, type Actor } from './moderate.js';
@@ -59,7 +60,7 @@ export async function listReports(
     .toSorted((a, b) =>
       a.priority === b.priority ? a.dueAt.localeCompare(b.dueAt) : a.priority === 'HIGH' ? -1 : 1,
     );
-  const offset = input.cursor ? Number(input.cursor) : 0;
+  const offset = cursorOffset(input.cursor);
   const page = sorted.slice(offset, offset + input.limit);
   const next = offset + input.limit;
   return { items: page, nextCursor: next < sorted.length ? String(next) : null };

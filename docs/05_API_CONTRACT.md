@@ -15,7 +15,10 @@
 
 - **Entrada/salida** validadas con zod en servidor (`schema.parse`) y en cliente.
 - **Fechas** de calendario `YYYY-MM-DD`; marcas de tiempo en salidas como **ISO 8601** (`string`). Importes en céntimos (`int`).
-- **Paginación:** `{ cursor?: string, limit?: int (1–50, defecto 20) }` → `{ items, nextCursor: string | null }`.
+- **Paginación:** `{ cursor?: string, limit?: int (1–50, defecto 20) }` → `{ items, nextCursor: string | null }`. Un `cursor` numérico (desplazamiento) se limita a 1000 en servidor (cada documento saltado se factura).
+- **Identificadores** que llegan del cliente (`homeId`, `matchId`, `uid`, `ticketId`…): solo `[A-Za-z0-9_-]{1,256}` (`DocId`), para que un valor como `a/messages/b` no pueda direccionar otro documento. En denuncias de mensajes, `targetId` admite una sola `/` (`matchId/messageId`).
+- **Sesión viva (todas las callables con sesión):** además de verificar el token, el servidor comprueba que la cuenta existe, no está deshabilitada y que el token es posterior a la última revocación (expulsión, baja, «cerrar sesión en todos los dispositivos»). Si no, `E_REAUTH_REQUIRED`. Para admin la comprobación es en cada llamada (y también el rol); para el resto se guarda 30 s por instancia.
+- **IP del cliente** (límites por IP y prueba de consentimiento): la última entrada de `X-Forwarded-For`, la que añade el frontal de Google (la primera la puede escribir el cliente).
 - **Idempotencia:** las acciones que crean recursos aceptan `clientRequestId?: string (uuid)`; si se repite, devuelven el mismo resultado.
 - **Errores:** `HttpsError(code, message, { code: AppErrorCode, fields?: Record<string,string>, meta?: object })`. El cliente muestra `t('errors.' + details.code)`.
 - **Guardas** abreviadas: `A` autenticado · `EV` email verificado · `PV` teléfono verificado · `ID` identidad aprobada · `ACT` cuenta activa · `LEG` textos al día · `CO` ciudad propia abierta · `ADM` admin + 2FA · `SADM` superadmin + 2FA · `PUB` pública (sin sesión, con App Check).
@@ -87,7 +90,7 @@ Ciudades, ventanas y `demandStats` se leen directamente de Firestore (lectura p�
 |---|---|---|---|---|---|
 | `likeHome` | A, EV, ID, ACT, LEG, CO | `{ homeId, message?: string (≤ P-40, solo Premium), clientRequestId? }` | `{ matched: boolean, matchId: string \| null, likesRemaining: int \| null }` | `E_LIKE_LIMIT` (`meta.resetsAt`), `E_RATE_LIMIT`, `E_NO_AVAILABILITY`, `E_HOME_NOT_PUBLISHED`, `E_NOT_FOUND`, `E_SELF_LIKE`, `E_PREMIUM_REQUIRED` (si hay `message`), `E_MESSAGE_LIMIT`, `E_TEXT_VIOLATION`, `E_ON_HOLD` | Transacción: contador, `likes`, si recíproco → `matches` (ID determinista) + N-07 a ambos + evento |
 | `passHome` | A, EV | `{ homeId }` | `{ ok: true }` | — | `passes` con `expiresAt` |
-| `undoPass` | A, EV | `{ homeId }` | `{ ok: true }` | `E_UNDO_LIMIT` (gratis: 1 por sesión, el cliente envía `sessionId`) | Borra `passes` |
+| `undoPass` | A, EV | `{ homeId }` | `{ ok: true }` | `E_UNDO_LIMIT` (gratis: 1 por inicio de sesión; el servidor usa `auth_time` del token y **ignora** el `sessionId` opcional que pueda enviar el cliente) | Borra `passes` |
 | `listLikesReceived` | A, EV | `{ cursor?, limit? }` | `{ count: int, items: HomeCard[] \| null, withMessage: HomeCard[], nextCursor }` (`items = null` si no es Premium; `withMessage` = me gusta con mensaje, visibles también para gratis, FR-61). Solo me gusta aún sin match, de casas visibles y sin bloqueo | — | — |
 | `markMatchSeen` | A | `{ matchId }` | `{ ok: true }` | `E_NOT_PARTICIPANT` | — |
 | `unmatch` | A | `{ matchId }` | `{ ok: true }` | `E_NOT_PARTICIPANT`, `E_MATCH_INACTIVE` | BR-09 |
@@ -159,7 +162,7 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | `getMyStanding` | A | `{}` | `{ strikes: StrikeView[], actions: ModerationActionView[] (con `statement`, `appeal`, `appealable`), hold: { scope, reason, dueAt } \| null }` | — |
 | `adminListReports` | ADM | `{ status?, priority?, cursor?, limit? }` | `{ items, nextCursor }` | — |
 | `adminGetReport` | ADM | `{ id }` | `{ report, targetUserHistory }` | `E_NOT_FOUND` |
-| `adminModerate` | ADM | `{ reportId?, targetType, targetId, targetUid, action: 'DISMISS'\|'WARN'\|'HIDE_CONTENT'\|'HIDE_MESSAGE'\|'SUSPEND'\|'BAN'\|'RESTORE'\|'RELEASE_HOLD', recordStrike?: boolean (solo restrictivas), suspendedUntil? (ISO; por defecto P-32 días), statement?: { templateId, facts (20–2000), ground: 'LAW'\|'TERMS', groundDetail } }` | `{ actionId, strikesActive, suggestedNext: 'NONE'\|'SUSPEND'\|'BAN' }` | `E_STATEMENT_REQUIRED` (WARN, HIDE_*, SUSPEND, BAN), `E_VALIDATION`, `E_NOT_FOUND` |
+| `adminModerate` | ADM | `{ reportId?, targetType, targetId, targetUid, action: 'DISMISS'\|'WARN'\|'HIDE_CONTENT'\|'HIDE_MESSAGE'\|'SUSPEND'\|'BAN'\|'RESTORE'\|'RELEASE_HOLD', recordStrike?: boolean (solo restrictivas), suspendedUntil? (ISO; por defecto P-32 días), statement?: { templateId, facts (20–2000), ground: 'LAW'\|'TERMS', groundDetail } }` | `{ actionId, strikesActive, suggestedNext: 'NONE'\|'SUSPEND'\|'BAN' }` | `E_STATEMENT_REQUIRED` (WARN, HIDE_*, SUSPEND, BAN), `E_VALIDATION` (también al sancionarse a sí mismo), `E_ROLE_REQUIRED` (una acción restrictiva sobre una cuenta del equipo requiere superadmin), `E_NOT_FOUND`. `HIDE_MESSAGE` quita el texto del mensaje (los participantes ya no lo reciben) y lo guarda solo en servidor (`hiddenMessages`) por si se revierte |
 | `adminDecideAppeal` | ADM | `{ appealId, decision: 'UPHOLD'\|'REJECT', text (10–2000) }` | `{ appeal: { id, status }, sameAdmin: boolean }` | `E_STATE` (ya resuelto). Si lo decide la misma persona que tomó la decisión, `sameAdmin = true` (aviso, no bloquea; equipo pequeño) |
 | `adminListAppeals` | ADM | `{}` | `{ items: AppealSummary[] }` | — |
 | `adminListHolds` | ADM | `{}` | `{ items: { uid, scope, displayName, reason, since, dueAt }[] }` | — |
@@ -199,8 +202,8 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 | Callable | Guardas | Entrada | Salida |
 |---|---|---|---|
 | `adminGetDashboard` | ADM | `{}` | KPIs de FR-49: `pendingVerifications {count, oldestAt}`, `pendingLocationReviews`, `openReports`, `newUsers7d`, `cities[]` (visibles vs umbral, fundadores), `matches7d`, `exchangesConfirmed30d`, `premiumBySource` |
-| `adminSearchUsers` | ADM | `{ q, cursor?, limit? }` | `{ items: UserAdminSummary[], nextCursor }` |
-| `adminGetUser` | ADM | `{ uid }` | `{ user, profile, home, verification, matchesCount, reports, actions, entitlements, audit }` |
+| `adminSearchUsers` | ADM | `{ q, cursor?, limit? }` | `{ items: UserAdminSummary[], nextCursor }` (auditada: `user.search`, solo el hash de la búsqueda) |
+| `adminGetUser` | ADM | `{ uid }` | `{ user, profile, home, verification, matchesCount, reports, actions, entitlements, audit }` (auditada: `user.view`) |
 | `adminGrantPremium` | ADM | `{ uid, days (1–365), reason }` | `{ premiumUntil }` |
 | `adminSetUserStatus` | ADM | `{ uid, status: 'ACTIVE'\|'SUSPENDED'\|'BANNED', suspendedUntil?, statement }` | `{ user }` |
 | `adminSetRole` | SADM | `{ uid, role: 'admin'\|'superadmin'\|null }` | `{ ok: true }` |
@@ -218,14 +221,14 @@ Doble ciego: la primera queda `PENDING` (solo la lee su autor); con la segunda s
 
 Todas las `admin*` que cambian algo escriben en `auditLog`.
 
-> M9: lectura del catálogo con `adminGetCatalog` (ADM) y de parámetros/textos con `adminGetParams` / `adminGetLegalDoc` (SADM). `adminSetUserStatus` reutiliza `adminModerate` (declaración de motivos obligatoria al suspender o expulsar). `adminUpdateParams` rechaza activar P-26 (seguros) hasta la validación legal. `adminPublishLegalDoc` crea versiones inmutables (`0.1-provisional` → `0.2`) y, para términos y privacidad, envía N-17 a los usuarios activos; si exige reaceptación aparece en `Me.legalPending`. `adminExportCsv` devuelve `{ url, expiresAt }` (URL firmada 15 min; CSV sin datos personales, con BOM y protección contra inyección de fórmulas). J-08 (04:00) recalcula `demandCounters.homeCount` con las casas visibles y publica `demandStats` = lista de espera + casas cuando alcanza P-18.
+> M9: lectura del catálogo con `adminGetCatalog` (ADM) y de parámetros/textos con `adminGetParams` / `adminGetLegalDoc` (SADM). `adminSetUserStatus` reutiliza `adminModerate` (declaración de motivos obligatoria al suspender o expulsar). `adminUpdateParams` rechaza activar P-26 (seguros) hasta la validación legal. `adminPublishLegalDoc` crea versiones inmutables (`0.1-provisional` → `0.2`) y, para términos y privacidad, envía N-17 a los usuarios activos; si exige reaceptación aparece en `Me.legalPending`. `adminGetReport` (`report.view`) y `adminExportCsv` (`export.csv`) quedan en `auditLog`. `adminExportCsv` devuelve `{ url, expiresAt }` (URL firmada 15 min; CSV sin datos personales, con BOM y protección contra inyección de fórmulas). J-08 (04:00) recalcula `demandCounters.homeCount` con las casas visibles y publica `demandStats` = lista de espera + casas cuando alcanza P-18.
 
 ### 2.15 HTTP (no callables)
 
 | Endpoint | Método | Descripción |
 |---|---|---|
 | `/stripeWebhook` | POST | Firma `Stripe-Signature` verificada con `STRIPE_WEBHOOK_SECRET`; idempotente; responde 200 rápido. |
-| `/r/{partnerId}?p={placement}` | GET | Registra clic (sin cookies ni uid: `partnerClicks {partnerId, placement, createdAt}`) y redirige 302 a `targetUrl` con `utm_source=tinhome`. Partner desconocido o inactivo → 302 a `/app`. `Cache-Control: no-store`, `Referrer-Policy: no-referrer`. Función `partnerRedirect` (rewrite de Hosting `/r/**`; en desarrollo, proxy de Vite al emulador). |
+| `/r/{partnerId}?p={placement}` | GET | Registra clic (sin cookies ni uid: `partnerClicks {partnerId, placement, createdAt}`; como mucho 5 por IP, partner y hora, el resto redirige sin contar) y redirige 302 a `targetUrl` con `utm_source=tinhome`. Partner desconocido o inactivo → 302 a `/app`. `Cache-Control: no-store`, `Referrer-Policy: no-referrer`. Función `partnerRedirect` (rewrite de Hosting `/r/**`; en desarrollo, proxy de Vite al emulador). |
 
 ---
 

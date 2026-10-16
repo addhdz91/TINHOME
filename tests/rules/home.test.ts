@@ -52,13 +52,14 @@ beforeEach(async () => {
 });
 
 describe('homes (M3)', () => {
-  it('lets the owner read a hidden home and others only visible ones', async () => {
+  it('only the owner reads the raw home document (others use getHomeDetail)', async () => {
     const laura = env.authenticatedContext('laura', verified).firestore();
     const ana = env.authenticatedContext('ana', verified).firestore();
     await assertSucceeds(getDoc(doc(laura, 'homes/laura')));
     await assertFails(getDoc(doc(ana, 'homes/laura')));
-    await assertSucceeds(getDoc(doc(ana, 'homes/javier')));
-    await assertSucceeds(getDocs(query(collection(ana, 'homes'), where('visible', '==', true))));
+    // Even a visible home: its document carries moderation and verification fields.
+    await assertFails(getDoc(doc(ana, 'homes/javier')));
+    await assertFails(getDocs(query(collection(ana, 'homes'), where('visible', '==', true))));
     await assertFails(getDocs(collection(ana, 'homes')));
   });
 
@@ -109,6 +110,16 @@ describe('processed home photos (Storage)', () => {
         {
           contentType: 'image/webp',
         },
+      ),
+    );
+  });
+
+  it('there is no client-writable avatar path (no processing would strip EXIF/GPS)', async () => {
+    await assertFails(
+      uploadBytes(
+        ref(env.authenticatedContext('javier', verified).storage(), 'avatars/javier/a.png'),
+        png,
+        { contentType: 'image/png' },
       ),
     );
   });

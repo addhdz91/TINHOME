@@ -1,6 +1,6 @@
 # Runbook — Despliegue a staging/producción y lanzamiento (M10)
 
-> Estado: **preparado, no ejecutado**. El entorno de desarrollo no tiene credenciales de Google Cloud ni de Stripe. Cada paso indica cómo comprobarlo. Marca la casilla y deja fecha e iniciales.
+> Estado: **preparado, no ejecutado**. Antes de abrir, cerrar los controles P1–P10 de [la auditoría de seguridad](../SECURITY_AUDIT.md#6-veredicto-y-condiciones-para-autorizar-producción). El entorno de desarrollo no tiene credenciales de Google Cloud ni de Stripe. Cada paso indica cómo comprobarlo. Marca la casilla y deja fecha e iniciales.
 
 ## 1. Requisitos por proyecto (`tinhome-staging`, `tinhome-prod`)
 
@@ -9,6 +9,7 @@
 - [ ] App Check con reCAPTCHA Enterprise. Aplicación **forzada** en Firestore, Storage y Functions una vez que las métricas muestren tráfico verificado.
 - [ ] `scripts/ops/configure-gcp.sh <proyecto>` aplicado: PITR, copias, TTL, versionado, alertas ([backups-and-restore.md](backups-and-restore.md)).
 - [ ] `GCLOUD_PROJECT=<proyecto> pnpm ops:auth` revisado y aplicado con `APPLY=1`: política de contraseñas en el servidor, protección contra enumeración de emails, MFA SMS + TOTP (`scripts/configure-auth.ts`).
+- [ ] `functions/.env.<proyecto>` con `FUNCTIONS_SERVICE_ACCOUNT` (cuenta creada por `configure-gcp.sh`) y retirado Editor de la cuenta por defecto.
 - [ ] Presupuesto y alerta de facturación (p. ej. 50/80/100 % de 100 €/mes en staging).
 
 ### Secretos (Secret Manager)

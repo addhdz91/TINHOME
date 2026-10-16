@@ -1,6 +1,6 @@
 import { z } from 'zod/mini';
 import { AMENITIES, BLOCKERS, HOME_TYPES, TRAVELS_WITH } from '../constants/enums.js';
-import { IsoDateSchema, PaginationInput } from './common.js';
+import { DocId, IsoDateSchema, PaginationInput } from './common.js';
 import { DateRange, TravelPrefsInput } from './home.js';
 
 /** 05 §4 `Compatibility`. */
@@ -173,7 +173,7 @@ export const ReviewView = z.object({
 export type ReviewView = z.infer<typeof ReviewView>;
 
 export const GetHomeDetailInput = z.object({
-  homeId: z.string().check(z.minLength(1), z.maxLength(128)),
+  homeId: DocId,
 });
 export const GetHomeDetailOutput = z.object({
   home: HomePublicView,
@@ -186,9 +186,10 @@ export type GetHomeDetailOutput = z.infer<typeof GetHomeDetailOutput>;
 
 /** BR-11 — `passHome` / `undoPass` (free users: one undo per app session, AC-20.3). */
 export const PassHomeInput = z.object({
-  homeId: z.string().check(z.minLength(1), z.maxLength(128)),
+  homeId: DocId,
 });
 export const UndoPassInput = z.object({
-  homeId: z.string().check(z.minLength(1), z.maxLength(128)),
-  sessionId: z.string().check(z.minLength(8), z.maxLength(64)),
+  homeId: DocId,
+  /** Ignored since the security audit: the server keys the free undo on the sign-in time. */
+  sessionId: z.optional(z.string().check(z.minLength(8), z.maxLength(64))),
 });

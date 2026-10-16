@@ -16,6 +16,7 @@ import { requestUserAgent } from '../../core/consent.js';
 import { adminAuth, db } from '../../core/firebase.js';
 import { requireAuth, requireEmailVerified } from '../../core/guards.js';
 import { getParams } from '../../core/params.js';
+import { forgetUserSession } from '../../core/privileged-session.js';
 import { requestIp } from '../../core/rate-limit.js';
 import { buildMe, type SessionInfo } from './me.js';
 import * as account from './service.js';
@@ -113,6 +114,7 @@ export const signOutEverywhere = defineCallable(
     const auth = requireAuth(request);
     account.requireRecentSignIn(request.auth?.token.auth_time, now);
     await adminAuth().revokeRefreshTokens(auth.uid);
+    forgetUserSession(auth.uid);
     await account.notifySignedOutEverywhere(db(), auth.uid, now);
     return { ok: true as const };
   },

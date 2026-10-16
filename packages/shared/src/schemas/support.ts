@@ -5,9 +5,9 @@ import {
   REPORT_REASONS,
   TICKET_STATUS,
 } from '../constants/enums.js';
-import { PaginationInput } from './common.js';
+import { AttachmentPath, DocId, PaginationInput } from './common.js';
 
-const Attachments = z.optional(z.array(z.string().check(z.maxLength(300))).check(z.maxLength(5)));
+const Attachments = z.optional(z.array(AttachmentPath).check(z.maxLength(5)));
 
 /** FR-67 — `submitComplaint`: signed-in users or visitors (with e-mail). */
 /** Versions of the privacy and cookies policies a visitor accepted in a public form. */
@@ -59,10 +59,10 @@ export type TicketDetail = z.infer<typeof TicketDetail>;
 
 export const ListMyComplaintsOutput = z.object({ items: z.array(TicketSummary) });
 export const GetComplaintInput = z.object({
-  ticketId: z.string().check(z.minLength(1), z.maxLength(128)),
+  ticketId: DocId,
 });
 export const AddComplaintMessageInput = z.object({
-  ticketId: z.string().check(z.minLength(1), z.maxLength(128)),
+  ticketId: DocId,
   text: z.string().check(z.trim(), z.minLength(1), z.maxLength(4000)),
 });
 
@@ -74,7 +74,7 @@ export const AdminListComplaintsOutput = z.object({
   nextCursor: z.nullable(z.string()),
 });
 export const AdminReplyComplaintInput = z.object({
-  ticketId: z.string().check(z.minLength(1), z.maxLength(128)),
+  ticketId: DocId,
   text: z.string().check(z.trim(), z.minLength(1), z.maxLength(4000)),
   status: z.enum(TICKET_STATUS),
 });

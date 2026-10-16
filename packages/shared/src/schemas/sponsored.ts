@@ -3,8 +3,8 @@ import { PARTNER_CATEGORIES, SPONSORED_PLACEMENTS } from '../constants/enums.js'
 import { SponsoredCard } from './discover.js';
 
 const HttpsUrl = z.url({ protocol: /^https$/ }).check(z.maxLength(500));
-/** Logo: an https URL or a path served by TinHome (e.g. `/partners/logo.webp`). */
-const LogoUrl = z.union([HttpsUrl, z.string().check(z.regex(/^\/[A-Za-z0-9/_.-]{1,200}$/))]);
+/** Logo: an https URL or a path served by TinHome (e.g. `/partners/logo.webp`; never `//host`). */
+const LogoUrl = z.union([HttpsUrl, z.string().check(z.regex(/^\/(?!\/)[A-Za-z0-9/_.-]{1,200}$/))]);
 
 /** FR-47 — `adminUpsertPartner` (SADM). Without `id` a new partner is created. */
 export const AdminUpsertPartnerInput = z

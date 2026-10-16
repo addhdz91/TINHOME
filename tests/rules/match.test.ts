@@ -92,6 +92,12 @@ describe('matches and chat (FR-60, BR-36, BR-45)', () => {
     );
   });
 
+  it('admins cannot read the match document either (it carries the last message preview)', async () => {
+    const admin = env.authenticatedContext('admin', adminWithMfa).firestore();
+    await assertFails(getDoc(doc(admin, 'matches/javier_laura')));
+    await assertFails(getDocs(collection(admin, 'matches')));
+  });
+
   it('after unmatching the conversation is no longer readable (BR-45)', async () => {
     const laura = env.authenticatedContext('laura', verified).firestore();
     await assertSucceeds(getDoc(doc(laura, 'matches/ana_laura')));

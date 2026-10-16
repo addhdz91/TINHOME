@@ -1,13 +1,13 @@
 import { z } from 'zod/mini';
 import { PARAM_DEFAULTS } from '../constants/params.js';
-import { PaginationInput } from './common.js';
+import { DocId, PaginationInput } from './common.js';
 import { HomeCard } from './discover.js';
 
-const MatchIdInput = z.object({ matchId: z.string().check(z.minLength(1), z.maxLength(200)) });
+const MatchIdInput = z.object({ matchId: DocId });
 
 /** FR-23 / FR-24 — `likeHome`. A message (FR-61) is Premium only. */
 export const LikeHomeInput = z.object({
-  homeId: z.string().check(z.minLength(1), z.maxLength(128)),
+  homeId: DocId,
   message: z.optional(
     z.string().check(z.trim(), z.minLength(1), z.maxLength(PARAM_DEFAULTS.premiumMessageMaxLength)),
   ),
@@ -45,7 +45,7 @@ export const SharePhoneInChatInput = MatchIdInput;
 
 /** FR-60 / BR-36 — `sendMessage`. The client id makes retries idempotent. */
 export const SendMessageInput = z.object({
-  matchId: z.string().check(z.minLength(1), z.maxLength(200)),
+  matchId: DocId,
   text: z.string().check(z.trim(), z.minLength(1), z.maxLength(5000)),
   clientRequestId: z.uuid(),
 });
@@ -54,13 +54,13 @@ export const SendMessageOutput = z.object({
 });
 export const MarkConversationReadInput = MatchIdInput;
 export const DeleteMessageForMeInput = z.object({
-  matchId: z.string().check(z.minLength(1), z.maxLength(200)),
-  messageId: z.string().check(z.minLength(1), z.maxLength(128)),
+  matchId: DocId,
+  messageId: DocId,
 });
 
 /** FR-41 — blocks. */
 export const BlockUserInput = z.object({
-  targetUid: z.string().check(z.minLength(1), z.maxLength(128)),
+  targetUid: DocId,
 });
 export const UnblockUserInput = BlockUserInput;
 export const ListBlockedOutput = z.object({

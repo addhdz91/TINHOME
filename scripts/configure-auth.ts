@@ -6,7 +6,12 @@
  *   number, existing weak passwords must be changed at next sign-in. «Has letters» stays a
  *   client check (no exact server equivalent without rejecting valid passwords);
  * - email enumeration protection (sign-in answers the same for unknown e-mails);
- * - multi-factor: SMS and TOTP enabled (FR-48, the admin panel requires one).
+ * - multi-factor: SMS and TOTP enabled (FR-48, the admin panel requires one);
+ * - SMS only to Spanish numbers (FR-31 accepts Spanish mobiles only): blocks SMS pumping to
+ *   premium-rate international numbers;
+ * - reCAPTCHA Enterprise on password sign-in/sign-up and phone verification in AUDIT mode
+ *   (scores are logged, nobody is blocked). Move both to ENFORCE once staging shows the web
+ *   client sends the tokens (10 §5, PENDIENTE): ENFORCE without them would lock people out.
  *
  * Usage (real project only): `GCLOUD_PROJECT=tinhome-staging pnpm ops:auth` prints the
  * change; add `APPLY=1` to write it. Needs GOOGLE_APPLICATION_CREDENTIALS (or gcloud ADC).
@@ -32,6 +37,13 @@ export const AUTH_CONFIG: UpdateProjectConfigRequest = {
     state: 'ENABLED',
     factorIds: ['phone'],
     providerConfigs: [{ state: 'ENABLED', totpProviderConfig: { adjacentIntervals: 5 } }],
+  },
+  smsRegionConfig: { allowlistOnly: { allowedRegions: ['ES'] } },
+  recaptchaConfig: {
+    emailPasswordEnforcementState: 'AUDIT',
+    phoneEnforcementState: 'AUDIT',
+    useSmsTollFraudProtection: true,
+    useSmsBotScore: true,
   },
 };
 

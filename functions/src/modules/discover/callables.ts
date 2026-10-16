@@ -60,7 +60,9 @@ export const undoPass = defineCallable(
   'undoPass',
   { input: UndoPassInput, output: OkOutput },
   async ({ input, request, now }) => {
-    await discover.undoPass(db(), await viewerOf(request, now), input, now);
+    const authTime = request.auth?.token.auth_time;
+    const signedInAt = typeof authTime === 'number' ? authTime : 0;
+    await discover.undoPass(db(), await viewerOf(request, now), input, signedInAt, now);
     return { ok: true as const };
   },
 );

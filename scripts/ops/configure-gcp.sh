@@ -34,13 +34,16 @@ for group in passes likeCounters chatCounters rateLimits mailQueue events stripe
     --collection-group="$group" --enable-ttl --async
 done
 
-echo "== Storage: object versioning 30 days + private exports deleted after 1 day"
+echo "== Storage: object versioning 30 days (private/: deleted versions gone after 1 day) + exports deleted after 1 day"
+# Identity documents and GDPR exports must really disappear when deleted (BR-25, ADR-008):
+# versioning would otherwise keep a recoverable copy for 30 days.
 LIFECYCLE="$(mktemp)"
 cat > "$LIFECYCLE" <<'JSON'
 {
   "rule": [
     { "action": { "type": "Delete" }, "condition": { "daysSinceNoncurrentTime": 30 } },
-    { "action": { "type": "Delete" }, "condition": { "age": 1, "matchesPrefix": ["private/exports/"] } }
+    { "action": { "type": "Delete" }, "condition": { "age": 1, "matchesPrefix": ["private/exports/"] } },
+    { "action": { "type": "Delete" }, "condition": { "isLive": false, "daysSinceNoncurrentTime": 1, "matchesPrefix": ["private/"] } }
   ]
 }
 JSON
@@ -54,7 +57,34 @@ run gcloud logging metrics create tinhome_function_errors --project="$PROJECT" \
 run gcloud logging metrics create tinhome_stripe_webhook_errors --project="$PROJECT" \
   --description="stripeWebhook rejected or failed" \
   --log-filter='resource.labels.service_name="stripewebhook" AND severity>=WARNING'
-echo "   Then create alert policies on both metrics (> 0 in 5 min) in Cloud Monitoring → e-mail to ops."
+run gcloud logging metrics create tinhome_rate_limited --project="$PROJECT" \
+  --description="Requests rejected by rate limits (abuse, brute force, scraping)" \
+  --log-filter='jsonPayload.errorCode="E_RATE_LIMIT"'
+run gcloud logging metrics create tinhome_session_rejected --project="$PROJECT" \
+  --description="Signed-in requests rejected: revoked, banned or deleted sessions" \
+  --log-filter='jsonPayload.errorCode="E_REAUTH_REQUIRED"'
+echo "   Then create alert policies in Cloud Monitoring → e-mail to ops: errors and webhook > 0 in"
+echo "   5 min; rate limits and rejected sessions above their weekly baseline (attack signal)."
+
+echo "== IAM: dedicated least-privilege service account for Cloud Functions (ASVS V14.1)"
+SA="tinhome-functions@${PROJECT}.iam.gserviceaccount.com"
+run gcloud iam service-accounts create tinhome-functions --project="$PROJECT" \
+  --display-name="TinHome Cloud Functions"
+for role in roles/datastore.user roles/firebaseauth.admin roles/logging.logWriter \
+  roles/cloudtrace.agent roles/eventarc.eventReceiver roles/firebasecloudmessaging.admin; do
+  run gcloud projects add-iam-policy-binding "$PROJECT" --member="serviceAccount:${SA}" --role="$role"
+done
+run gcloud storage buckets add-iam-policy-binding "$BUCKET" --member="serviceAccount:${SA}" \
+  --role=roles/storage.objectAdmin
+# Signed URLs (identity documents, exports) are signed with the account's own key via IAM.
+run gcloud iam service-accounts add-iam-policy-binding "$SA" --project="$PROJECT" \
+  --member="serviceAccount:${SA}" --role=roles/iam.serviceAccountTokenCreator
+for secret in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET DOC_HASH_PEPPER EMAIL_API_KEY; do
+  run gcloud secrets add-iam-policy-binding "$secret" --project="$PROJECT" \
+    --member="serviceAccount:${SA}" --role=roles/secretmanager.secretAccessor
+done
+echo "   Then set FUNCTIONS_SERVICE_ACCOUNT=${SA} in functions/.env.${PROJECT}, redeploy, and remove"
+echo "   the Editor role from the default compute service account (check nothing else uses it)."
 
 echo "== Region check: everything must live in ${REGION} (NFR-05)"
 run gcloud firestore databases describe --project="$PROJECT" --database="$DB" --format='value(locationId)'

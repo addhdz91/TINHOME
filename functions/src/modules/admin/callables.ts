@@ -30,8 +30,10 @@ import {
   OkOutput,
   UrlWithExpiryOutput,
 } from '@tinhome/shared/schemas';
+import { viewAudit } from '../../core/audit.js';
 import { defineCallable } from '../../core/callable.js';
 import { clock } from '../../core/clock.js';
+import { sha256Hex } from '../../core/crypto.js';
 import { db } from '../../core/firebase.js';
 import { requireAdmin, requireSuperadmin } from '../../core/guards.js';
 import { logger } from '../../core/logger.js';
@@ -62,7 +64,14 @@ export const adminSearchUsers = defineCallable(
   'adminSearchUsers',
   { input: AdminSearchUsersInput, output: AdminSearchUsersOutput },
   async ({ input, request }) => {
-    requireAdmin(request);
+    const actor = requireAdmin(request);
+    // ASVS V7.1 — looking people up is auditable; only a hash of the query is kept.
+    await viewAudit(
+      actor,
+      'user.search',
+      'query',
+      sha256Hex(input.q.trim().toLowerCase()).slice(0, 16),
+    );
     return users.searchUsers(db(), input);
   },
 );
@@ -71,7 +80,8 @@ export const adminGetUser = defineCallable(
   'adminGetUser',
   { input: AdminGetUserInput, output: AdminGetUserOutput },
   async ({ input, request, now }) => {
-    requireAdmin(request);
+    const actor = requireAdmin(request);
+    await viewAudit(actor, 'user.view', 'user', input.uid);
     return users.getUser(db(), input.uid, await getParams(), now);
   },
 );
@@ -185,7 +195,8 @@ export const adminExportCsv = defineCallable(
     options: { timeoutSeconds: 120, memory: '512MiB' },
   },
   async ({ input, request, now }) => {
-    requireAdmin(request);
+    const actor = requireAdmin(request);
+    await viewAudit(actor, 'export.csv', 'report', input.report);
     return exportCsv(db(), input, now);
   },
 );

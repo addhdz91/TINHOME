@@ -1,10 +1,8 @@
-# Generado a partir de docs/05_API_CONTRACT.md. Mantener sincronizado con @tinhome/shared/schemas.
 openapi: 3.1.0
 info:
   title: TinHome API (Cloud Functions callables)
   version: 2.0.0
-  description: 'Contrato de las funciones de TinHome Fase 1. Las callables se invocan con el SDK de Firebase (httpsCallable),
-    que envía POST {data} y recibe {result}. Fuente de verdad en código: esquemas zod de @tinhome/shared.'
+  description: 'Contrato de las funciones de TinHome Fase 1. Las callables se invocan con el SDK de Firebase (httpsCallable), que envía POST {data} y recibe {result}. Fuente de verdad en código: esquemas zod de @tinhome/shared.'
 servers:
 - url: https://europe-southwest1-{projectId}.cloudfunctions.net
   variables:
@@ -436,7 +434,7 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: &id002
+                data:
                   type: object
                   additionalProperties: false
                   properties: {}
@@ -483,13 +481,15 @@ paths:
                   type: object
                   additionalProperties: false
                   properties:
-                    displayFirstName: &id001 {type: string}
+                    displayFirstName:
+                      type: string
                     about:
                       type: string
                       maxLength: 300
                     languages:
                       type: array
-                      items: *id001
+                      items:
+                        type: string
                     travelsWith:
                       type: string
                       enum:
@@ -497,7 +497,8 @@ paths:
                       - COUPLE
                       - FAMILY
                       - FRIENDS
-                    avatarPath: *id001
+                    avatarPath:
+                      type: string
               required:
               - data
       responses:
@@ -646,7 +647,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: {}
               required:
               - data
       responses:
@@ -863,11 +867,14 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
                     photoIds:
+                      minItems: 1
+                      maxItems: 20
                       type: array
-                      items: *id001
+                      items:
+                        type: string
+                        minLength: 1
                   required:
                   - photoIds
               required:
@@ -919,9 +926,10 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    photoId: *id001
+                    photoId:
+                      type: string
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - photoId
               required:
@@ -973,9 +981,11 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    version: *id001
+                    version:
+                      type: string
+                      minLength: 1
+                      maxLength: 40
                   required:
                   - version
               required:
@@ -1023,7 +1033,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: {}
               required:
               - data
       responses:
@@ -1041,7 +1054,8 @@ paths:
                     properties:
                       home:
                         $ref: '#/components/schemas/HomeOwnerView'
-                      visible: &id004 {type: boolean}
+                      visible:
+                        type: boolean
                       pendingReasons:
                         type: array
                         description: Motivos BR-04 por los que aún no es visible.
@@ -1077,7 +1091,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: {}
               required:
               - data
       responses:
@@ -1123,7 +1140,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: {}
               required:
               - data
       responses:
@@ -1169,7 +1189,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: {}
               required:
               - data
       responses:
@@ -1459,9 +1482,12 @@ paths:
               properties:
                 data:
                   type: object
-                  additionalProperties: false
                   properties:
-                    token: *id001
+                    token:
+                      type: string
+                      minLength: 20
+                      maxLength: 100
+                      pattern: ^[A-Za-z0-9_-]+$
                   required:
                   - token
               required:
@@ -1479,8 +1505,9 @@ paths:
                     type: object
                     additionalProperties: false
                     properties:
-                      cityId: *id001
-                      position: &id005
+                      cityId:
+                        type: string
+                      position:
                         type: integer
                     required:
                     - cityId
@@ -1791,7 +1818,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -2086,8 +2113,7 @@ paths:
                   properties:
                     homeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - homeId
               required:
@@ -2482,8 +2508,7 @@ paths:
                   properties:
                     homeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     message:
                       type: string
                       minLength: 1
@@ -2556,8 +2581,7 @@ paths:
                   properties:
                     homeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - homeId
               required:
@@ -2611,15 +2635,13 @@ paths:
                   properties:
                     homeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     sessionId:
                       type: string
                       minLength: 8
                       maxLength: 64
                   required:
                   - homeId
-                  - sessionId
               required:
               - data
       responses:
@@ -2671,7 +2693,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -3052,8 +3074,7 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - matchId
               required:
@@ -3107,8 +3128,7 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - matchId
               required:
@@ -3162,8 +3182,7 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - matchId
               required:
@@ -3222,8 +3241,7 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     startDate:
                       type: string
                     endDate:
@@ -3232,8 +3250,7 @@ paths:
                       type: object
                       propertyNames:
                         type: string
-                        minLength: 1
-                        maxLength: 128
+                        pattern: ^[A-Za-z0-9_-]{1,256}$
                       additionalProperties:
                         type: integer
                         minimum: 1
@@ -3242,8 +3259,7 @@ paths:
                       type: object
                       propertyNames:
                         type: string
-                        minLength: 1
-                        maxLength: 128
+                        pattern: ^[A-Za-z0-9_-]{1,256}$
                       additionalProperties:
                         type: integer
                         minimum: 0
@@ -3398,8 +3414,7 @@ paths:
                   properties:
                     exchangeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     accept:
                       type: boolean
                   required:
@@ -3544,8 +3559,7 @@ paths:
                   properties:
                     exchangeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     reason:
                       anyOf:
                       - type: string
@@ -3692,8 +3706,7 @@ paths:
                   properties:
                     exchangeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     overall:
                       type: integer
                       minimum: 1
@@ -4055,8 +4068,7 @@ paths:
                   properties:
                     targetUid:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - targetUid
               required:
@@ -4110,8 +4122,7 @@ paths:
                   properties:
                     targetUid:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - targetUid
               required:
@@ -4235,8 +4246,7 @@ paths:
                       - MESSAGE
                     targetId:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}(\/[A-Za-z0-9_-]{1,256})?$
                     reason:
                       type: string
                       enum:
@@ -4258,7 +4268,7 @@ paths:
                       type: array
                       items:
                         type: string
-                        maxLength: 300
+                        pattern: ^private\/reports\/[A-Za-z0-9_-]{1,128}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
                     alsoBlock:
                       type: boolean
                   required:
@@ -4426,8 +4436,7 @@ paths:
                   properties:
                     actionId:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     text:
                       type: string
                       minLength: 20
@@ -4960,7 +4969,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -5071,8 +5080,7 @@ paths:
                   properties:
                     id:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - id
               required:
@@ -5279,8 +5287,7 @@ paths:
                   properties:
                     id:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     file:
                       type: string
                       enum:
@@ -5348,8 +5355,7 @@ paths:
                   properties:
                     id:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     decision:
                       type: string
                       enum:
@@ -5500,7 +5506,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -5632,8 +5638,7 @@ paths:
                   properties:
                     id:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - id
               required:
@@ -5993,8 +5998,7 @@ paths:
                   properties:
                     reportId:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     targetType:
                       type: string
                       enum:
@@ -6004,12 +6008,10 @@ paths:
                       - MESSAGE
                     targetId:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}(\/[A-Za-z0-9_-]{1,256})?$
                     targetUid:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     action:
                       type: string
                       enum:
@@ -6127,8 +6129,7 @@ paths:
                   properties:
                     appealId:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     decision:
                       type: string
                       enum:
@@ -6208,7 +6209,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -6347,8 +6348,7 @@ paths:
                   properties:
                     uid:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - uid
               required:
@@ -6750,8 +6750,7 @@ paths:
                   properties:
                     uid:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     days:
                       type: integer
                       minimum: 1
@@ -6816,8 +6815,7 @@ paths:
                   properties:
                     uid:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     status:
                       type: string
                       enum:
@@ -6915,8 +6913,7 @@ paths:
                   properties:
                     uid:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     role:
                       anyOf:
                       - type: string
@@ -7666,7 +7663,7 @@ paths:
                         maxLength: 500
                         format: uri
                       - type: string
-                        pattern: ^\/[A-Za-z0-9/_.-]{1,200}$
+                        pattern: ^\/(?!\/)[A-Za-z0-9/_.-]{1,200}$
                     targetUrl:
                       type: string
                       maxLength: 500
@@ -8120,7 +8117,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -8226,7 +8223,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -8346,8 +8343,7 @@ paths:
                   properties:
                     id:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     status:
                       type: string
                       enum:
@@ -8407,7 +8403,10 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                data: *id002
+                data:
+                  type: object
+                  additionalProperties: false
+                  properties: {}
               required:
               - data
       responses:
@@ -8419,7 +8418,14 @@ paths:
                 type: object
                 additionalProperties: false
                 properties:
-                  result: &id003 {additionalProperties: false, properties: {ok: {const: true}}, required: [ok], type: object}
+                  result:
+                    additionalProperties: false
+                    properties:
+                      ok:
+                        const: true
+                    required:
+                    - ok
+                    type: object
                 required:
                 - result
         default:
@@ -8561,8 +8567,7 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - matchId
               required:
@@ -8616,8 +8621,7 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     text:
                       type: string
                       minLength: 1
@@ -8692,8 +8696,7 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - matchId
               required:
@@ -8747,12 +8750,10 @@ paths:
                   properties:
                     matchId:
                       type: string
-                      minLength: 1
-                      maxLength: 200
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     messageId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - matchId
                   - messageId
@@ -8963,7 +8964,7 @@ paths:
                       type: array
                       items:
                         type: string
-                        maxLength: 300
+                        pattern: ^private\/reports\/[A-Za-z0-9_-]{1,128}\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
                     email:
                       type: string
                       maxLength: 254
@@ -9048,8 +9049,7 @@ paths:
                   properties:
                     ticketId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     text:
                       type: string
                       minLength: 1
@@ -9165,8 +9165,7 @@ paths:
                   properties:
                     homeId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     decision:
                       type: string
                       enum:
@@ -9240,8 +9239,7 @@ paths:
                   properties:
                     uid:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     scope:
                       type: string
                       enum:
@@ -9424,8 +9422,7 @@ paths:
                   properties:
                     alertId:
                       type: string
-                      minLength: 1
-                      maxLength: 256
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - alertId
               required:
@@ -9479,7 +9476,7 @@ paths:
                   properties:
                     cursor:
                       type: string
-                      minLength: 1
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     limit:
                       default: 20
                       type: integer
@@ -9590,8 +9587,7 @@ paths:
                   properties:
                     ticketId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                     text:
                       type: string
                       minLength: 1
@@ -9789,7 +9785,8 @@ paths:
       - name: Stripe-Signature
         in: header
         required: true
-        schema: *id001
+        schema:
+          type: string
       requestBody:
         required: true
         content:
@@ -9812,7 +9809,8 @@ paths:
       - name: partnerId
         in: path
         required: true
-        schema: *id001
+        schema:
+          type: string
       - name: p
         in: query
         required: true
@@ -10673,8 +10671,7 @@ paths:
                   properties:
                     ticketId:
                       type: string
-                      minLength: 1
-                      maxLength: 128
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
                   required:
                   - ticketId
               required:
@@ -11967,12 +11964,18 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id: *id001
-        thumbUrl: *id001
-        cardUrl: *id001
-        fullUrl: *id001
-        width: *id005
-        height: *id005
+        id:
+          type: string
+        thumbUrl:
+          type: string
+        cardUrl:
+          type: string
+        fullUrl:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
       required:
       - thumbUrl
       - cardUrl
@@ -11983,15 +11986,22 @@ components:
       type: object
       additionalProperties: false
       properties:
-        perfectFit: *id004
-        mutualDestination: *id004
-        wantsYourCity: *id004
+        perfectFit:
+          type: boolean
+        mutualDestination:
+          type: boolean
+        wantsYourCity:
+          type: boolean
         sharedWindowIds:
           type: array
-          items: *id001
-        overlapDays: *id005
-        petsOk: *id004
-        capacityOk: *id004
+          items:
+            type: string
+        overlapDays:
+          type: integer
+        petsOk:
+          type: boolean
+        capacityOk:
+          type: boolean
       required:
       - perfectFit
       - mutualDestination
@@ -12004,13 +12014,16 @@ components:
       type: object
       additionalProperties: false
       properties:
-        displayName: *id001
+        displayName:
+          type: string
         photoUrl:
           oneOf:
-          - *id001
+          - type: string
           - type: 'null'
-        identityVerified: *id004
-        foundingMember: *id004
+        identityVerified:
+          type: boolean
+        foundingMember:
+          type: boolean
       required:
       - displayName
       - photoUrl
@@ -12020,17 +12033,26 @@ components:
       type: object
       additionalProperties: false
       properties:
-        homeId: *id001
-        ownerUid: *id001
-        title: *id001
-        cityId: *id001
-        cityName: *id001
-        zone: *id001
+        homeId:
+          type: string
+        ownerUid:
+          type: string
+        title:
+          type: string
+        cityId:
+          type: string
+        cityName:
+          type: string
+        zone:
+          type: string
         type:
           $ref: '#/components/schemas/HomeType'
-        maxGuests: *id005
-        bedrooms: *id005
-        petsAllowed: *id004
+        maxGuests:
+          type: integer
+        bedrooms:
+          type: integer
+        petsAllowed:
+          type: boolean
         photos:
           type: array
           items:
@@ -12042,18 +12064,21 @@ components:
           - type: object
             additionalProperties: false
             properties:
-              avg: &id010 {type: number}
-              count: *id005
+              avg:
+                type: number
+              count:
+                type: integer
             required:
             - avg
             - count
           - type: 'null'
-        isTop: *id004
+        isTop:
+          type: boolean
         compatibility:
           $ref: '#/components/schemas/Compatibility'
         likedYou:
           oneOf:
-          - *id004
+          - type: boolean
           - type: 'null'
       required:
       - homeId
@@ -12076,11 +12101,16 @@ components:
       type: object
       additionalProperties: false
       properties:
-        partnerId: *id001
-        title: *id001
-        text: *id001
-        logoUrl: *id001
-        clickUrl: *id001
+        partnerId:
+          type: string
+        title:
+          type: string
+        text:
+          type: string
+        logoUrl:
+          type: string
+        clickUrl:
+          type: string
         label:
           const: Patrocinado
       required:
@@ -12101,7 +12131,8 @@ components:
           - ANY_OPEN
         cityIds:
           type: array
-          items: *id001
+          items:
+            type: string
           maxItems: 5
       required:
       - mode
@@ -12112,15 +12143,20 @@ components:
       properties:
         windowIds:
           type: array
-          items: *id001
+          items:
+            type: string
         ranges:
           type: array
           items:
             type: object
             additionalProperties: false
             properties:
-              start: &id006 {format: date, type: string}
-              end: *id006
+              start:
+                format: date
+                type: string
+              end:
+                format: date
+                type: string
             required:
             - start
             - end
@@ -12136,7 +12172,8 @@ components:
           type: integer
           minimum: 1
           maximum: 12
-        withPet: *id004
+        withPet:
+          type: boolean
       required:
       - count
       - withPet
@@ -12152,7 +12189,8 @@ components:
           type: string
           minLength: 50
           maxLength: 1500
-        cityId: *id001
+        cityId:
+          type: string
         zone:
           type: string
           maxLength: 60
@@ -12188,10 +12226,12 @@ components:
           type: integer
           minimum: 1
           maximum: 12
-        petsAllowed: *id004
+        petsAllowed:
+          type: boolean
         amenities:
           type: array
-          items: *id001
+          items:
+            type: string
         houseRules:
           type: string
           maxLength: 500
@@ -12201,14 +12241,17 @@ components:
       - type: object
         additionalProperties: false
         properties:
-          id: *id001
+          id:
+            type: string
           status:
             $ref: '#/components/schemas/HomeStatus'
-          visible: *id004
-          complete: *id004
+          visible:
+            type: boolean
+          complete:
+            type: boolean
           declarationVersion:
             oneOf:
-            - *id001
+            - type: string
             - type: 'null'
           locationCheck:
             type: string
@@ -12260,16 +12303,20 @@ components:
       type: object
       additionalProperties: false
       properties:
-        uid: *id001
-        displayName: *id001
+        uid:
+          type: string
+        displayName:
+          type: string
         photoUrl:
           oneOf:
-          - *id001
+          - type: string
           - type: 'null'
-        about: *id001
+        about:
+          type: string
         languages:
           type: array
-          items: *id001
+          items:
+            type: string
         travelsWith:
           type: string
           enum:
@@ -12277,57 +12324,83 @@ components:
           - COUPLE
           - FAMILY
           - FRIENDS
-        memberSince: &id008 {format: date-time, type: string}
-        identityVerified: *id004
-        foundingMember: *id004
-        isTopHost: *id004
+        memberSince:
+          format: date-time
+          type: string
+        identityVerified:
+          type: boolean
+        foundingMember:
+          type: boolean
+        isTopHost:
+          type: boolean
         ratingAvg:
           oneOf:
-          - *id010
+          - type: number
           - type: 'null'
-        reviewsCount: *id005
+        reviewsCount:
+          type: integer
     Review:
       type: object
       additionalProperties: false
       properties:
-        id: *id001
-        authorDisplayName: *id001
-        overall: *id005
+        id:
+          type: string
+        authorDisplayName:
+          type: string
+        overall:
+          type: integer
         sub:
           type: object
           additionalProperties: false
           properties:
-            cleanliness: *id005
-            accuracy: *id005
-            communication: *id005
-            care: *id005
+            cleanliness:
+              type: integer
+            accuracy:
+              type: integer
+            communication:
+              type: integer
+            care:
+              type: integer
         comment:
           oneOf:
-          - *id001
+          - type: string
           - type: 'null'
-        publishedAt: *id008
+        publishedAt:
+          format: date-time
+          type: string
     Exchange:
       type: object
       additionalProperties: false
       properties:
-        id: *id001
-        matchId: *id001
+        id:
+          type: string
+        matchId:
+          type: string
         participants:
           type: array
-          items: *id001
-        proposedBy: *id001
-        startDate: *id006
-        endDate: *id006
-        nights: *id005
+          items:
+            type: string
+        proposedBy:
+          type: string
+        startDate:
+          format: date
+          type: string
+        endDate:
+          format: date
+          type: string
+        nights:
+          type: integer
         guests:
           type: object
-          additionalProperties: *id005
+          additionalProperties:
+            type: integer
         pets:
           type: object
-          additionalProperties: *id005
+          additionalProperties:
+            type: integer
         note:
           oneOf:
-          - *id001
+          - type: string
           - type: 'null'
         status:
           type: string
@@ -12340,15 +12413,19 @@ components:
           - COMPLETED
         expiresAt:
           oneOf:
-          - *id008
+          - format: date-time
+            type: string
           - type: 'null'
     Me:
       type: object
       additionalProperties: false
       properties:
-        uid: *id001
-        email: *id001
-        firstName: *id001
+        uid:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
         status:
           type: string
           enum:
@@ -12361,8 +12438,10 @@ components:
           type: object
           additionalProperties: false
           properties:
-            emailVerified: *id004
-            phoneVerified: *id004
+            emailVerified:
+              type: boolean
+            phoneVerified:
+              type: boolean
             identity:
               $ref: '#/components/schemas/IdentityStatus'
         onboarding:
@@ -12373,20 +12452,24 @@ components:
               type: integer
               minimum: 1
               maximum: 6
-            completed: *id004
-            percent: *id005
+            completed:
+              type: boolean
+            percent:
+              type: integer
         home:
           oneOf:
           - type: object
             additionalProperties: false
             properties:
-              id: *id001
+              id:
+                type: string
               status:
                 $ref: '#/components/schemas/HomeStatus'
-              visible: *id004
+              visible:
+                type: boolean
               cityId:
                 oneOf:
-                - *id001
+                - type: string
                 - type: 'null'
           - type: 'null'
         city:
@@ -12394,8 +12477,10 @@ components:
           - type: object
             additionalProperties: false
             properties:
-              id: *id001
-              name: *id001
+              id:
+                type: string
+              name:
+                type: string
               status:
                 type: string
                 enum:
@@ -12406,17 +12491,21 @@ components:
                 type: object
                 additionalProperties: false
                 properties:
-                  count: *id005
-                  threshold: *id005
+                  count:
+                    type: integer
+                  threshold:
+                    type: integer
           - type: 'null'
         premium:
           type: object
           additionalProperties: false
           properties:
-            active: *id004
+            active:
+              type: boolean
             until:
               oneOf:
-              - *id008
+              - format: date-time
+                type: string
               - type: 'null'
             source:
               oneOf:
@@ -12429,18 +12518,23 @@ components:
                 - MONTHLY
                 - YEARLY
               - type: 'null'
-            cancelAtPeriodEnd: *id004
-            canWithdraw: *id004
+            cancelAtPeriodEnd:
+              type: boolean
+            canWithdraw:
+              type: boolean
         likes:
           type: object
           additionalProperties: false
           properties:
             remainingToday:
               oneOf:
-              - *id005
+              - type: integer
               - type: 'null'
-            resetsAt: *id008
-        canLike: *id004
+            resetsAt:
+              format: date-time
+              type: string
+        canLike:
+          type: boolean
         blockers:
           type: array
           items:
@@ -12451,11 +12545,16 @@ components:
             type: object
             additionalProperties: false
             properties:
-              slug: *id001
-              version: *id001
-              requiresReacceptance: *id004
-        foundingMember: *id004
-        referralCode: *id001
+              slug:
+                type: string
+              version:
+                type: string
+              requiresReacceptance:
+                type: boolean
+        foundingMember:
+          type: boolean
+        referralCode:
+          type: string
         roles:
           type: array
           items:
@@ -12481,14 +12580,17 @@ components:
       type: object
       additionalProperties: false
       properties:
-        templateId: *id001
-        facts: *id001
+        templateId:
+          type: string
+        facts:
+          type: string
         ground:
           type: string
           enum:
           - LAW
           - TERMS
-        groundDetail: *id001
+        groundDetail:
+          type: string
       required:
       - templateId
       - facts
@@ -12502,16 +12604,20 @@ components:
           type: object
           additionalProperties: false
           properties:
-            status: *id001
-            message: *id001
+            status:
+              type: string
+            message:
+              type: string
             details:
               type: object
               additionalProperties: false
               properties:
-                code: *id001
+                code:
+                  type: string
                 fields:
                   type: object
-                  additionalProperties: *id001
+                  additionalProperties:
+                    type: string
                 meta:
                   type: object
               required:

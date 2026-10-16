@@ -17,6 +17,7 @@ import { clock } from '../../core/clock.js';
 import { db } from '../../core/firebase.js';
 import { requireAuth } from '../../core/guards.js';
 import { logger } from '../../core/logger.js';
+import { MAX_INSTANCES } from '../../core/options.js';
 import { getParams } from '../../core/params.js';
 import { publicUrl } from '../../core/public-url.js';
 import { requestIp } from '../../core/rate-limit.js';
@@ -96,7 +97,7 @@ export const devSimulateStripe = defineCallable(
  * id, answers fast. Unknown events are acknowledged and ignored.
  */
 export const stripeWebhook = onRequest(
-  { region: REGION, secrets, memory: '256MiB' },
+  { region: REGION, secrets, memory: '256MiB', maxInstances: MAX_INSTANCES.http },
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).send('Method Not Allowed');

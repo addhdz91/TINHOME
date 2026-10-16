@@ -8,6 +8,7 @@ import { mentionsPayment, minuteBucket, whatsappUrl } from '@tinhome/shared/doma
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { publicUrl } from '../../core/public-url.js';
+import { requireUserActive } from '../../core/users.js';
 import { resolvePushSender, type PushSender } from '../notifications/push.js';
 import { notify } from '../notifications/service.js';
 import { otherParticipant, participantMatch } from './matches.js';
@@ -171,6 +172,11 @@ export async function deleteMessageForMe(
   await ref.update({ deletedFor: FieldValue.arrayUnion(uid) });
 }
 
+/** 05 §2.6 — ACT: a suspended or banned account cannot share or read phone numbers. */
+async function requireActiveAccount(db: Firestore, uid: string): Promise<void> {
+  requireUserActive((await db.doc(`users/${uid}`).get()).data() ?? {});
+}
+
 /** FR-28 — voluntary, per match and permanent while the match is ACTIVE. */
 export async function sharePhone(
   db: Firestore,
@@ -179,6 +185,7 @@ export async function sharePhone(
   now: Date,
 ): Promise<void> {
   const match = await participantMatch(db, uid, matchId);
+  await requireActiveAccount(db, uid);
   await db.runTransaction(async (tx) => {
     const current = await tx.get(match.ref);
     requireActive(current);
@@ -206,6 +213,7 @@ export async function matchContact(
 ): Promise<{ displayName: string; phoneE164: string; whatsappUrl: string }> {
   const match = await participantMatch(db, uid, matchId);
   requireActive(match);
+  await requireActiveAccount(db, uid);
   const other = otherParticipant(match, uid);
   if (!(match.get('phoneSharedBy') as string[]).includes(other))
     throw appError('E_PHONE_NOT_SHARED');

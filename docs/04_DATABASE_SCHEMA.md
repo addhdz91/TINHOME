@@ -16,7 +16,7 @@
 |---|---|---|---|
 | `users` | `uid` | Propietario; admin | ✗ (callables) |
 | `publicProfiles` | `uid` | Usuarios con email verificado | ✗ |
-| `homes` | `uid` (1 casa por usuario) | `visible == true` (usuarios verificados por email) · propietario · admin | ✗ |
+| `homes` | `uid` (1 casa por usuario) | Propietario · admin (las casas de otros, por callable) | ✗ |
 | `likes` | `{fromUid}_{toUid}` | Solo el emisor (`fromUid == auth.uid`) | ✗ |
 | `passes` | `{uid}_{homeId}` | ✗ | ✗ |
 | `matches` | `{uidMenor}_{uidMayor}` | Participantes | ✗ |
@@ -247,13 +247,16 @@ Partner: `name`, `category: CLEANING|KEYS|TRANSPORT|LUGGAGE|TRAVEL_INSURANCE|OTH
 - `users/{uid}/pushTokens/{sha256(token)}`: `token`, `platform: 'web'`, `userAgent`, `createdAt`, `lastSeenAt`. Se borran si FCM responde «no registrado».
 - `adminAlerts/{id}`: `type: REPORT_HIGH|PHOTO_DUPLICATE|HOLD_DUE|COMPLAINT_DUE|LOCATION_MANUAL|VERIFICATION_DUPLICATE` (M4), `refType`, `refId`, `priority`, `createdAt`, `handledBy?`, `handledAt?`.
 
+### 2.24c `hiddenMessages/{matchId}_{messageId}` (solo servidor)
+Texto original de un mensaje ocultado por moderación (`HIDE_MESSAGE`): `matchId`, `messageId`, `text`, `hiddenAt`. El mensaje queda con `text: ''` y `hiddenByModeration: true` (y la vista previa `lastMessage.text` vacía si era el último), así los participantes ya no lo reciben. Se restaura si la decisión se revierte y se borra con el chat (J-14). Sin acceso desde el cliente (denegación por defecto).
+
 ### 2.25 Otros
 - `gdprRequests/{id}`: `uid`, `type: ACCESS|RECTIFICATION|ERASURE|OBJECTION|RESTRICTION|PORTABILITY`, `details`, `status: OPEN|DONE|REJECTED`, `dueAt`, `exportPath?`, `createdAt`, `closedAt?`, `note?` (respuesta enviada con N-30), `closedBy?`.
 - `users` en baja: `status: DELETION_PENDING`, `deletion { requestedAt, purgeAt }`, `statusBeforeDeletion`. Tras J-05 queda una lápida `{ status: DELETED, deletedAt, deletionRequestedAt }` sin datos personales.
 - `likeCounters/{uid}_{date}`: `count`, `hourBuckets: { [HH]: int }` (hora de Madrid), `messageCount` (me gusta con mensaje, P-27), `expiresAt`. TTL a 3 días.
 - `chatCounters/{uid}_{YYYYMMDDHHmm}`: `count`. Límite de mensajes por minuto (BR-36). TTL a 1 día.
 - `events/{id}`: `name`, `uidHash`, `cityId?`, `props` (sin PII), `createdAt`. TTL 400 días.
-- `auditLog/{id}`: `actorUid`, `actorRole`, `action`, `targetType`, `targetId`, `before?`, `after?`, `reason?`, `createdAt`. Solo inserción.
+- `auditLog/{id}`: `actorUid`, `actorRole`, `action`, `targetType`, `targetId`, `before?`, `after?`, `reason?`, `createdAt`. Solo inserción. Además de las acciones, registra las lecturas de datos personales del equipo: `user.search` (solo el hash de la búsqueda), `user.view`, `report.view`, `export.csv`, `consents.view` y el acceso a documentos de identidad.
 - `mailQueue/{id}`: `to`, `templateId`, `data`, `status: QUEUED|SENT|FAILED`, `attempts`, `lastError?`, `createdAt`, `sentAt?`, `expiresAt` (TTL 90 días).
 - `stripeEvents/{eventId}`: `kind` (tipo normalizado), `createdAt`, `expiresAt` (TTL 90 días). Se crea con `create()` antes de aplicar el evento: un reenvío del mismo evento es un no-op (idempotencia, M7).
 
@@ -316,12 +319,14 @@ service cloud.firestore {
 
     match /users/{userId} { allow read: if signedIn() && (uid() == userId || isAdmin()); }
     match /publicProfiles/{userId} { allow read: if emailVerified(); }
+    // Las casas de otros se leen con getHomeDetail / el mazo (bloqueos BR-10 y solo campos públicos)
     match /homes/{homeId} {
-      allow read: if emailVerified() && (resource.data.visible == true || uid() == homeId || isAdmin());
+      allow read: if emailVerified() && (uid() == homeId || isAdmin());
     }
     match /likes/{likeId} { allow read: if signedIn() && resource.data.fromUid == uid(); }
     match /matches/{matchId} {
-      allow read: if signedIn() && (uid() in resource.data.participants || isAdmin());
+      // Solo participantes: el documento lleva la vista previa del último mensaje (el equipo no lee chats)
+      allow read: if signedIn() && uid() in resource.data.participants;
       // Mensajes: solo lectura para participantes; se escriben con la callable sendMessage
       // M6: solo participantes y solo con el match ACTIVE; el equipo no lee chats (las denuncias llevan instantánea)
       match /messages/{messageId} {
@@ -397,10 +402,7 @@ service firebase.storage {
     match /homes/{userId}/photos/{file} {
       allow read: if signedIn() && request.auth.token.email_verified == true;
     }
-    match /avatars/{userId}/{file} {
-      allow read: if signedIn() && request.auth.token.email_verified == true;
-      allow create, update: if signedIn() && request.auth.uid == userId && isImage() && request.resource.size < 5 * 1024 * 1024;
-    }
+    // Sin ruta de avatares en Fase 1 (no hay procesado que quite EXIF/GPS): denegada por defecto.
     // Documentos de verificación: el propietario solo crea; lectura únicamente por URL firmada del servidor
     match /private/verifications/{userId}/{verificationId}/{file} {
       allow create: if signedIn() && request.auth.uid == userId && isDoc() && under10MB();

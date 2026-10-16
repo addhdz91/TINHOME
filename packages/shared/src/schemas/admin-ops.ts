@@ -7,11 +7,11 @@ import {
   PREMIUM_SOURCE,
   USER_STATUS,
 } from '../constants/enums.js';
-import { IsoDateSchema, PaginationInput } from './common.js';
+import { DocId, IsoDateSchema, PaginationInput } from './common.js';
 import { ParamsSchema } from './config.js';
 import { ModerationActionView, StatementInput, StrikeView } from './moderation.js';
 
-const Uid = z.string().check(z.minLength(1), z.maxLength(128));
+const Uid = DocId;
 
 /** FR-50 — users. */
 export const UserAdminSummary = z.object({

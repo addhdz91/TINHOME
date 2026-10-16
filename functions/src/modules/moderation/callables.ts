@@ -22,6 +22,7 @@ import {
   SubmitReportInput,
   SubmitReportOutput,
 } from '@tinhome/shared/schemas';
+import { viewAudit } from '../../core/audit.js';
 import { defineCallable } from '../../core/callable.js';
 import { clock } from '../../core/clock.js';
 import { db } from '../../core/firebase.js';
@@ -75,7 +76,9 @@ export const adminGetReport = defineCallable(
   'adminGetReport',
   { input: AdminGetReportInput, output: AdminGetReportOutput },
   async ({ input, request, now }) => {
-    requireAdmin(request);
+    const actor = requireAdmin(request);
+    // The report carries a snapshot of the reported content (possibly chat messages).
+    await viewAudit(actor, 'report.view', 'report', input.id);
     return queue.getReport(db(), input.id, await getParams(), now);
   },
 );

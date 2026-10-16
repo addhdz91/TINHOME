@@ -39,7 +39,26 @@ export async function consumeRateLimit(db: Firestore, options: RateLimitOptions)
     });
 }
 
-/** Best-effort client IP of a callable request (Cloud Functions sets `ip` from X-Forwarded-For). */
-export function requestIp(rawRequest: { ip?: string | undefined } | undefined): string {
+const IP_LIKE = /^[0-9a-fA-F:.]{2,45}$/;
+
+/**
+ * Client IP of a request, for rate limits and the /24 of legal evidence. The Functions
+ * framework enables Express `trust proxy`, so `req.ip` is the LEFTMOST X-Forwarded-For entry,
+ * which the client can write itself (rotating it would bypass every IP limit). Google's
+ * front end appends the address it saw, so the trustworthy value is the RIGHTMOST entry.
+ */
+export function requestIp(
+  rawRequest: { ip?: string | undefined; headers?: Record<string, unknown> } | undefined,
+): string {
+  const header = rawRequest?.headers?.['x-forwarded-for'];
+  const forwarded = Array.isArray(header) ? header.join(',') : header;
+  if (typeof forwarded === 'string') {
+    const last = forwarded
+      .split(',')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+      .at(-1);
+    if (last && IP_LIKE.test(last)) return last;
+  }
   return rawRequest?.ip ?? 'unknown';
 }

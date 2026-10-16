@@ -171,6 +171,34 @@ describe('photo processing (FR-11, FR-64)', () => {
     expect(photos[0]?.width).toBe(1080);
   });
 
+  it('rejects non-photo formats, corrupt files and decompression bombs, leaving nothing behind', async () => {
+    await upsertHome.run(authedRequest(home, laura));
+    const svg = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"><rect width="100%" height="100%"/></svg>',
+    );
+    const jpeg = await testJpeg(4);
+    const truncated = jpeg.subarray(0, Math.floor(jpeg.length / 3));
+    // 8000×8000 = 64 Mpx: a few KB as PNG, ~256 MB once decoded.
+    const bomb = await sharp({
+      create: { width: 8000, height: 8000, channels: 3, background: '#000' },
+      limitInputPixels: false,
+    })
+      .png({ compressionLevel: 9 })
+      .toBuffer();
+    for (const [id, file] of [
+      ['svg', svg],
+      ['cut', truncated],
+      ['bomb', bomb],
+    ] as const) {
+      expect(await uploadAndProcess('laura', id, file)).toEqual({ status: 'SKIPPED_INVALID' });
+      const [rawExists] = await bucket().file(`homes/laura/raw/${id}`).exists();
+      expect(rawExists).toBe(false);
+    }
+    const [leftovers] = await bucket().getFiles({ prefix: 'homes/laura/photos/' });
+    expect(leftovers).toHaveLength(0);
+    expect((await db().doc('homes/laura').get()).get('photos') ?? []).toHaveLength(0);
+  });
+
   it('puts a home on preventive hold when a photo duplicates another home (BR-40)', async () => {
     await seedUser('javier');
     await upsertHome.run(

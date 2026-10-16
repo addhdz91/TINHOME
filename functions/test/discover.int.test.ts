@@ -242,14 +242,27 @@ describe('passHome / undoPass (BR-11, AC-20.3)', () => {
     expect(
       (await getHomeDetail.run(authedRequest({ homeId: 'perfect' }, laura))).relation.passed,
     ).toBe(true);
-    await undoPass.run(authedRequest({ homeId: 'perfect', sessionId: 'session-1' }, laura));
+    const session1 = { ...laura, auth_time: 1_800_000_000 };
+    await undoPass.run(authedRequest({ homeId: 'perfect', sessionId: 'session-1' }, session1));
     await passHome.run(authedRequest({ homeId: 'perfect' }, laura));
     expect(
       await errorCode(
-        undoPass.run(authedRequest({ homeId: 'perfect', sessionId: 'session-1' }, laura)),
+        undoPass.run(authedRequest({ homeId: 'perfect', sessionId: 'session-1' }, session1)),
       ),
     ).toBe('E_UNDO_LIMIT');
-    await undoPass.run(authedRequest({ homeId: 'perfect', sessionId: 'session-2' }, laura));
+    // A new random sessionId from the client does not reset the limit (same sign-in).
+    expect(
+      await errorCode(
+        undoPass.run(authedRequest({ homeId: 'perfect', sessionId: 'otra-sesion-9' }, session1)),
+      ),
+    ).toBe('E_UNDO_LIMIT');
+    // A new sign-in is a new session.
+    await undoPass.run(
+      authedRequest(
+        { homeId: 'perfect', sessionId: 'session-2' },
+        { ...laura, auth_time: 1_800_000_900 },
+      ),
+    );
 
     await db()
       .doc('users/laura')

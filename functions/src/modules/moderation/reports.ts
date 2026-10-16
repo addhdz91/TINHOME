@@ -171,7 +171,10 @@ export async function submitReport(
   });
 
   const priority = reportPriority(input.reason);
+  // Only an ACTIVE, verified account can trigger a preventive hold: a suspended person can
+  // still report (anyone can, even visitors), but not freeze someone else's account with it.
   const reporterVerified =
+    reporter.get('status') === 'ACTIVE' &&
     (reporter.get('verification') as { identity?: string } | undefined)?.identity === 'APPROVED';
   const ref = db.collection('reports').doc();
   await ref.set({

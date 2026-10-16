@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useTheme } from '@/app/theme-context';
 import { toAppError } from '@/lib/app-error';
 import { firebaseAuth, knownAuthUser } from '@/lib/firebase-auth';
+import { clearPrivateCaches } from '@/lib/pwa';
 import { getMe, updateSettings } from '@/lib/session-api';
 import { AuthContext, meKey, type AuthContextValue, type AuthState } from './auth-context';
 
@@ -16,7 +17,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null | undefined>(knownAuthUser);
 
-  useEffect(() => onIdTokenChanged(firebaseAuth(), (next) => setUser(next)), []);
+  useEffect(
+    () =>
+      onIdTokenChanged(firebaseAuth(), (next) => {
+        setUser(next);
+        if (next === null) void clearPrivateCaches().catch(() => undefined);
+      }),
+    [],
+  );
 
   const uid = user?.uid;
   const me = useQuery({
@@ -30,6 +38,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         const appError = toAppError(error);
         if (appError.code === 'E_NOT_FOUND') return null;
+        if (appError.code === 'E_REAUTH_REQUIRED') {
+          // The server no longer accepts this session (revoked, banned or deleted account).
+          // A fresh token works if the session is still valid; otherwise sign out here.
+          const current = firebaseAuth().currentUser;
+          const refreshed = await current?.getIdToken(true).catch(() => null);
+          if (!refreshed) {
+            await firebaseSignOut(firebaseAuth());
+            return null;
+          }
+          return getMe({});
+        }
         throw appError;
       }
     },

@@ -10,7 +10,7 @@ import {
   TENURES,
 } from '../constants/enums.js';
 import { PARAM_DEFAULTS } from '../constants/params.js';
-import { IsoDateSchema } from './common.js';
+import { DocId, IsoDateSchema } from './common.js';
 
 const Slug = z.string().check(z.minLength(1), z.maxLength(60), z.regex(/^[a-z0-9-]+$/));
 
@@ -94,7 +94,7 @@ export const ReorderHomePhotosInput = z.object({
     .array(z.string().check(z.minLength(1)))
     .check(z.minLength(1), z.maxLength(PARAM_DEFAULTS.photosMax)),
 });
-export const DeleteHomePhotoInput = z.object({ photoId: z.string().check(z.minLength(1)) });
+export const DeleteHomePhotoInput = z.object({ photoId: DocId });
 export const PhotosOutput = z.object({ photos: z.array(HomePhoto) });
 
 export const AcceptDeclarationInput = z.object({

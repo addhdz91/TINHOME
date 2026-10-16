@@ -1,6 +1,6 @@
 import { z } from 'zod/mini';
 import { ANALYTICS_EVENTS, GDPR_REQUEST_STATUS, GDPR_REQUEST_TYPES } from '../constants/enums.js';
-import { PaginationInput } from './common.js';
+import { DocId, PaginationInput } from './common.js';
 
 /** FR-59 — `submitGdprRequest` (A). */
 export const SubmitGdprRequestInput = z.object({
@@ -36,7 +36,7 @@ export const AdminListGdprRequestsOutput = z.object({
   nextCursor: z.nullable(z.string()),
 });
 export const AdminCloseGdprRequestInput = z.object({
-  id: z.string().check(z.minLength(1), z.maxLength(128)),
+  id: DocId,
   status: z.enum(['DONE', 'REJECTED']),
   note: z.string().check(z.trim(), z.minLength(5), z.maxLength(2000)),
 });

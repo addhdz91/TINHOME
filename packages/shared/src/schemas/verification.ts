@@ -11,7 +11,7 @@ import {
   VERIFICATION_FILES,
   VERIFICATION_STATUS,
 } from '../constants/enums.js';
-import { PaginationInput } from './common.js';
+import { DocId, PaginationInput } from './common.js';
 
 /** Storage path `private/verifications/{uid}/{verificationId}/{file}` (checked by the server). */
 const StoragePath = z
@@ -75,7 +75,7 @@ export const AdminListVerificationsOutput = z.object({
 });
 
 export const AdminGetVerificationInput = z.object({
-  id: z.string().check(z.minLength(1), z.maxLength(128)),
+  id: DocId,
 });
 
 export const VerificationAdminView = z.extend(VerificationSummary, {
@@ -112,7 +112,7 @@ export const AdminGetVerificationOutput = z.object({
 export type AdminGetVerificationOutput = z.infer<typeof AdminGetVerificationOutput>;
 
 export const AdminGetVerificationFileUrlInput = z.object({
-  id: z.string().check(z.minLength(1), z.maxLength(128)),
+  id: DocId,
   file: z.enum(VERIFICATION_FILES),
 });
 export const AdminGetVerificationFileUrlOutput = z.object({
@@ -122,7 +122,7 @@ export const AdminGetVerificationFileUrlOutput = z.object({
 });
 
 export const AdminDecideVerificationInput = z.object({
-  id: z.string().check(z.minLength(1), z.maxLength(128)),
+  id: DocId,
   decision: z.enum(VERIFICATION_DECISIONS),
   reason: z.optional(z.string().check(z.trim(), z.maxLength(1000))),
   infoRequest: z.optional(z.string().check(z.trim(), z.maxLength(1000))),
@@ -168,7 +168,7 @@ export type LocationReviewSummary = z.infer<typeof LocationReviewSummary>;
 export const AdminListLocationReviewsOutput = z.object({ items: z.array(LocationReviewSummary) });
 
 export const AdminDecideLocationReviewInput = z.object({
-  homeId: z.string().check(z.minLength(1), z.maxLength(128)),
+  homeId: DocId,
   decision: z.enum(REVIEW_DECISIONS),
   reason: z.string().check(z.trim(), z.minLength(3), z.maxLength(1000)),
 });

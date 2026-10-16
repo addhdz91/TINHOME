@@ -13,8 +13,10 @@ import { clock } from '../../core/clock.js';
 import { db } from '../../core/firebase.js';
 import { requireSuperadmin, verifiedUid } from '../../core/guards.js';
 import { logger } from '../../core/logger.js';
+import { MAX_INSTANCES } from '../../core/options.js';
 import { getParams } from '../../core/params.js';
 import { publicUrl } from '../../core/public-url.js';
+import { requestIp } from '../../core/rate-limit.js';
 import * as sponsored from './service.js';
 
 /** BR-28 — A, EV. */
@@ -50,26 +52,30 @@ export function partnerIdFromPath(path: string): string {
 }
 
 /** 05 §2.15 — `GET /r/{partnerId}?p=` → click counted, 302 to the partner (no cookies). */
-export const partnerRedirect = onRequest({ region: REGION, memory: '256MiB' }, async (req, res) => {
-  res.set('Cache-Control', 'no-store');
-  res.set('Referrer-Policy', 'no-referrer');
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    res.status(405).send('Method Not Allowed');
-    return;
-  }
-  const placement = typeof req.query.p === 'string' ? req.query.p : undefined;
-  try {
-    const target = await sponsored.recordClick(
-      db(),
-      partnerIdFromPath(req.path),
-      placement,
-      clock.now(),
-    );
-    res.redirect(302, target ?? `${publicUrl()}/app`);
-  } catch (error) {
-    logger.error('partner redirect failed', {
-      cause: error instanceof Error ? error.message.slice(0, 200) : 'unknown',
-    });
-    res.redirect(302, `${publicUrl()}/app`);
-  }
-});
+export const partnerRedirect = onRequest(
+  { region: REGION, memory: '256MiB', maxInstances: MAX_INSTANCES.http },
+  async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.set('Referrer-Policy', 'no-referrer');
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
+    const placement = typeof req.query.p === 'string' ? req.query.p : undefined;
+    try {
+      const target = await sponsored.recordClick(
+        db(),
+        partnerIdFromPath(req.path),
+        placement,
+        clock.now(),
+        requestIp(req),
+      );
+      res.redirect(302, target ?? `${publicUrl()}/app`);
+    } catch (error) {
+      logger.error('partner redirect failed', {
+        cause: error instanceof Error ? error.message.slice(0, 200) : 'unknown',
+      });
+      res.redirect(302, `${publicUrl()}/app`);
+    }
+  },
+);

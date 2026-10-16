@@ -26,6 +26,13 @@ export async function purgeClosedChats(db: Firestore, months: number, now: Date)
       await batch.commit();
       if (page.size < BATCH) break;
     }
+    // Texts of messages hidden by moderation go with the chat.
+    const hidden = await db.collection('hiddenMessages').where('matchId', '==', match.id).get();
+    if (!hidden.empty) {
+      const batch = db.batch();
+      for (const doc of hidden.docs) batch.delete(doc.ref);
+      await batch.commit();
+    }
     await match.ref.update({ messagesPurgedAt: Timestamp.fromDate(now) });
     purged += 1;
   }

@@ -11,6 +11,8 @@ import type { AdminGetUserOutput, StatementInput, UserAdminSummary } from '@tinh
 import type { Params } from '@tinhome/shared/types';
 import { appError } from '../../core/app-error.js';
 import { writeAudit } from '../../core/audit.js';
+import { cursorOffset } from '../../core/pagination.js';
+import { forgetUserSession } from '../../core/privileged-session.js';
 import { actionView } from '../moderation/appeals.js';
 import { moderate, type Actor } from '../moderation/moderate.js';
 import { recomputePremium } from '../premium/entitlements.js';
@@ -78,7 +80,7 @@ export async function searchUsers(
     for (const result of results) for (const doc of result.docs) seen.set(doc.id, doc);
     snaps = { docs: [...seen.values()], size: seen.size };
   }
-  const offset = input.cursor ? Number(input.cursor) : 0;
+  const offset = cursorOffset(input.cursor);
   const page = snaps.docs.slice(offset, offset + input.limit);
   const next = offset + input.limit;
   return {
@@ -259,6 +261,7 @@ export async function setRole(
   await getAuth().setCustomUserClaims(input.uid, { ...user.customClaims, role: input.role });
   // The old role lives in the person's current tokens: end those sessions (they sign in again).
   await getAuth().revokeRefreshTokens(input.uid);
+  forgetUserSession(input.uid);
   const directory = db.doc(`adminDirectory/${input.uid}`);
   if (input.role && user.email) await directory.set({ email: user.email, role: input.role });
   else await directory.delete();

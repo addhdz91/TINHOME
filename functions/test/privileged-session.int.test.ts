@@ -1,8 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { adminAuth } from '../src/core/firebase.js';
-import { setPrivilegedSessionCheck } from '../src/core/privileged-session.js';
+import { setSessionCheck } from '../src/core/privileged-session.js';
+import { getMe } from '../src/modules/account/callables.js';
 import { adminGetDashboard, adminSetRole } from '../src/modules/admin/callables.js';
+import { adminModerate } from '../src/modules/moderation/callables.js';
 import { listMyGdprRequests } from '../src/modules/privacy/callables.js';
+import { seedEligible } from './fixtures.js';
 import {
   authedRequest,
   clearAuth,
@@ -22,8 +25,9 @@ async function account(uid: string, role: string | null) {
   if (role) await adminAuth().setCustomUserClaims(uid, { role });
 }
 
-beforeAll(() => setPrivilegedSessionCheck(null)); // the real live check
-afterAll(() => setPrivilegedSessionCheck(() => Promise.resolve()));
+beforeAll(() => setSessionCheck(null)); // the real live checks
+afterAll(() => setSessionCheck(() => Promise.resolve()));
+beforeEach(() => setSessionCheck(null)); // empties the per-instance cache
 
 beforeEach(async () => {
   await clearFirestore();
@@ -81,8 +85,64 @@ describe('live admin session (FR-48, NFR-04)', () => {
     const after = await adminAuth().getUser('adm');
     expect(after.customClaims?.role).toBe('superadmin');
     expect(Date.parse(after.tokensValidAfterTime ?? '')).toBeGreaterThan(Date.now() - 60_000);
-    // A plain user (no Auth record here) is unaffected by the admin check.
-    const laura: TestToken = { uid: 'laura', email_verified: true };
+    // A plain user is looked up as a user, not as an admin.
+    await account('laura', null);
+    const laura = { uid: 'laura', email_verified: true, iat: freshIat() };
     await expect(listMyGdprRequests.run(authedRequest({}, laura))).resolves.toEqual({ items: [] });
+  });
+});
+
+describe('live user session (ASVS V3.3: revocation, bans and deleted accounts)', () => {
+  it('rejects a token issued before «cerrar sesión en todos los dispositivos»', async () => {
+    await account('laura', null);
+    const old = { uid: 'laura', email_verified: true, iat: freshIat() - 120 };
+    await expect(listMyGdprRequests.run(authedRequest({}, old))).resolves.toEqual({ items: [] });
+    await adminAuth().revokeRefreshTokens('laura');
+    setSessionCheck(null); // another instance: nothing cached
+    expect(await errorCode(listMyGdprRequests.run(authedRequest({}, old)))).toBe(
+      'E_REAUTH_REQUIRED',
+    );
+    const fresh = { ...old, iat: freshIat() };
+    await expect(listMyGdprRequests.run(authedRequest({}, fresh))).resolves.toEqual({ items: [] });
+  });
+
+  it('a ban ends the session at once on the instance that bans; unknown accounts are rejected', async () => {
+    await account('boss', 'superadmin');
+    await account('laura', null);
+    await seedEligible('laura', 'madrid');
+    const laura = {
+      uid: 'laura',
+      email: 'laura@ejemplo.es',
+      email_verified: true,
+      iat: freshIat() - 60,
+    };
+    await expect(getMe.run(authedRequest({}, laura))).resolves.toBeTruthy();
+    const boss = {
+      uid: 'boss',
+      email_verified: true,
+      role: 'superadmin',
+      firebase: mfa,
+      iat: freshIat(),
+    };
+    await adminModerate.run(
+      authedRequest(
+        {
+          targetUid: 'laura',
+          targetType: 'USER',
+          targetId: 'laura',
+          action: 'BAN',
+          statement: {
+            templateId: 'FRAUD',
+            facts: 'Ha pedido una fianza por transferencia a otra persona usuaria.',
+            ground: 'TERMS',
+            groundDetail: 'Términos: sin pagos entre personas usuarias.',
+          },
+        },
+        boss,
+      ),
+    );
+    expect(await errorCode(getMe.run(authedRequest({}, laura)))).toBe('E_REAUTH_REQUIRED');
+    const ghost = { uid: 'ghost', email_verified: true, iat: freshIat() };
+    expect(await errorCode(getMe.run(authedRequest({}, ghost)))).toBe('E_REAUTH_REQUIRED');
   });
 });

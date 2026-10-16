@@ -12,7 +12,18 @@
       "source": "functions",
       "codebase": "default",
       "runtime": "nodejs22",
-      "ignore": ["node_modules", "src", "**/*.test.ts", "*.config.ts", "tsconfig.json"]
+      "ignore": [
+        "node_modules",
+        "src",
+        "**/*.test.ts",
+        "*.config.ts",
+        "tsconfig.json",
+        "test",
+        ".tmp",
+        "coverage",
+        "*.log",
+        ".env.local"
+      ]
     }
   ],
   "hosting": {
@@ -83,7 +94,25 @@
         ]
       },
       {
-        "source": "/@(index|app).html",
+        "source": "/@(index|app|entrar|registro).html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "**/!(*.*)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "/",
         "headers": [
           {
             "key": "Cache-Control",
