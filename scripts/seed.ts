@@ -199,7 +199,7 @@ async function seedUsers(): Promise<void> {
         privacidad: LEGAL_VERSION,
         cookies: LEGAL_VERSION,
       },
-      settings: { theme: demo.theme, notifications: {} },
+      settings: { theme: demo.theme, notifications: {}, marketingOptIn: demo.uid === 'javier' },
       createdAt: now,
       updatedAt: now,
     });
@@ -367,6 +367,65 @@ async function seedHomes(): Promise<void> {
 }
 
 /** M5 — 60 visible homes with owners that only exist in Firestore, plus some likes to Javier. */
+/**
+ * Subscribers panel (/admin/suscriptores): catalogue owners spread over every marketing
+ * segment — paying (monthly, yearly, cancelling), former subscribers and expired gifts — and
+ * one in three with commercial e-mails accepted (the demo users keep their own state).
+ */
+async function seedSubscribers(): Promise<number> {
+  const DAY = 86_400_000;
+  const batch = db.batch();
+  let count = 0;
+  buildCatalog().forEach((home, index) => {
+    const uid = home.ownerUid;
+    const user = db.doc(`users/${uid}`);
+    if (index % 3 === 0) {
+      batch.set(user, { settings: { marketingOptIn: true } }, { merge: true });
+    }
+    const subscription = db.doc(`subscriptions/${uid}`);
+    const entitlement = db.doc(`entitlements/seed-${uid}`);
+    if (home.ownerPremium) {
+      // Paying: monthly, yearly or cancelling at the end of the period.
+      const kind = (['MONTHLY', 'YEARLY', 'CANCELING'] as const)[index % 3] ?? 'MONTHLY';
+      const end = Timestamp.fromMillis(Date.now() + (kind === 'CANCELING' ? 9 : 20) * DAY);
+      batch.set(subscription, {
+        plan: kind === 'YEARLY' ? 'YEARLY' : 'MONTHLY',
+        status: 'active',
+        cancelAtPeriodEnd: kind === 'CANCELING',
+        currentPeriodEnd: end,
+        startedAt: now,
+        updatedAt: now,
+      });
+      batch.set(entitlement, { uid, source: 'STRIPE', startsAt: now, endsAt: end });
+      batch.set(user, { premiumUntil: end, premiumSource: 'STRIPE' }, { merge: true });
+      count += 1;
+    } else if (index % 7 === 3 || index % 7 === 5) {
+      // Premium that ended: a former subscriber or a gift that expired.
+      const ended = Timestamp.fromMillis(Date.now() - 20 * DAY);
+      if (index % 7 === 3) {
+        batch.set(subscription, {
+          plan: 'MONTHLY',
+          status: 'canceled',
+          cancelAtPeriodEnd: false,
+          currentPeriodEnd: ended,
+          startedAt: Timestamp.fromMillis(Date.now() - 80 * DAY),
+          updatedAt: now,
+        });
+      }
+      batch.set(entitlement, {
+        uid,
+        source: index % 7 === 3 ? 'STRIPE' : 'REFERRAL',
+        startsAt: Timestamp.fromMillis(Date.now() - 80 * DAY),
+        endsAt: ended,
+      });
+      batch.set(user, { premiumUntil: ended, premiumSource: null }, { merge: true });
+      count += 1;
+    }
+  });
+  await batch.commit();
+  return count;
+}
+
 async function seedCatalog(): Promise<number> {
   const pool = await getPhotoPool();
   const catalog = buildCatalog();
@@ -658,6 +717,7 @@ async function main(): Promise<void> {
   console.log(`✔ ${DEMO_HOMES.length} demo homes (photos in the Storage emulator)`);
   console.log(`✔ ${await seedVerifications()} pending verifications with sample documents`);
   console.log(`✔ ${await seedCatalog()} catalogue homes for Discover and Explore`);
+  console.log(`✔ ${await seedSubscribers()} catalogue owners with a subscription history`);
   console.log(`✔ ${await seedMatches()} active match (Javier ⇄ Sofía) with messages`);
   console.log(
     `✔ ${await seedExchanges()} completed exchange to review (Javier ⇄ Sofía) and notices`,

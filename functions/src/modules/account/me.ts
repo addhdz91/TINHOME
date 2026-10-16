@@ -173,11 +173,13 @@ function settingsOf(raw: unknown): Me['settings'] {
     theme?: ThemePreference;
     notifications?: unknown;
     pushPreview?: unknown;
+    marketingOptIn?: unknown;
   };
   const notifications = NotificationPreferencesSchema.safeParse(settings.notifications ?? {});
   return {
     theme: settings.theme ?? 'system',
     notifications: notifications.success ? notifications.data : {},
     pushPreview: settings.pushPreview === true,
+    marketingOptIn: settings.marketingOptIn === true,
   };
 }

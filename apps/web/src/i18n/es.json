@@ -173,7 +173,8 @@
       "audit": "Auditoría",
       "partners": "Patrocinados",
       "gdpr": "Solicitudes RGPD",
-      "consents": "Consentimientos"
+      "consents": "Consentimientos",
+      "subscribers": "Suscriptores"
     },
     "denied": {
       "title": "No tienes acceso",
@@ -741,9 +742,93 @@
         "PUBLIC_COMPLAINT": "Reclamación pública",
         "PUBLIC_REPORT": "Denuncia pública",
         "HOME_DECLARATION": "Declaración de la casa",
-        "PREMIUM_CHECKOUT": "Pago Premium"
+        "PREMIUM_CHECKOUT": "Pago Premium",
+        "SETTINGS": "Ajustes"
       },
-      "legacy": "Registro anterior a la ampliación (sin detalle de formulario)"
+      "legacy": "Registro anterior a la ampliación (sin detalle de formulario)",
+      "marketing": {
+        "MARKETING_OPT_IN": "Emails comerciales: activados",
+        "MARKETING_OPT_OUT": "Emails comerciales: desactivados"
+      }
+    },
+    "subscribers": {
+      "title": "Suscriptores",
+      "intro": "Quién paga Premium, quién lo tiene regalado y está a punto de perderlo, y quién se fue. Úsalo para planificar campañas de conversión y reactivación.",
+      "city": "Ciudad",
+      "allCities": "Todas las ciudades",
+      "expiring": "Premium que termina",
+      "expiringAny": "Cualquier fecha",
+      "expiringDays_one": "En {{count}} día o menos",
+      "expiringDays_other": "En {{count}} días o menos",
+      "truncated": "Hay más cuentas de las que el panel lee de una vez: los números cubren solo las primeras 5.000.",
+      "kpis": {
+        "mrr": "Ingresos mensuales estimados",
+        "plans": "{{monthly}} mensuales · {{yearly}} anuales (IVA incluido)",
+        "paying": "Suscriptores de pago",
+        "canceling_one": "{{count}} cancela al final del periodo",
+        "canceling_other": "{{count}} cancelan al final del periodo",
+        "expiring": "Premium que termina en 30 días",
+        "expiringHint": "Regalado o cancelado: aún se puede convertir o retener",
+        "conversion": "Conversión a pago",
+        "accounts_one": "Sobre {{count}} cuenta",
+        "accounts_other": "Sobre {{count}} cuentas"
+      },
+      "segmentsTitle": "Segmentos",
+      "segments": {
+        "PAID_ACTIVE": "De pago activos",
+        "PAID_CANCELING": "Cancelan al final del periodo",
+        "GIFTED": "Premium regalado",
+        "LAPSED_PAID": "Ex-suscriptores",
+        "LAPSED_GIFTED": "Regalo caducado",
+        "FREE": "Nunca Premium"
+      },
+      "actions": {
+        "PAID_ACTIVE": "Fidelizar: novedades y ventajas, y pedirles que inviten a gente de otras ciudades.",
+        "PAID_CANCELING": "Retener antes de que termine: recordar lo que pierden o proponer el plan anual.",
+        "GIFTED": "Fundadores, invitaciones o concedido por el equipo: invitar a pasar a pago antes de que caduque.",
+        "LAPSED_PAID": "Pagaron y lo dejaron: invitación a reactivar la suscripción.",
+        "LAPSED_GIFTED": "Probaron Premium gratis y caducó: invitación a suscribirse por primera vez.",
+        "FREE": "Nunca han tenido Premium: mostrar sus ventajas."
+      },
+      "optInCount_one": "{{count}} acepta emails comerciales",
+      "optInCount_other": "{{count}} aceptan emails comerciales",
+      "listTitle": "Todas las cuentas",
+      "marketingOnly": "Solo con emails comerciales aceptados",
+      "exportHint": "La exportación para campañas solo incluye a quien aceptó recibir emails comerciales (LSSI art. 21), con los filtros elegidos. Cada consulta y exportación queda registrada.",
+      "export": "Exportar CSV para campaña",
+      "exportEmpty": "Nadie con emails comerciales aceptados en esta selección.",
+      "exported_one": "Exportada {{count}} persona",
+      "exported_other": "Exportadas {{count}} personas",
+      "fileName": "tinhome-campana-{{segment}}.csv",
+      "empty": "No hay cuentas con estos filtros",
+      "tableCaption": "Cuentas del segmento elegido",
+      "cols": {
+        "name": "Persona",
+        "email": "Email",
+        "city": "Ciudad",
+        "segment": "Segmento",
+        "expires": "Premium hasta",
+        "plan": "Plan",
+        "consent": "Emails comerciales"
+      },
+      "sources": {
+        "STRIPE": "Pago",
+        "FOUNDER": "Fundador",
+        "REFERRAL": "Invitación",
+        "ADMIN": "Concedido por el equipo"
+      },
+      "plans": {
+        "MONTHLY": "Mensual",
+        "YEARLY": "Anual"
+      },
+      "cancels": "Cancela al final del periodo",
+      "renews": "Renueva el {{date}}",
+      "ended": "Terminó el {{date}}",
+      "endsIn_one": "Termina el {{date}} (en {{count}} día)",
+      "endsIn_other": "Termina el {{date}} (en {{count}} días)",
+      "yes": "Sí",
+      "no": "No",
+      "more": "Cargar más"
     }
   },
   "appShell": {
@@ -2059,7 +2144,8 @@
       "toggle": "{{category}} por {{channel}}",
       "mandatory": "Los avisos de tu cuenta, pagos, verificación y textos legales se envían siempre. Nunca te enviamos publicidad sin tu permiso.",
       "preview": "Mostrar el texto de los mensajes en las notificaciones",
-      "previewHint": "Si lo desactivas, solo verás «Javier te ha escrito»."
+      "previewHint": "Si lo desactivas, solo verás «Javier te ha escrito».",
+      "marketingHint": "Por defecto está desactivado. Solo te escribiremos con ofertas o novedades si lo activas, y puedes desactivarlo cuando quieras. Los avisos de tu cuenta no dependen de esta opción."
     }
   },
   "push": {

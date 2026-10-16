@@ -117,6 +117,8 @@ test('a11y: admin panel', async ({ page }) => {
     '/admin/metricas',
     '/admin/rgpd',
     '/admin/patrocinados',
+    '/admin/suscriptores',
+    '/admin/consentimientos',
     '/admin/auditoria',
   ]) {
     await audit(page, path, h1(page));

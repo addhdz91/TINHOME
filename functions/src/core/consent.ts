@@ -8,6 +8,8 @@ import {
 import {
   CONSENT_DOCS,
   CONSENT_TEXTS,
+  MARKETING_CONSENT_TEXT,
+  MARKETING_CONSENT_VERSION,
   type ConsentSource,
   type LegalAcceptanceType,
 } from '@tinhome/shared/constants';
@@ -93,6 +95,31 @@ export async function prepareConsents(
       userAgent: context.userAgent,
     };
   });
+}
+
+/**
+ * FR-46 / LSSI art. 21 — evidence of turning commercial e-mails on or off in Ajustes: the exact
+ * wording and its version, when, and from where. Insert-only, like the legal acceptances.
+ */
+export function marketingConsentRecord(
+  optIn: boolean,
+  context: Omit<ConsentContext, 'source' | 'authProvider'>,
+): Record<string, unknown> {
+  return {
+    uid: context.uid,
+    emailHash: context.email ? sha256Hex(context.email.trim().toLowerCase()) : null,
+    type: optIn ? 'MARKETING_OPT_IN' : 'MARKETING_OPT_OUT',
+    slug: null,
+    version: MARKETING_CONSENT_VERSION,
+    contentHash: sha256Hex(MARKETING_CONSENT_TEXT),
+    source: 'SETTINGS',
+    method: 'TOGGLE',
+    consentText: MARKETING_CONSENT_TEXT,
+    authProvider: null,
+    acceptedAt: FieldValue.serverTimestamp(),
+    ipTruncated: truncateIp(context.ip),
+    userAgent: context.userAgent,
+  };
 }
 
 /** Writes the prepared records (insert-only) inside a transaction or a batch. */

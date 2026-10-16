@@ -18,6 +18,7 @@ import {
   MapPinned,
   PauseCircle,
   Scale,
+  Gem,
   Undo2,
   type LucideIcon,
 } from 'lucide-react';
@@ -49,6 +50,7 @@ type NavKey =
   | 'metrics'
   | 'partners'
   | 'consents'
+  | 'subscribers'
   | 'gdpr'
   | 'audit';
 
@@ -69,6 +71,7 @@ const NAV: { key: NavKey; to: string; icon: LucideIcon; end?: boolean; superOnly
   { key: 'params', to: '/admin/parametros', icon: SlidersHorizontal, superOnly: true },
   { key: 'legal', to: '/admin/textos', icon: FileText, superOnly: true },
   { key: 'partners', to: '/admin/patrocinados', icon: Megaphone, superOnly: true },
+  { key: 'subscribers', to: '/admin/suscriptores', icon: Gem, superOnly: true },
   { key: 'consents', to: '/admin/consentimientos', icon: FileCheck, superOnly: true },
   { key: 'audit', to: '/admin/auditoria', icon: ScrollText, superOnly: true },
 ];

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
   MANDATORY_NOTIFICATION_CATEGORIES,
+  MARKETING_CONSENT_TEXT,
   NOTIFICATION_CATEGORIES,
   NOTIFICATION_CHANNELS,
   type NotificationCategory,
@@ -112,6 +113,25 @@ export function NotificationSettings() {
           </label>
           <p id="push-preview-hint" className="text-sm text-muted">
             {t('notifications.settings.previewHint')}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-start gap-3 border-t border-border pt-3">
+        <input
+          id="marketing-opt-in"
+          type="checkbox"
+          className="mt-1 size-5 accent-primary"
+          checked={me.settings.marketingOptIn}
+          disabled={save.isPending}
+          aria-describedby="marketing-opt-in-hint"
+          onChange={(event) => save.mutate({ marketingOptIn: event.target.checked })}
+        />
+        <div>
+          <label htmlFor="marketing-opt-in" className="font-semibold">
+            {MARKETING_CONSENT_TEXT}
+          </label>
+          <p id="marketing-opt-in-hint" className="text-sm text-muted">
+            {t('notifications.settings.marketingHint')}
           </p>
         </div>
       </div>

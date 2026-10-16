@@ -11,3 +11,13 @@ export const CONSENT_TEXTS: Record<ConsentDoc, string> = {
   privacidad: 'He leído y acepto la Política de privacidad',
   cookies: 'He leído la Política de cookies',
 };
+
+/**
+ * LSSI art. 21 / RGPD art. 7 — specific, separate and revocable consent to commercial e-mails
+ * (FR-46: none without it). Shown next to the switch in Ajustes and stored with each opt-in or
+ * opt-out. PROVISIONAL until the lawyer validates it.
+ */
+export const MARKETING_CONSENT_TEXT =
+  'Quiero recibir por email ofertas y novedades de TinHome. Puedo darme de baja cuando quiera.';
+/** Version of that wording (bump it when the text changes). */
+export const MARKETING_CONSENT_VERSION = '1';

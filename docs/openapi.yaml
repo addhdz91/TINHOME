@@ -600,6 +600,8 @@ paths:
                       additionalProperties: false
                     pushPreview:
                       type: boolean
+                    marketingOptIn:
+                      type: boolean
                   additionalProperties: false
               required:
               - data
@@ -11902,6 +11904,352 @@ paths:
       security:
       - FirebaseIdToken: []
         AppCheck: []
+  /adminGetSubscriberStats:
+    post:
+      operationId: adminGetSubscriberStats
+      tags:
+      - Admin
+      summary: 'Panel de suscriptores: personas por segmento e ingresos mensuales estimados'
+      description: 'Callable de Firebase. Guardas: SADM. Lee como máximo 5.000 cuentas (truncated). Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    cityId:
+                      type: string
+                      minLength: 1
+                      maxLength: 60
+                      pattern: ^[a-z0-9-]+$
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      segments:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            segment:
+                              type: string
+                              enum:
+                              - PAID_ACTIVE
+                              - PAID_CANCELING
+                              - GIFTED
+                              - LAPSED_PAID
+                              - LAPSED_GIFTED
+                              - FREE
+                            count:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            marketingOptIn:
+                              type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                          required:
+                          - segment
+                          - count
+                          - marketingOptIn
+                          additionalProperties: false
+                      plans:
+                        type: object
+                        properties:
+                          monthly:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          yearly:
+                            type: integer
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                        required:
+                        - monthly
+                        - yearly
+                        additionalProperties: false
+                      mrrCents:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      expiringIn30Days:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      total:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      truncated:
+                        type: boolean
+                    required:
+                    - segments
+                    - plans
+                    - mrrCents
+                    - expiringIn30Days
+                    - total
+                    - truncated
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminListSubscribers:
+    post:
+      operationId: adminListSubscribers
+      tags:
+      - Admin
+      summary: 'Panel de suscriptores: personas de un segmento'
+      description: 'Callable de Firebase. Guardas: SADM. Auditada (subscribers.list). Primero las que caducan antes. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    cursor:
+                      type: string
+                      pattern: ^[A-Za-z0-9_-]{1,256}$
+                    limit:
+                      default: 20
+                      type: integer
+                      minimum: 1
+                      maximum: 50
+                    segment:
+                      type: string
+                      enum:
+                      - PAID_ACTIVE
+                      - PAID_CANCELING
+                      - GIFTED
+                      - LAPSED_PAID
+                      - LAPSED_GIFTED
+                      - FREE
+                    cityId:
+                      type: string
+                      minLength: 1
+                      maxLength: 60
+                      pattern: ^[a-z0-9-]+$
+                    expiringWithinDays:
+                      type: integer
+                      minimum: 1
+                      maximum: 365
+                    marketingOnly:
+                      type: boolean
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uid:
+                              type: string
+                            displayName:
+                              type: string
+                            email:
+                              type:
+                              - string
+                              - 'null'
+                            cityId:
+                              type:
+                              - string
+                              - 'null'
+                            segment:
+                              type: string
+                              enum:
+                              - PAID_ACTIVE
+                              - PAID_CANCELING
+                              - GIFTED
+                              - LAPSED_PAID
+                              - LAPSED_GIFTED
+                              - FREE
+                            premiumSource:
+                              anyOf:
+                              - type: string
+                                enum:
+                                - STRIPE
+                                - FOUNDER
+                                - REFERRAL
+                                - ADMIN
+                              - type: 'null'
+                            premiumUntil:
+                              type:
+                              - string
+                              - 'null'
+                            daysLeft:
+                              anyOf:
+                              - type: integer
+                                minimum: -9007199254740991
+                                maximum: 9007199254740991
+                              - type: 'null'
+                            plan:
+                              anyOf:
+                              - type: string
+                                enum:
+                                - MONTHLY
+                                - YEARLY
+                              - type: 'null'
+                            cancelAtPeriodEnd:
+                              type: boolean
+                            marketingOptIn:
+                              type: boolean
+                            createdAt:
+                              type:
+                              - string
+                              - 'null'
+                          required:
+                          - uid
+                          - displayName
+                          - email
+                          - cityId
+                          - segment
+                          - premiumSource
+                          - premiumUntil
+                          - daysLeft
+                          - plan
+                          - cancelAtPeriodEnd
+                          - marketingOptIn
+                          - createdAt
+                          additionalProperties: false
+                      nextCursor:
+                        type:
+                        - string
+                        - 'null'
+                      total:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                    required:
+                    - items
+                    - nextCursor
+                    - total
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
+  /adminExportSubscribers:
+    post:
+      operationId: adminExportSubscribers
+      tags:
+      - Admin
+      summary: CSV para campañas por email (solo con emails comerciales aceptados)
+      description: 'Callable de Firebase. Guardas: SADM. Auditada (subscribers.export). Siempre limitada a marketingOptIn (FR-46, LSSI art. 21). URL firmada 15 min. Ver 05_API_CONTRACT.md.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  type: object
+                  properties:
+                    segment:
+                      type: string
+                      enum:
+                      - PAID_ACTIVE
+                      - PAID_CANCELING
+                      - GIFTED
+                      - LAPSED_PAID
+                      - LAPSED_GIFTED
+                      - FREE
+                    cityId:
+                      type: string
+                      minLength: 1
+                      maxLength: 60
+                      pattern: ^[a-z0-9-]+$
+                    expiringWithinDays:
+                      type: integer
+                      minimum: 1
+                      maximum: 365
+                  additionalProperties: false
+              required:
+              - data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      expiresAt:
+                        type: string
+                      rows:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                    required:
+                    - url
+                    - expiresAt
+                    - rows
+                    additionalProperties: false
+                required:
+                - result
+        default:
+          description: Error (HttpsError con details.code de AppErrorCode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - FirebaseIdToken: []
+        AppCheck: []
 components:
   securitySchemes:
     FirebaseIdToken:
@@ -12564,8 +12912,6 @@ components:
             - superadmin
         settings:
           type: object
-          additionalProperties: false
-          description: Añadido en M2 para sincronizar el tema entre dispositivos (C-26).
           properties:
             theme:
               type: string
@@ -12574,8 +12920,60 @@ components:
               - light
               - dark
               - black
+            notifications:
+              type: object
+              properties:
+                MATCHES:
+                  type: object
+                  properties:
+                    email:
+                      type: boolean
+                    push:
+                      type: boolean
+                  additionalProperties: false
+                MESSAGES:
+                  type: object
+                  properties:
+                    email:
+                      type: boolean
+                    push:
+                      type: boolean
+                  additionalProperties: false
+                LIKES:
+                  type: object
+                  properties:
+                    email:
+                      type: boolean
+                    push:
+                      type: boolean
+                  additionalProperties: false
+                EXCHANGES:
+                  type: object
+                  properties:
+                    email:
+                      type: boolean
+                    push:
+                      type: boolean
+                  additionalProperties: false
+                REVIEWS:
+                  type: object
+                  properties:
+                    email:
+                      type: boolean
+                    push:
+                      type: boolean
+                  additionalProperties: false
+              additionalProperties: false
+            pushPreview:
+              type: boolean
+            marketingOptIn:
+              type: boolean
           required:
           - theme
+          - notifications
+          - pushPreview
+          - marketingOptIn
+          additionalProperties: false
     StatementOfReasons:
       type: object
       additionalProperties: false

@@ -88,7 +88,7 @@
 | `firstSubscribedAt` | Timestamp | O,S | Desistimiento (P-07D días desde la primera suscripción; lo fija la primera suscripción activa) |
 | `withdrawalUsed` | bool | R,S | |
 | `legal` | `{ [docSlug]: version }` | R,S | Versiones aceptadas |
-| `settings` | `{ theme: 'system'\|'light'\|'dark'\|'black', notifications: { [MATCHES\|MESSAGES\|LIKES\|EXCHANGES\|REVIEWS]: { email?: bool, push?: bool } }, pushPreview: bool }` | R | Vía `updateSettings`. Falta = activado; SERVICE y LEGAL no son configurables (M8) |
+| `settings` | `{ theme: 'system'\|'light'\|'dark'\|'black', notifications: { [MATCHES\|MESSAGES\|LIKES\|EXCHANGES\|REVIEWS]: { email?: bool, push?: bool } }, pushPreview: bool, marketingOptIn?: bool, marketingOptInAt?: Timestamp }` | R | Vía `updateSettings`. `marketingOptIn` = emails comerciales (FR-46), desactivado si falta; cada cambio deja prueba en `legalAcceptances`. Falta = activado; SERVICE y LEGAL no son configurables (M8) |
 | `deletionRequestedAt` | Timestamp | O,S | |
 | `waitlistPrefill` | `{ cityId, destinations, windowIds }` | O,S | M2 · copia de la lista de espera con el mismo email (FR-19) para precargar los pasos 3–4 |
 
@@ -212,9 +212,9 @@ Slugs: `aviso-legal`, `terminos`, `privacidad`, `cookies`, `normas-comunidad`, `
 Prueba de aceptación (BR-35, RGPD art. 7.1). Solo inserción (`create`): nunca se actualiza ni se borra desde la app; una nueva aceptación es un documento nuevo.
 
 - **Quién:** `uid | null` (null para visitantes: lista de espera, reclamación o denuncia pública) y `emailHash` (SHA-256 del email normalizado; permite encontrar las de un visitante sin guardar su email).
-- **Qué:** `type: TERMS|PRIVACY|COOKIES|DECLARATION|WITHDRAWAL_START|COMMUNITY_RULES`, `slug`, `version`, `contentHash` (SHA-256 del markdown exacto de esa versión).
+- **Qué:** `type: TERMS|PRIVACY|COOKIES|DECLARATION|WITHDRAWAL_START|COMMUNITY_RULES|MARKETING_OPT_IN|MARKETING_OPT_OUT` (los de emails comerciales sin `slug`, con `version` del texto `MARKETING_CONSENT_VERSION`), `slug`, `version`, `contentHash` (SHA-256 del markdown exacto de esa versión).
 - **Cuándo:** `acceptedAt` (hora del servidor).
-- **Cómo:** `source: SIGNUP|REACCEPTANCE|WAITLIST|PUBLIC_COMPLAINT|PUBLIC_REPORT|HOME_DECLARATION|PREMIUM_CHECKOUT`, `method: 'CHECKBOX'` (casilla propia de cada texto, sin marcar por defecto), `consentText` (texto exacto junto a la casilla, `CONSENT_TEXTS`) y `authProvider` (`password`, `google.com`… en el registro).
+- **Cómo:** `source: SIGNUP|REACCEPTANCE|WAITLIST|PUBLIC_COMPLAINT|PUBLIC_REPORT|HOME_DECLARATION|PREMIUM_CHECKOUT|SETTINGS`, `method: 'CHECKBOX'|'TOGGLE'` (casilla propia de cada texto, sin marcar por defecto), `consentText` (texto exacto junto a la casilla, `CONSENT_TEXTS`) y `authProvider` (`password`, `google.com`… en el registro).
 - **Desde dónde:** `ipTruncated` (/24) y `userAgent` (≤ 300 caracteres).
 - `context?` (`homeId`) en la declaración responsable.
 

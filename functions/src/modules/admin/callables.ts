@@ -14,8 +14,14 @@ import {
   AdminGrantPremiumOutput,
   AdminListAuditInput,
   AdminListAuditOutput,
+  AdminExportSubscribersInput,
+  AdminExportSubscribersOutput,
+  AdminGetSubscriberStatsInput,
+  AdminGetSubscriberStatsOutput,
   AdminListConsentsInput,
   AdminListConsentsOutput,
+  AdminListSubscribersInput,
+  AdminListSubscribersOutput,
   AdminParamsOutput,
   AdminPublishLegalDocInput,
   AdminPublishLegalDocOutput,
@@ -45,6 +51,7 @@ import { dashboard } from './dashboard.js';
 import { recomputeDemand } from './demand.js';
 import { getLegalDoc, publishLegalDoc } from './legal.js';
 import { exportCsv, metrics } from './metrics.js';
+import { exportSubscribers, listSubscribers, subscriberStats } from './subscribers.js';
 import * as users from './users.js';
 
 const ok = { ok: true as const };
@@ -227,4 +234,40 @@ export const adminListConsents = defineCallable(
   'adminListConsents',
   { input: AdminListConsentsInput, output: AdminListConsentsOutput },
   async ({ input, request }) => listConsents(db(), requireSuperadmin(request), input),
+);
+
+/** Subscribers panel (marketing) — SADM: segments and estimated MRR. */
+export const adminGetSubscriberStats = defineCallable(
+  'adminGetSubscriberStats',
+  { input: AdminGetSubscriberStatsInput, output: AdminGetSubscriberStatsOutput },
+  async ({ input, request, now }) => {
+    requireSuperadmin(request);
+    return subscriberStats(db(), input, await getParams(), now);
+  },
+);
+
+/** Subscribers panel — SADM, audited (names and e-mails of a segment). */
+export const adminListSubscribers = defineCallable(
+  'adminListSubscribers',
+  { input: AdminListSubscribersInput, output: AdminListSubscribersOutput },
+  async ({ input, request, now }) => {
+    const actor = requireSuperadmin(request);
+    await viewAudit(actor, 'subscribers.list', 'segment', input.segment ?? 'ALL');
+    return listSubscribers(db(), input, now);
+  },
+);
+
+/** Campaign CSV — SADM, audited; only people who accepted commercial e-mails (FR-46). */
+export const adminExportSubscribers = defineCallable(
+  'adminExportSubscribers',
+  {
+    input: AdminExportSubscribersInput,
+    output: AdminExportSubscribersOutput,
+    options: { timeoutSeconds: 120, memory: '512MiB' },
+  },
+  async ({ input, request, now }) => {
+    const actor = requireSuperadmin(request);
+    await viewAudit(actor, 'subscribers.export', 'segment', input.segment ?? 'ALL');
+    return exportSubscribers(db(), input, now);
+  },
 );

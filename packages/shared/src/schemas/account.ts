@@ -97,6 +97,8 @@ export const MeSchema = z.object({
     notifications: NotificationPreferencesSchema,
     /** 03 §17 — show the message text in push notifications (off by default). */
     pushPreview: z.boolean(),
+    /** FR-46 / LSSI art. 21 — accepted commercial e-mails (off by default). */
+    marketingOptIn: z.boolean(),
   }),
 });
 export type Me = z.infer<typeof MeSchema>;
@@ -112,6 +114,8 @@ export const UpdateSettingsInput = z.strictObject({
   theme: z.optional(z.enum(THEME_PREFERENCES)),
   notifications: z.optional(NotificationPreferencesSchema),
   pushPreview: z.optional(z.boolean()),
+  /** FR-46 — commercial e-mails (off unless the person turns them on; evidence stored). */
+  marketingOptIn: z.optional(z.boolean()),
 });
 export type UpdateSettingsInput = z.infer<typeof UpdateSettingsInput>;
 export const OkOutput = z.object({ ok: z.literal(true) });

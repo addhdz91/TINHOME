@@ -71,7 +71,10 @@ export const updateSettings = defineCallable(
   { input: UpdateSettingsInput, output: OkOutput },
   async ({ input, request }) => {
     const auth = requireAuth(request);
-    await account.updateSettings(db(), auth.uid, input);
+    await account.updateSettings(db(), auth.uid, input, {
+      ip: requestIp(request.rawRequest),
+      userAgent: requestUserAgent(request.rawRequest),
+    });
     return { ok: true as const };
   },
 );

@@ -123,6 +123,8 @@ export const LEGAL_ACCEPTANCE_TYPES = [
   'WITHDRAWAL_START',
   'COMMUNITY_RULES',
   'COOKIES',
+  'MARKETING_OPT_IN',
+  'MARKETING_OPT_OUT',
 ] as const;
 export type LegalAcceptanceType = (typeof LEGAL_ACCEPTANCE_TYPES)[number];
 
@@ -507,9 +509,24 @@ export const CONSENT_SOURCES = [
   'PUBLIC_REPORT',
   'HOME_DECLARATION',
   'PREMIUM_CHECKOUT',
+  'SETTINGS',
 ] as const;
 export type ConsentSource = (typeof CONSENT_SOURCES)[number];
 
 /** Legal texts asked as separate checkboxes in the forms (each with its own link). */
 export const CONSENT_DOCS = ['terminos', 'privacidad', 'cookies'] as const;
 export type ConsentDoc = (typeof CONSENT_DOCS)[number];
+
+/**
+ * Marketing segments of the admin subscribers panel, computed on the server from the
+ * entitlements and the Stripe subscription (see `subscriberSegment`).
+ */
+export const SUBSCRIBER_SEGMENTS = [
+  'PAID_ACTIVE',
+  'PAID_CANCELING',
+  'GIFTED',
+  'LAPSED_PAID',
+  'LAPSED_GIFTED',
+  'FREE',
+] as const;
+export type SubscriberSegment = (typeof SUBSCRIBER_SEGMENTS)[number];

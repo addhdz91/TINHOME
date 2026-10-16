@@ -47,6 +47,9 @@ export {
   adminUpsertWindow,
   jobRecomputeDemand,
   adminListConsents,
+  adminGetSubscriberStats,
+  adminListSubscribers,
+  adminExportSubscribers,
 } from './modules/admin/callables.js';
 export {
   adminDecideLocationReview,

@@ -1,4 +1,10 @@
 import {
+  AdminExportSubscribersInput,
+  AdminExportSubscribersOutput,
+  AdminGetSubscriberStatsInput,
+  AdminGetSubscriberStatsOutput,
+  AdminListSubscribersInput,
+  AdminListSubscribersOutput,
   AdminListConsentsInput,
   AdminListConsentsOutput,
   AdminCloseGdprRequestInput,
@@ -386,4 +392,19 @@ export const adminListConsents = callable(
   'adminListConsents',
   AdminListConsentsInput,
   AdminListConsentsOutput,
+);
+export const adminGetSubscriberStats = callable(
+  'adminGetSubscriberStats',
+  AdminGetSubscriberStatsInput,
+  AdminGetSubscriberStatsOutput,
+);
+export const adminListSubscribers = callable(
+  'adminListSubscribers',
+  AdminListSubscribersInput,
+  AdminListSubscribersOutput,
+);
+export const adminExportSubscribers = callable(
+  'adminExportSubscribers',
+  AdminExportSubscribersInput,
+  AdminExportSubscribersOutput,
 );

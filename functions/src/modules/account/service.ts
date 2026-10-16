@@ -21,7 +21,7 @@ import type {
   UpdateSettingsInput,
 } from '@tinhome/shared/schemas';
 import { appError } from '../../core/app-error.js';
-import { prepareConsents, writeConsents } from '../../core/consent.js';
+import { marketingConsentRecord, prepareConsents, writeConsents } from '../../core/consent.js';
 import { sha256Hex } from '../../core/crypto.js';
 import { enqueueMail, enqueueMailNow } from '../../core/email/queue.js';
 import { currentLegalVersions } from '../../core/legal.js';
@@ -198,11 +198,20 @@ export async function updateSettings(
   db: Firestore,
   uid: string,
   input: UpdateSettingsInput,
+  evidence: { ip: string; userAgent: string | null } = { ip: 'unknown', userAgent: null },
 ): Promise<void> {
   const ref = db.doc(`users/${uid}`);
   const snap = await ref.get();
   if (!snap.exists) throw appError('E_NOT_FOUND');
   const changes: Record<string, unknown> = {};
+  // FR-46 — commercial e-mails: only a real change is recorded, with its evidence.
+  const marketingChanged =
+    input.marketingOptIn !== undefined &&
+    input.marketingOptIn !== (snap.get('settings.marketingOptIn') === true);
+  if (marketingChanged) {
+    changes['settings.marketingOptIn'] = input.marketingOptIn;
+    changes['settings.marketingOptInAt'] = FieldValue.serverTimestamp();
+  }
   if (input.theme) changes['settings.theme'] = input.theme;
   if (input.pushPreview !== undefined) changes['settings.pushPreview'] = input.pushPreview;
   // FR-46 — one field per category and channel, so concurrent toggles do not overwrite each other.
@@ -212,7 +221,18 @@ export async function updateSettings(
     }
   }
   if (Object.keys(changes).length === 0) return;
-  await ref.update({ ...changes, updatedAt: FieldValue.serverTimestamp() });
+  const batch = db.batch();
+  batch.update(ref, { ...changes, updatedAt: FieldValue.serverTimestamp() });
+  if (marketingChanged && input.marketingOptIn !== undefined) {
+    writeConsents(db, batch, [
+      marketingConsentRecord(input.marketingOptIn, {
+        uid,
+        email: (snap.get('email') as string | undefined) ?? null,
+        ...evidence,
+      }),
+    ]);
+  }
+  await batch.commit();
 }
 
 /**

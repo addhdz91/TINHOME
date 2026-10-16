@@ -116,7 +116,9 @@ export function ConsentsPage() {
                     <td className="p-2">
                       {item.slug
                         ? t(`legal.docs.${item.slug}`, { defaultValue: item.slug })
-                        : item.type}
+                        : item.type === 'MARKETING_OPT_IN' || item.type === 'MARKETING_OPT_OUT'
+                          ? t(`admin.consents.marketing.${item.type}`)
+                          : item.type}
                     </td>
                     <td className="p-2">{item.version}</td>
                     <td className="p-2">

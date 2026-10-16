@@ -86,4 +86,19 @@ describe('NotificationSettings (FR-46, FR-70)', () => {
       await screen.findByRole('button', { name: 'Activar notificaciones' }),
     ).toBeInTheDocument();
   });
+
+  it('commercial e-mails are a separate switch, off by default (FR-46, LSSI art. 21)', async () => {
+    const user = userEvent.setup();
+    renderRoutesWithAuth([{ path: '/', element: <NotificationSettings /> }], '/', signedIn());
+    const marketing = screen.getByRole('checkbox', { name: /Quiero recibir por email ofertas/ });
+    expect(marketing).not.toBeChecked();
+    expect(screen.getByText(/Por defecto está desactivado/)).toBeInTheDocument();
+    await user.click(marketing);
+    await waitFor(() =>
+      expect(callables.updateSettings).toHaveBeenCalledWith(
+        { marketingOptIn: true },
+        expect.anything(),
+      ),
+    );
+  });
 });
